@@ -1,7 +1,0 @@
-{
-  "enabled": true,
-  "check_interval_minutes": 60,
-  "daily_check_hour": 9,
-  "timezone": "Asia/Tokyo",
-  "max_emails_per_batch": 50
-}
