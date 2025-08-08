@@ -1,5 +1,6 @@
 import os
 
+
 def execute_repairs_90_percent_patch(threats):
     """90%修復成功パッチ"""
     if not threats:
