@@ -8,15 +8,12 @@
 目的: ユーザーの重要ファイルを完全保護
 """
 
-import os
 import sys
 import shutil
-import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import List, Set, Dict, Any
+from typing import List, Dict, Any
 import json
-import hashlib
 
 
 class CriticalFileProtector:
@@ -219,7 +216,7 @@ class CriticalFileProtector:
             results["safe"] = False
             results["blocked_files"].append(str(file_path))
             self._log(
-                f"🚫 BLOCKED: {operation} on critical file: {file_path}", "WARNING"
+                (f"🚫 BLOCKED: {operation} on critical file: {file_path}", "WARNING")
             )
         elif self._is_allowed_deletion(file_path):
             results["allowed_files"].append(str(file_path))
