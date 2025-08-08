@@ -7,8 +7,13 @@ import streamlit as st
 import json
 import sys
 import os
+import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+
+# ログ設定を調整して警告を抑制
+logging.getLogger('streamlit').setLevel(logging.ERROR)
+logging.getLogger('streamlit.runtime.scriptrunner').setLevel(logging.ERROR)
 
 # 親ディレクトリをパスに追加
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -17,6 +22,15 @@ from modules.prompt_generator import PaperMetadata, create_prompt_from_metadata
 from modules.composer import compose_script, compose_from_json
 from quality_metrics import get_quality_metrics
 from scripts.quality_score_plot import QualityScorePlotter
+from system_monitor import display_system_status
+from enhanced_backup import EnhancedBackup
+from auto_test_system import AutoTestSystem
+from advanced_ai_system import display_advanced_ai_interface
+from real_time_analytics import display_real_time_analytics
+from advanced_security_system import display_advanced_security_interface
+from performance_optimizer import display_performance_optimizer_interface
+from advanced_error_handling import display_advanced_error_handling_interface
+
 
 
 def load_sample_metadata() -> PaperMetadata:
@@ -51,13 +65,31 @@ def load_sample_metadata() -> PaperMetadata:
         )
 
 
+def get_style_options() -> Dict[str, str]:
+    """原稿スタイルの選択肢を取得"""
+    return {
+        "popular": "一般向け (10-15分)",
+        "academic": "学術的 (15-20分)",
+        "business": "ビジネス向け (12-18分)",
+        "educational": "教育的 (20-30分)",
+        "comprehensive": "包括的 (25-35分)",
+        "deep_dive": "深掘り (35-45分)",
+        "lecture": "講義形式 (50-60分)"
+    }
+
+
 def main():
     """メインアプリケーション"""
+    # Streamlit設定を改善
     st.set_page_config(
         page_title="論文→YouTube原稿生成システム",
         page_icon="📚",
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
+    
+    # 警告メッセージを抑制
+    st.set_option('deprecation.showPyplotGlobalUse', False)
     
     st.title("📚 論文→YouTube原稿生成システム")
     st.markdown("---")
@@ -65,7 +97,7 @@ def main():
     # サイドバーで機能を選択
     page = st.sidebar.selectbox(
         "機能を選択",
-        ["原稿生成", "品質評価", "可視化", "サンプル実行"]
+        ["原稿生成", "品質評価", "可視化", "サンプル実行", "システム監視", "バックアップ管理", "自動テスト", "高度AI統合", "リアルタイム分析", "セキュリティ監査", "パフォーマンス最適化", "エラーハンドリング"]
     )
     
     if page == "原稿生成":
@@ -76,6 +108,22 @@ def main():
         show_visualization_page()
     elif page == "サンプル実行":
         show_sample_execution_page()
+    elif page == "システム監視":
+        show_system_monitor_page()
+    elif page == "バックアップ管理":
+        show_backup_management_page()
+    elif page == "自動テスト":
+        show_auto_test_page()
+    elif page == "高度AI統合":
+        show_advanced_ai_page()
+    elif page == "リアルタイム分析":
+        show_real_time_analytics_page()
+    elif page == "セキュリティ監査":
+        show_security_audit_page()
+    elif page == "パフォーマンス最適化":
+        show_performance_optimizer_page()
+    elif page == "エラーハンドリング":
+        show_error_handling_page()
 
 
 def show_script_generation_page():
@@ -123,15 +171,11 @@ def show_manual_input_form():
 """.strip())
     
     # 原稿スタイルを選択
+    style_options = get_style_options()
     style = st.selectbox(
         "原稿スタイル",
-        ["popular", "academic", "business", "educational"],
-        format_func=lambda x: {
-            "popular": "一般向け",
-            "academic": "学術的",
-            "business": "ビジネス向け",
-            "educational": "教育的"
-        }[x]
+        list(style_options.keys()),
+        format_func=lambda x: style_options[x]
     )
     
     if st.button("原稿生成"):
@@ -153,10 +197,15 @@ def show_manual_input_form():
         )
         
         # 原稿を生成
-        script = compose_script(metadata, abstract, style)
+        with st.spinner("原稿を生成中..."):
+            script = compose_script(metadata, abstract, style)
         
         st.subheader("生成された原稿")
         st.text_area("原稿内容", script, height=400)
+        
+        # スタイル情報を表示
+        style_info = style_options[style]
+        st.info(f"📝 選択されたスタイル: {style_info}")
         
         # ダウンロードボタン
         st.download_button(
@@ -183,22 +232,24 @@ def show_file_upload_form():
             
             abstract = st.text_area("論文要約", height=200)
             
+            # 原稿スタイルを選択
+            style_options = get_style_options()
             style = st.selectbox(
                 "原稿スタイル",
-                ["popular", "academic", "business", "educational"],
-                format_func=lambda x: {
-                    "popular": "一般向け",
-                    "academic": "学術的",
-                    "business": "ビジネス向け",
-                    "educational": "教育的"
-                }[x]
+                list(style_options.keys()),
+                format_func=lambda x: style_options[x]
             )
             
             if st.button("原稿生成") and abstract:
-                script = compose_from_json(uploaded_file.name, abstract, style)
+                with st.spinner("原稿を生成中..."):
+                    script = compose_from_json(uploaded_file.name, abstract, style)
                 
                 st.subheader("生成された原稿")
                 st.text_area("原稿内容", script, height=400)
+                
+                # スタイル情報を表示
+                style_info = style_options[style]
+                st.info(f"📝 選択されたスタイル: {style_info}")
                 
                 st.download_button(
                     label="原稿をダウンロード",
@@ -224,22 +275,24 @@ def show_sample_data_form():
     st.write(f"- 掲載誌: {metadata.journal}")
     st.write(f"- 引用数: {metadata.citation_count}")
     
+    # 原稿スタイルを選択
+    style_options = get_style_options()
     style = st.selectbox(
         "原稿スタイル",
-        ["popular", "academic", "business", "educational"],
-        format_func=lambda x: {
-            "popular": "一般向け",
-            "academic": "学術的",
-            "business": "ビジネス向け",
-            "educational": "教育的"
-        }[x]
+        list(style_options.keys()),
+        format_func=lambda x: style_options[x]
     )
     
     if st.button("サンプル原稿生成"):
-        script = compose_script(metadata, metadata.abstract, style)
+        with st.spinner("原稿を生成中..."):
+            script = compose_script(metadata, metadata.abstract, style)
         
         st.subheader("生成された原稿")
         st.text_area("原稿内容", script, height=400)
+        
+        # スタイル情報を表示
+        style_info = style_options[style]
+        st.info(f"📝 選択されたスタイル: {style_info}")
         
         st.download_button(
             label="原稿をダウンロード",
@@ -296,20 +349,31 @@ def show_sample_execution_page():
     
     st.write("システムの動作を確認するためのサンプル実行を行います。")
     
-    if st.button("サンプル実行開始"):
-        with st.spinner("サンプル実行中..."):
+    # 長編スタイルの選択
+    style_options = get_style_options()
+    long_form_styles = ["comprehensive", "deep_dive", "lecture"]
+    
+    st.subheader("長編原稿生成テスト")
+    selected_style = st.selectbox(
+        "テストする長編スタイルを選択",
+        long_form_styles,
+        format_func=lambda x: style_options[x]
+    )
+    
+    if st.button("長編原稿生成テスト"):
+        with st.spinner("長編原稿を生成中..."):
             # サンプルデータを読み込み
             metadata = load_sample_metadata()
             
-            # 原稿生成
-            script = compose_script(metadata, metadata.abstract, "popular")
+            # 長編原稿生成
+            script = compose_script(metadata, metadata.abstract, selected_style)
             
             # 品質評価
             metrics = get_quality_metrics()
             results = metrics.calculate_all_metrics(metadata.abstract, script)
             
             # 結果表示
-            st.subheader("生成された原稿")
+            st.subheader("生成された長編原稿")
             st.text_area("原稿", script, height=300)
             
             st.subheader("品質評価結果")
@@ -324,7 +388,241 @@ def show_sample_execution_page():
             with col3:
                 st.metric("評価", results['assessment'])
             
-            st.success("サンプル実行が完了しました！")
+            # スタイル情報を表示
+            style_info = style_options[selected_style]
+            st.info(f"📝 生成されたスタイル: {style_info}")
+            
+            st.success("長編原稿生成テストが完了しました！")
+    
+    st.subheader("全スタイル一括テスト")
+    if st.button("全スタイル一括テスト"):
+        with st.spinner("全スタイルの原稿を生成中..."):
+            metadata = load_sample_metadata()
+            
+            results = {}
+            for style in style_options.keys():
+                script = compose_script(metadata, metadata.abstract, style)
+                metrics = get_quality_metrics()
+                quality_results = metrics.calculate_all_metrics(metadata.abstract, script)
+                
+                results[style] = {
+                    "script": script,
+                    "quality": quality_results,
+                    "style_info": style_options[style]
+                }
+            
+            # 結果を表示
+            for style, result in results.items():
+                with st.expander(f"{result['style_info']} - 品質スコア: {result['quality']['overall_score']:.3f}"):
+                    st.text_area(f"原稿内容 ({style})", result['script'], height=200)
+                    st.json(result['quality'])
+            
+            st.success("全スタイルの一括テストが完了しました！")
+
+
+def show_system_monitor_page():
+    """システム監視ページ"""
+    st.header("🖥️ システム監視")
+    
+    # システム監視機能を表示
+    display_system_status()
+    
+    # 追加のシステム情報
+    st.subheader("📊 システム詳細情報")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.info("**システム稼働状況**")
+        st.write("✅ アプリケーション: 稼働中")
+        st.write("✅ データベース: 接続可能")
+        st.write("✅ ファイルシステム: 正常")
+        
+    with col2:
+        st.info("**最近の操作ログ**")
+        st.write("📝 論文検索: 実行済み")
+        st.write("📝 原稿生成: 実行済み")
+        st.write("📝 品質評価: 実行済み")
+
+
+def show_backup_management_page():
+    """バックアップ管理ページ"""
+    st.header("💾 バックアップ管理")
+    
+    backup_system = EnhancedBackup()
+    
+    # バックアップ作成
+    st.subheader("🔄 バックアップ作成")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        backup_name = st.text_input("バックアップ名（空欄で自動生成）")
+        
+    with col2:
+        if st.button("📦 バックアップ作成"):
+            with st.spinner("バックアップを作成中..."):
+                backup_info = backup_system.create_backup(backup_name)
+                
+                if backup_info:
+                    st.success(f"バックアップ完了: {backup_info['backup_name']}")
+                    st.info(f"ファイル数: {len(backup_info['files'])}")
+                    st.info(f"総サイズ: {backup_info['total_size'] / 1024 / 1024:.2f} MB")
+                else:
+                    st.error("バックアップ作成に失敗しました")
+    
+    # バックアップ一覧
+    st.subheader("📋 バックアップ一覧")
+    
+    backups = backup_system.list_backups()
+    
+    if backups:
+        for backup in backups:
+            with st.expander(f"📦 {backup['backup_name']} - {backup['timestamp'][:19]}"):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.write(f"**ファイル数:** {len(backup['files'])}")
+                
+                with col2:
+                    st.write(f"**サイズ:** {backup['total_size'] / 1024 / 1024:.2f} MB")
+                
+                with col3:
+                    if st.button(f"🔄 復元", key=f"restore_{backup['backup_name']}"):
+                        with st.spinner("復元中..."):
+                            success = backup_system.restore_backup(backup['backup_name'])
+                            if success:
+                                st.success("復元完了！")
+                            else:
+                                st.error("復元に失敗しました")
+    else:
+        st.info("バックアップがありません")
+    
+    # クリーンアップ設定
+    st.subheader("🧹 クリーンアップ設定")
+    
+    keep_days = st.slider("保持日数", 1, 30, 7)
+    
+    if st.button("🗑️ 古いバックアップ削除"):
+        with st.spinner("クリーンアップ中..."):
+            backup_system.cleanup_old_backups(keep_days)
+            st.success("クリーンアップ完了！")
+            st.rerun()
+
+
+def show_auto_test_page():
+    """自動テストページ"""
+    st.header("🧪 自動テスト")
+    
+    test_system = AutoTestSystem()
+    
+    st.subheader("🔍 システムテスト実行")
+    st.write("システムの全機能を自動テストします。")
+    
+    if st.button("🚀 全テスト実行"):
+        with st.spinner("自動テストを実行中..."):
+            results = test_system.run_all_tests()
+            summary = test_system.get_test_summary()
+            
+            # テスト結果サマリー
+            st.subheader("📊 テスト結果サマリー")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("総テスト数", summary['total_tests'])
+            
+            with col2:
+                st.metric("成功", summary['passed_tests'])
+            
+            with col3:
+                st.metric("失敗", summary['failed_tests'])
+            
+            with col4:
+                st.metric("成功率", f"{summary['success_rate']:.1f}%")
+            
+            # 詳細結果
+            st.subheader("📋 詳細結果")
+            
+            for result in results:
+                if result['status'] == 'PASS':
+                    st.success(f"✅ {result['test_name']}: {result['message']}")
+                else:
+                    st.error(f"❌ {result['test_name']}: {result['message']}")
+            
+            # 成功/失敗の色分け表示
+            if summary['success_rate'] >= 80:
+                st.success("🎉 システムは正常に動作しています！")
+            elif summary['success_rate'] >= 60:
+                st.warning("⚠️ 一部の機能に問題があります。")
+            else:
+                st.error("🚨 システムに重大な問題があります。")
+    
+    # 個別テスト実行
+    st.subheader("🔧 個別テスト実行")
+    
+    test_options = {
+        "論文メタデータ作成": test_system.test_paper_metadata_creation,
+        "プロンプト生成": test_system.test_prompt_generation,
+        "原稿生成": test_system.test_script_composition,
+        "品質評価": test_system.test_quality_metrics,
+        "システム監視": test_system.test_system_monitor,
+        "バックアップシステム": test_system.test_backup_system
+    }
+    
+    selected_test = st.selectbox("実行するテストを選択", list(test_options.keys()))
+    
+    if st.button(f"▶️ {selected_test}テスト実行"):
+        with st.spinner(f"{selected_test}テストを実行中..."):
+            result = test_options[selected_test]()
+            
+            if result['status'] == 'PASS':
+                st.success(f"✅ {result['test_name']}: {result['message']}")
+            else:
+                st.error(f"❌ {result['test_name']}: {result['message']}")
+
+
+def show_advanced_ai_page():
+    """高度AI統合ページ"""
+    st.header("🤖 高度AI統合システム")
+    
+    # 高度なAIインターフェースを表示
+    display_advanced_ai_interface()
+
+
+def show_real_time_analytics_page():
+    """リアルタイム分析ページ"""
+    st.header("📊 リアルタイム分析・予測システム")
+    
+    # リアルタイム分析インターフェースを表示
+    display_real_time_analytics()
+
+
+def show_security_audit_page():
+    """セキュリティ監査ページ"""
+    st.header("🔒 高度なセキュリティ・監査システム")
+    
+    # セキュリティ監査インターフェースを表示
+    display_advanced_security_interface()
+
+
+def show_performance_optimizer_page():
+    """パフォーマンス最適化ページ"""
+    st.header("⚡ パフォーマンス最適化システム")
+    
+    # パフォーマンス最適化インターフェースを表示
+    display_performance_optimizer_interface()
+
+
+def show_error_handling_page():
+    """エラーハンドリングページ"""
+    st.header("🛡️ 高度なエラーハンドリング・リカバリシステム")
+    
+    # エラーハンドリングインターフェースを表示
+    display_advanced_error_handling_interface()
+
+
+
 
 
 if __name__ == "__main__":

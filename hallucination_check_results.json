@@ -1,0 +1,46 @@
+[
+  {
+    "ai_output": "この研究では、AI技術を用いて画像認識の精度を向上させました。実験結果によると、従来の手法と比較して30%の精度向上を達成しました。",
+    "source_text": "本研究では、ディープラーニングを用いて画像認識の精度を向上させました。実験結果によると、従来の手法と比較して25%の精度向上を達成しました。",
+    "overall_similarity": 0.8412698412698413,
+    "consistency_score": 0.8397177419354839,
+    "hallucination_score": 0.16028225806451613,
+    "hallucination_level": "低",
+    "is_hallucination": false,
+    "matched_claims": [
+      {
+        "ai_claim": "この研究では、AI技術を用いて画像認識の精度を向上させました",
+        "source_claim": "本研究では、ディープラーニングを用いて画像認識の精度を向上させました",
+        "similarity": 0.7419354838709677
+      },
+      {
+        "ai_claim": "実験結果によると、従来の手法と比較して30%の精度向上を達成しました",
+        "source_claim": "実験結果によると、従来の手法と比較して25%の精度向上を達成しました",
+        "similarity": 0.9375
+      }
+    ],
+    "unmatched_claims": [],
+    "total_claims": 2,
+    "matched_count": 2,
+    "checked_at": "2025-08-08T21:53:03.333449"
+  },
+  {
+    "ai_output": "この論文では、量子コンピューティングの新しいアルゴリズムを提案しています。",
+    "source_text": "この研究では、機械学習を用いた自然言語処理の改善について述べています。",
+    "overall_similarity": 0.29411764705882354,
+    "consistency_score": 0.0,
+    "hallucination_score": 1.0,
+    "hallucination_level": "高",
+    "is_hallucination": true,
+    "matched_claims": [],
+    "unmatched_claims": [
+      {
+        "ai_claim": "この論文では、量子コンピューティングの新しいアルゴリズムを提案しています",
+        "similarity": 0.29411764705882354
+      }
+    ],
+    "total_claims": 1,
+    "matched_count": 0,
+    "checked_at": "2025-08-08T21:53:03.333642"
+  }
+]

@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "description": "出力の安定化用テンプレート",
+  
+  "default": {
+    "system": "あなたは研究アシスタントです。以下の研究目的に従って、信頼できる論文ベースで一貫性ある構成を出力してください。",
+    "user": "研究データを分析し、学術的に正確で理解しやすい要約を作成してください。",
+    "constraints": [
+      "事実に基づいた内容のみ",
+      "引用を適切に含める",
+      "論理的な構成を保つ",
+      "専門用語は平易に説明"
+    ]
+  },
+  
+  "youtube_script": {
+    "system": "あなたはYouTube原稿作成の専門家です。研究論文を魅力的な動画原稿に変換してください。",
+    "user": "出力は2〜3分のトーク構成にしてください。要点→補足→結論の順。研究論拠を会話調に整理してください。",
+    "structure": {
+      "hook": "視聴者の興味を引く導入（15秒）",
+      "introduction": "研究背景と目的（30秒）",
+      "main_content": "研究結果と分析（2-2.5分）",
+      "conclusion": "まとめと今後の展望（15秒）",
+      "call_to_action": "視聴者へのアクション呼びかけ（15秒）"
+    },
+    "style": {
+      "tone": "親しみやすく、専門的",
+      "pace": "適度なテンポで理解しやすい",
+      "engagement": "質問や具体例を含む",
+      "clarity": "複雑な概念を平易に説明"
+    }
+  },
+  
+  "academic_summary": {
+    "system": "あなたは学術論文の要約専門家です。研究の核心を正確に抽出してください。",
+    "user": "研究の目的、方法、結果、結論を簡潔にまとめてください。",
+    "format": {
+      "structure": ["背景", "目的", "方法", "結果", "結論", "意義"],
+      "length": "500-800文字",
+      "style": "学術的で正確"
+    }
+  },
+  
+  "business_presentation": {
+    "system": "あなたはビジネスプレゼンテーションの専門家です。研究結果をビジネス価値に変換してください。",
+    "user": "研究の実用的な応用とビジネスインパクトを強調してください。",
+    "focus": {
+      "practical_applications": true,
+      "business_impact": true,
+      "cost_benefit_analysis": true,
+      "implementation_strategy": true
+    }
+  },
+  
+  "educational_content": {
+    "system": "あなたは教育コンテンツの専門家です。学習者にとって理解しやすい内容に変換してください。",
+    "user": "段階的に概念を説明し、学習目標を明確にしてください。",
+    "pedagogy": {
+      "scaffolding": true,
+      "examples": true,
+      "interactive_elements": true,
+      "assessment_questions": true
+    }
+  },
+  
+  "fact_checking": {
+    "system": "あなたは事実確認の専門家です。情報の正確性を検証してください。",
+    "user": "提供された情報の信頼性と事実性を評価してください。",
+    "criteria": [
+      "ソースの信頼性",
+      "情報の最新性",
+      "引用の適切性",
+      "論理的一貫性"
+    ]
+  },
+  
+  "quality_assurance": {
+    "system": "あなたは品質保証の専門家です。コンテンツの品質を評価してください。",
+    "user": "可読性、エンゲージメント、構造の観点から品質を評価してください。",
+    "metrics": {
+      "readability": "文章の理解しやすさ",
+      "engagement": "視聴者の興味を引く要素",
+      "structure": "論理的な構成",
+      "accuracy": "情報の正確性"
+    }
+  }
+} 

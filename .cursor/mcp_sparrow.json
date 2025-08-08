@@ -1,0 +1,69 @@
+{
+  "sparrowLogic": {
+    "version": "1.0",
+    "description": "Google DeepMind's Sparrow Logic for citation enforcement",
+    "citationRules": {
+      "mandatoryCitations": {
+        "priority": "critical",
+        "rules": [
+          "Every paragraph must reference at least one verifiable source",
+          "Scientific claims require DOI or PMID references",
+          "Academic papers must include author names and publication year",
+          "Web sources must include full URL and access date",
+          "Statistics must cite original data source"
+        ]
+      },
+      "sourceVerification": {
+        "priority": "high",
+        "rules": [
+          "Prefer peer-reviewed academic sources",
+          "Use Google Scholar URLs for academic references",
+          "Verify DOI links before including",
+          "Check publication dates for relevance",
+          "Cross-reference multiple sources when possible"
+        ]
+      },
+      "citationFormat": {
+        "priority": "medium",
+        "rules": [
+          "DOI format: https://doi.org/10.xxxx/xxxxx",
+          "PMID format: PMID: xxxxxxxx",
+          "Google Scholar: https://scholar.google.com/scholar?q=...",
+          "Include page numbers for book citations",
+          "Use consistent citation style throughout"
+        ]
+      }
+    },
+    "enforcement": {
+      "autoReject": [
+        "Paragraphs without citations",
+        "Claims without verifiable sources",
+        "Unattributed statistics or data"
+      ],
+      "warningFlags": [
+        "Single source claims",
+        "Outdated sources (>5 years for fast-moving fields)",
+        "Non-peer-reviewed sources for scientific claims"
+      ],
+      "qualityChecks": {
+        "sourceDiversity": "Require multiple sources for major claims",
+        "recencyCheck": "Prefer recent sources for current topics",
+        "authorityCheck": "Verify author credentials and institution"
+      }
+    },
+    "processingStages": {
+      "rawSummarization": {
+        "applyRules": true,
+        "citationRequired": true
+      },
+      "scriptAssembly": {
+        "applyRules": true,
+        "citationRequired": true
+      },
+      "finalReview": {
+        "applyRules": true,
+        "citationRequired": true
+      }
+    }
+  }
+} 

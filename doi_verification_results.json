@@ -1,0 +1,52 @@
+[
+  {
+    "valid": true,
+    "doi": "10.1038/nature12373",
+    "title": "Nanometre-scale thermometry in a living cell",
+    "authors": [
+      "G. Kucsko",
+      "P. C. Maurer",
+      "N. Y. Yao",
+      "M. Kubo",
+      "H. J. Noh",
+      "P. K. Lo",
+      "H. Park",
+      "M. D. Lukin"
+    ],
+    "published_date": [
+      2013,
+      8
+    ],
+    "url": "https://doi.org/10.1038/nature12373",
+    "type": "journal-article",
+    "verified_at": "2025-08-08T23:16:36.395012"
+  },
+  {
+    "valid": true,
+    "doi": "10.1126/science.1234567",
+    "title": "Comment on “Apatite\n            <sup>4</sup>\n            He/\n            <sup>3</sup>\n            He and (U-Th)/He Evidence for an Ancient Grand Canyon”",
+    "authors": [
+      "Ivo Lucchitta"
+    ],
+    "published_date": [
+      2013,
+      4,
+      12
+    ],
+    "url": "https://doi.org/10.1126/science.1234567",
+    "type": "journal-article",
+    "verified_at": "2025-08-08T23:16:37.210227"
+  },
+  {
+    "valid": false,
+    "doi": "10.1000/182",
+    "error": "API エラー: 404",
+    "verified_at": "2025-08-08T23:16:38.118671"
+  },
+  {
+    "valid": false,
+    "doi": "invalid-doi-test",
+    "error": "API エラー: 404",
+    "verified_at": "2025-08-08T23:16:38.929833"
+  }
+]

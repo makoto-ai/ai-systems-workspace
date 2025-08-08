@@ -1,0 +1,108 @@
+{
+  "version": "2.0.0",
+  "description": "誤爆・誤表現の制御",
+  
+  "forbidden_phrases": [
+    "この論文は存在しない可能性があります",
+    "正確な情報ではありません",
+    "推測に基づいています",
+    "未確認の情報です",
+    "個人的な意見です",
+    "確実ではありません",
+    "疑わしい情報です",
+    "根拠が不明です"
+  ],
+  
+  "require_doi": true,
+  "reject_hallucinated_sources": true,
+  
+  "content_safety": {
+    "medical_content": {
+      "detection": true,
+      "required_disclaimer": "※この情報は医療助言ではありません。専門医にご相談ください。",
+      "forbidden_claims": [
+        "治療効果を保証する",
+        "診断を行う",
+        "薬の処方を推奨する"
+      ]
+    },
+    
+    "financial_content": {
+      "detection": true,
+      "required_disclaimer": "※投資にはリスクが伴います。専門家にご相談ください。",
+      "forbidden_claims": [
+        "投資収益を保証する",
+        "株価の予測を行う",
+        "投資助言を行う"
+      ]
+    },
+    
+    "psychological_content": {
+      "detection": true,
+      "required_disclaimer": "※この情報は心理学的な参考情報です。専門家にご相談ください。",
+      "forbidden_claims": [
+        "診断を行う",
+        "治療効果を保証する",
+        "個人の心理状態を断定する"
+      ]
+    }
+  },
+  
+  "factual_accuracy": {
+    "require_citations": true,
+    "min_citation_count": 1,
+    "preferred_sources": [
+      "peer_reviewed_journals",
+      "academic_databases",
+      "reputable_institutions"
+    ],
+    "rejected_sources": [
+      "unverified_websites",
+      "social_media",
+      "anonymous_sources"
+    ]
+  },
+  
+  "language_guidelines": {
+    "avoid_absolute_claims": true,
+    "use_hedging_language": true,
+    "preferred_phrases": [
+      "研究によると",
+      "論文では",
+      "調査結果として",
+      "分析では"
+    ],
+    "avoided_phrases": [
+      "絶対に",
+      "間違いなく",
+      "確実に",
+      "必ず"
+    ]
+  },
+  
+  "output_quality": {
+    "min_readability_score": 0.6,
+    "min_engagement_score": 0.5,
+    "min_structure_score": 0.7,
+    "min_confidence_score": 0.7,
+    "max_hallucination_risk": 0.1
+  },
+  
+  "error_handling": {
+    "auto_correction": true,
+    "fallback_content": true,
+    "warning_system": true,
+    "quality_degradation": {
+      "allow_partial_output": true,
+      "mark_uncertain_parts": true,
+      "provide_confidence_scores": true
+    }
+  },
+  
+  "validation_rules": {
+    "cross_reference_check": true,
+    "source_verification": true,
+    "content_consistency": true,
+    "logical_coherence": true
+  }
+} 

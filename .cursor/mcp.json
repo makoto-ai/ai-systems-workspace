@@ -1,12 +1,96 @@
 {
-  "name": "ai-systems-workspace",
-  "goals": [
-    "Enable PDF/metadata input for academic paper analysis",
-    "Generate YouTube scripts from research",
-    "Evaluate output quality using BLEU/ROUGE",
-    "Display metrics visually in Streamlit"
-  ],
-  "tools": ["Streamlit", "scikit-learn", "nltk", "transformers", "pycocoevalcap", "sentence-transformers"],
-  "language": "Python",
-  "framework": "Streamlit + modular backend"
+  "mcpServers": {
+    "ClaudeMCP": {
+      "command": "claude",
+      "args": ["--model", "claude-3-opus-20240229"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      },
+      "description": "Claude Projectsと連携した長文原稿生成支援",
+      "features": {
+        "longFormGeneration": true,
+        "outlineCreation": true,
+        "thesisAntithesisStructure": true,
+        "punctuationOptimization": true
+      },
+      "constitutionalAI": ".cursor/mcp_claude_constitution.json"
+    },
+    "OpenAIMCP": {
+      "command": "openai",
+      "args": ["--model", "gpt-4o"],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      },
+      "description": "GPT-4oを中心に翻訳・原稿生成・検証を行う",
+      "features": {
+        "translation": true,
+        "factChecking": true,
+        "hallucinationRemoval": true,
+        "multiModelComparison": true
+      }
+    },
+    "ResearchMCP": {
+      "command": "research",
+      "args": ["--sources", "semantic-scholar,doi"],
+      "env": {
+        "SEMANTIC_SCHOLAR_API_KEY": "${SEMANTIC_SCHOLAR_API_KEY}"
+      },
+      "description": "論文構造の取得・メタデータの整理・要点抽出",
+      "features": {
+        "semanticScholar": true,
+        "doiIntegration": true,
+        "metadataExtraction": true,
+        "keyPointExtraction": true
+      },
+      "sparrowLogic": ".cursor/mcp_sparrow.json"
+    },
+    "RoleplayMCP": {
+      "command": "roleplay",
+      "args": ["--whisperx", "--voice-analysis"],
+      "env": {
+        "WHISPERX_MODEL": "large-v3"
+      },
+      "description": "音声ロープレの構文解析、感情・対話構造の抽出",
+      "features": {
+        "whisperX": true,
+        "speakerDiarization": true,
+        "emotionAnalysis": true,
+        "salesConversationAnalysis": true,
+        "voiceTremorDetection": true
+      }
+    },
+    "MicrosoftMCP": {
+      "command": "microsoft",
+      "args": ["--copilot", "--azure-ai"],
+      "env": {
+        "MICROSOFT_API_KEY": "${MICROSOFT_API_KEY}"
+      },
+      "description": "CopilotやAzure AIとの構成連携実験",
+      "features": {
+        "copilotIntegration": true,
+        "azureAI": true,
+        "gpt4TurboComparison": true,
+        "experimental": true
+      },
+      "guardrails": ".cursor/mcp_guardrails.json"
+    }
+  },
+  "currentMCP": "ClaudeMCP",
+  "defaultSettings": {
+    "temperature": 0.7,
+    "maxTokens": 4000,
+    "topP": 0.9,
+    "frequencyPenalty": 0.0,
+    "presencePenalty": 0.0
+  },
+  "promptTemplates": {
+    "deepResearch": ".cursor/prompts/deep-research.md",
+    "translationCheck": ".cursor/prompts/translation-check.md",
+    "salesRoleplayAnalysis": ".cursor/prompts/sales-roleplay-analysis.md",
+    "claudeAcademicSummary": ".cursor/prompts/claude_academic_summary.txt",
+    "gptPrecisionSummary": ".cursor/prompts/gpt_precision_summary.txt"
+  },
+  "composerConfig": ".cursor/composer.json",
+  "memoryConfig": ".cursor/memory_composer.json",
+  "projectRules": ".cursor/project-rules.json"
 } 

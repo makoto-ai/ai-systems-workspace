@@ -1,0 +1,44 @@
+FROM python:3.11-slim
+
+# システム依存関係のインストール
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# Python依存関係のインストール
+COPY requirements_mcp.txt .
+RUN pip install --no-cache-dir -r requirements_mcp.txt
+
+# MCP関連の追加インストール
+RUN pip install --no-cache-dir \
+    mcp \
+    mcp-server-stdio \
+    mcp-server-websocket \
+    mcp-server-http
+
+# アプリケーションファイルのコピー
+COPY . .
+
+# MCP設定ファイルのコピー
+COPY .cursor/mcp.json /app/mcp_config.json
+COPY .cursor/memory_composer.json /app/memory_config.json
+
+# 環境変数の設定
+ENV PYTHONPATH=/app
+ENV MCP_SERVER_PORT=8001
+ENV MCP_ENABLED=true
+
+# ヘルスチェックの追加
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# ポートの公開
+EXPOSE 8001
+
+# 起動コマンド
+CMD ["python", "mcp_service.py"] 

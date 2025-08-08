@@ -1,0 +1,160 @@
+{
+  "version": "2.0.0",
+  "description": "検索補正・ハルシネ対策・初期補正",
+  
+  "crossref_only": true,
+  "real_time_validation": true,
+  
+  "query_constraints": [
+    "DOI必須",
+    "Google Scholar API / Crossref API経由のみ許可",
+    "査読済み論文を優先",
+    "最新5年以内の論文を優先",
+    "高被引用論文を優先"
+  ],
+  
+  "search_strategies": {
+    "primary": {
+      "method": "crossref_api",
+      "priority": "high",
+      "filters": {
+        "content_type": "journal-article",
+        "has_doi": true,
+        "has_abstract": true
+      }
+    },
+    "secondary": {
+      "method": "google_scholar_api",
+      "priority": "medium",
+      "filters": {
+        "include_citations": true,
+        "peer_reviewed_only": true
+      }
+    },
+    "fallback": {
+      "method": "semantic_scholar_api",
+      "priority": "low",
+      "filters": {
+        "has_pdf": false,
+        "has_abstract": true
+      }
+    }
+  },
+  
+  "hallucination_prevention": {
+    "source_verification": {
+      "enabled": true,
+      "methods": [
+        "doi_validation",
+        "crossref_lookup",
+        "title_author_match"
+      ]
+    },
+    "content_validation": {
+      "enabled": true,
+      "checks": [
+        "fact_consistency",
+        "citation_accuracy",
+        "logical_coherence"
+      ]
+    },
+    "confidence_scoring": {
+      "enabled": true,
+      "thresholds": {
+        "high_confidence": 0.8,
+        "medium_confidence": 0.6,
+        "low_confidence": 0.4
+      }
+    }
+  },
+  
+  "initial_correction": {
+    "auto_fix": {
+      "enabled": true,
+      "types": [
+        "grammar_correction",
+        "style_improvement",
+        "clarity_enhancement"
+      ]
+    },
+    "quality_checks": {
+      "enabled": true,
+      "checks": [
+        "readability_score",
+        "engagement_score",
+        "structure_score"
+      ]
+    },
+    "content_refinement": {
+      "enabled": true,
+      "methods": [
+        "redundancy_removal",
+        "flow_improvement",
+        "tone_adjustment"
+      ]
+    }
+  },
+  
+  "query_optimization": {
+    "keyword_extraction": {
+      "enabled": true,
+      "methods": [
+        "tf_idf_analysis",
+        "topic_modeling",
+        "semantic_analysis"
+      ]
+    },
+    "query_expansion": {
+      "enabled": true,
+      "methods": [
+        "synonym_expansion",
+        "related_term_inclusion",
+        "hierarchical_expansion"
+      ]
+    },
+    "relevance_scoring": {
+      "enabled": true,
+      "factors": [
+        "title_relevance",
+        "abstract_relevance",
+        "citation_count",
+        "publication_date"
+      ]
+    }
+  },
+  
+  "validation_pipeline": {
+    "pre_search": {
+      "query_validation": true,
+      "keyword_optimization": true,
+      "constraint_checking": true
+    },
+    "during_search": {
+      "real_time_filtering": true,
+      "relevance_scoring": true,
+      "duplicate_detection": true
+    },
+    "post_search": {
+      "result_validation": true,
+      "quality_assessment": true,
+      "hallucination_detection": true
+    }
+  },
+  
+  "error_recovery": {
+    "query_failure": {
+      "fallback_strategies": [
+        "broaden_search_terms",
+        "reduce_constraints",
+        "use_alternative_apis"
+      ]
+    },
+    "validation_failure": {
+      "recovery_actions": [
+        "manual_review",
+        "alternative_sources",
+        "quality_degradation"
+      ]
+    }
+  }
+} 

@@ -1,0 +1,107 @@
+# AI Systems Hybrid 依存関係
+
+# 基本フレームワーク
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+httpx==0.25.2
+
+# データベース
+psycopg2-binary==2.9.9
+redis==5.0.1
+sqlalchemy==2.0.23
+
+# AI/ML
+openai==1.3.7
+anthropic==0.7.8
+groq==0.4.2
+transformers==4.36.2
+torch>=2.2.0
+numpy>=1.26.0
+pandas>=2.1.0
+
+# 音声処理
+whisper==1.1.10
+pydub==0.25.1
+librosa==0.10.1
+soundfile==0.12.1
+
+# システム監視
+psutil==5.9.6
+prometheus-client==0.19.0
+
+# OpenTelemetry
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+opentelemetry-instrumentation-fastapi==0.42b0
+opentelemetry-instrumentation-requests==0.42b0
+opentelemetry-exporter-prometheus==1.21.0
+opentelemetry-exporter-otlp-proto-grpc==1.21.0
+
+# セキュリティ
+cryptography==41.0.8
+bcrypt==4.1.2
+python-jose[cryptography]==3.3.0
+
+# テスト・開発
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# ログ・監視
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# ユーティリティ
+python-multipart==0.0.6
+aiofiles==23.2.1
+python-dotenv==1.0.0
+click==8.1.7
+rich==13.7.0
+
+# ネットワーク
+requests==2.31.0
+websockets==12.0
+
+# データ処理
+pyyaml==6.0.1
+xmltodict==0.13.0
+lxml==4.9.3
+
+# セキュリティスキャン
+bandit==1.7.5
+safety==2.3.5
+
+# パフォーマンス
+orjson==3.9.10
+ujson==5.8.0
+
+# 非同期
+asyncio-mqtt==0.16.1
+aio-pika==9.3.0
+
+# 画像処理
+pillow==10.1.0
+opencv-python==4.8.1.78
+
+# 自然言語処理
+nltk==3.8.1
+spacy==3.7.2
+textblob==0.17.1
+
+# 機械学習
+scikit-learn==1.3.2
+scipy==1.11.4
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# ドキュメント
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# 開発ツール
+pre-commit==3.6.0
+tox==4.11.4 

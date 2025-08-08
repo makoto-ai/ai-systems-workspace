@@ -10,8 +10,29 @@ datasources:
     isDefault: true
     editable: true
     jsonData:
-      timeInterval: 5s
-      httpMethod: POST
-      manageAlerts: true
-      prometheusType: Prometheus
-      prometheusVersion: 2.40.0
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    secureJsonData: {}
+    
+  - name: OpenTelemetry
+    type: prometheus
+    access: proxy
+    url: http://otel-collector:9464
+    isDefault: false
+    editable: true
+    jsonData:
+      timeInterval: "10s"
+      queryTimeout: "30s"
+    secureJsonData: {}
+    
+  - name: Node Exporter
+    type: prometheus
+    access: proxy
+    url: http://node-exporter:9100
+    isDefault: false
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "30s"
+    secureJsonData: {}

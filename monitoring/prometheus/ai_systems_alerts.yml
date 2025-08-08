@@ -1,0 +1,182 @@
+groups:
+  - name: ai-systems-alerts
+    rules:
+      # 高エラー率アラート
+      - alert: HighErrorRate
+        expr: rate(ai_systems_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高エラー率が検出されました"
+          description: "{{ $labels.service }} でエラー率が {{ $value }} を超えています"
+
+      # 高応答時間アラート
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(ai_systems_response_time_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高応答時間が検出されました"
+          description: "{{ $labels.service }} で応答時間が5秒を超えています"
+
+      # 高CPU使用率アラート
+      - alert: HighCPUUsage
+        expr: ai_systems_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高CPU使用率が検出されました"
+          description: "CPU使用率が {{ $value }}% を超えています"
+
+      # 高メモリ使用率アラート
+      - alert: HighMemoryUsage
+        expr: ai_systems_memory_usage_percent > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高メモリ使用率が検出されました"
+          description: "メモリ使用率が {{ $value }}% を超えています"
+
+      # サービスダウンアラート
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "サービスがダウンしています"
+          description: "{{ $labels.job }} サービスが応答していません"
+
+      # 低リクエスト率アラート
+      - alert: LowRequestRate
+        expr: rate(ai_systems_requests_total[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "低リクエスト率が検出されました"
+          description: "リクエスト率が予想より低くなっています"
+
+      # データベース接続エラーアラート
+      - alert: DatabaseConnectionError
+        expr: rate(ai_systems_errors_total{service="postgresql"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "データベース接続エラーが検出されました"
+          description: "PostgreSQLへの接続でエラーが発生しています"
+
+      # Redis接続エラーアラート
+      - alert: RedisConnectionError
+        expr: rate(ai_systems_errors_total{service="redis"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis接続エラーが検出されました"
+          description: "Redisへの接続でエラーが発生しています"
+
+      # Vault接続エラーアラート
+      - alert: VaultConnectionError
+        expr: up{job="vault"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Vault接続エラーが検出されました"
+          description: "Vaultサービスが応答していません"
+
+      # Grafana接続エラーアラート
+      - alert: GrafanaConnectionError
+        expr: up{job="grafana"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Grafana接続エラーが検出されました"
+          description: "Grafanaサービスが応答していません"
+
+      # Prometheus接続エラーアラート
+      - alert: PrometheusConnectionError
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus接続エラーが検出されました"
+          description: "Prometheusサービスが応答していません"
+
+      # VOICEVOX接続エラーアラート
+      - alert: VoicevoxConnectionError
+        expr: up{job="voicevox-engine"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VOICEVOX接続エラーが検出されました"
+          description: "VOICEVOX Engineサービスが応答していません"
+
+      # Ollama接続エラーアラート
+      - alert: OllamaConnectionError
+        expr: up{job="ollama"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ollama接続エラーが検出されました"
+          description: "Ollamaサービスが応答していません"
+
+      # メインアプリケーションエラーアラート
+      - alert: MainAppError
+        expr: rate(ai_systems_errors_total{service="main-app"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "メインアプリケーションエラーが検出されました"
+          description: "メインアプリケーションでエラーが発生しています"
+
+      # MCPサービスエラーアラート
+      - alert: MCPServiceError
+        expr: rate(ai_systems_errors_total{service="mcp"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MCPサービスエラーが検出されました"
+          description: "MCPサービスでエラーが発生しています"
+
+      # Composerサービスエラーアラート
+      - alert: ComposerServiceError
+        expr: rate(ai_systems_errors_total{service="composer"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Composerサービスエラーが検出されました"
+          description: "Composerサービスでエラーが発生しています"
+
+      # ディスク容量不足アラート
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ディスク容量不足が検出されました"
+          description: "ディスク使用率が90%を超えています"
+
+      # ネットワーク接続エラーアラート
+      - alert: NetworkConnectionError
+        expr: rate(ai_systems_errors_total{service=~".*"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ネットワーク接続エラーが検出されました"
+          description: "複数のサービスでネットワーク接続エラーが発生しています" 

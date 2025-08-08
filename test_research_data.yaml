@@ -1,0 +1,19 @@
+abstract: 本研究では、AI技術を活用した営業手法の効果を検証しました。機械学習アルゴリズムを使用して顧客データを分析し、最適なアプローチ戦略を提案するシステムを開発しました。研究結果によると、AIを活用した営業チームは、従来の手法と比較して平均30%の売上向上を達成しました。
+authors:
+- 田中太郎
+- 佐藤花子
+- 鈴木一郎
+citation_count: 15
+doi: 10.1234/jst.2024.001
+institutions:
+- 東京大学
+- 京都大学
+journal: Journal of Sales Technology
+keywords:
+- AI
+- 営業
+- パフォーマンス
+- 機械学習
+- 顧客分析
+publication_year: 2024
+title: AIによる営業パフォーマンス向上の研究

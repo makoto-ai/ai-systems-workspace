@@ -1,0 +1,77 @@
+{
+  "purpose": "音声AIロープレ＋論文原稿生成",
+  "version": "2.0.0",
+  "description": "研究論文からYouTube原稿を自動生成する高度なAIシステム",
+  
+  "agents": {
+    "groq": {
+      "role": "論文の要約、構成作成、骨組み案出し",
+      "model": "llama3-70b-8192",
+      "strengths": ["高速処理", "大規模コンテキスト", "論理的思考"],
+      "tasks": ["研究要約", "構造化", "初期原稿生成"]
+    },
+    "claude": {
+      "role": "ハルシネ検出、文法調整、出力形式の統一と仕上げ",
+      "model": "claude-3-5-sonnet-20241022",
+      "strengths": ["事実確認", "品質保証", "細かい調整"],
+      "tasks": ["事実検証", "品質チェック", "最終調整"]
+    },
+    "gpt-4": {
+      "role": "ハルシネ検出、文法調整、出力形式の統一と仕上げ",
+      "model": "gpt-4",
+      "strengths": ["創造性", "多様性", "実用性"],
+      "tasks": ["表現改善", "エンゲージメント向上", "視聴者向け調整"]
+    }
+  },
+  
+  "output_rules": {
+    "format": "構成: テーゼ-アンチテーゼ-ジンテーゼ / セクション毎に見出しをつける",
+    "style": "口語・論理・専門性のバランスを保つ",
+    "language": "日本語",
+    "structure": {
+      "hook": "視聴者の興味を引く導入",
+      "introduction": "研究背景と目的の説明",
+      "main_content": "研究結果と分析",
+      "conclusion": "まとめと今後の展望",
+      "call_to_action": "視聴者へのアクション呼びかけ"
+    }
+  },
+  
+  "model_routing": {
+    "primary": "groq",
+    "fallback": "claude",
+    "quality_check": "gpt-4",
+    "routing_rules": {
+      "initial_generation": "groq",
+      "fact_checking": "claude",
+      "style_refinement": "gpt-4",
+      "final_polish": "claude"
+    }
+  },
+  
+  "quality_standards": {
+    "readability_score": 0.7,
+    "engagement_score": 0.6,
+    "structure_score": 0.8,
+    "confidence_score": 0.7,
+    "citation_accuracy": 0.9,
+    "factual_accuracy": 0.95
+  },
+  
+  "mcp_integrations": ["Opik", "GitHub", "Apidog"],
+  
+  "error_handling": {
+    "max_retries": 3,
+    "timeout_seconds": 30,
+    "fallback_enabled": true,
+    "graceful_degradation": true
+  },
+  
+  "safety_checks": {
+    "medical_content": true,
+    "financial_content": true,
+    "psychological_content": true,
+    "require_disclaimers": true,
+    "content_moderation": true
+  }
+} 

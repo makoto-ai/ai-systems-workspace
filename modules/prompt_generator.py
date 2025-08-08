@@ -29,7 +29,10 @@ class PromptGenerator:
             "academic": self._get_academic_template(),
             "popular": self._get_popular_template(),
             "business": self._get_business_template(),
-            "educational": self._get_educational_template()
+            "educational": self._get_educational_template(),
+            "comprehensive": self._get_comprehensive_template(),  # 20分以上の長編
+            "deep_dive": self._get_deep_dive_template(),        # 30分以上の詳細版
+            "lecture": self._get_lecture_template()             # 45分以上の講義形式
         }
     
     def create_prompt_from_metadata(self, metadata: PaperMetadata, style: str = "popular") -> str:
@@ -38,7 +41,7 @@ class PromptGenerator:
         
         Args:
             metadata: 論文メタデータ
-            style: プロンプトスタイル ("academic", "popular", "business", "educational")
+            style: プロンプトスタイル ("academic", "popular", "business", "educational", "comprehensive", "deep_dive", "lecture")
         
         Returns:
             生成されたプロンプト文字列
@@ -195,6 +198,117 @@ class PromptGenerator:
 - 動画時間: 20-30分
 - 構成: 学習目標(1分) → 基礎知識(5分) → 研究紹介(8分) → 実践演習(10分) → 理解確認(3分) → 次回予告(3分)
 - トーン: 教育的で体系的"""
+    
+    def _get_comprehensive_template(self) -> str:
+        """包括的スタイルのテンプレート（20分以上）"""
+        return """以下の研究論文を基に、包括的で詳細なYouTube原稿を作成してください。
+
+研究情報:
+- 研究タイトル: {title}
+- 研究者: {authors}
+- 発表年: {year}
+- 研究機関: {institutions}
+- 分野: {keywords}
+
+研究内容:
+{abstract}
+
+包括的解説情報:
+{context}
+
+要求事項:
+1. 研究の全貌を包括的に解説
+2. 背景から応用まで、すべての側面を詳しく説明
+3. 関連研究や先行研究との比較も含める
+4. 実践的な応用例を多数提示
+5. 将来の研究方向や可能性についても言及
+
+出力形式:
+- 動画時間: 25-35分
+- 構成: 
+  - 導入・問題提起(3分)
+  - 研究背景・先行研究(5分)
+  - 研究手法・理論的枠組み(8分)
+  - 実験・分析結果(8分)
+  - 考察・解釈(5分)
+  - 応用・実践例(3分)
+  - 今後の展望(2分)
+  - まとめ(1分)
+- トーン: 詳細で包括的、専門的だが理解しやすい"""
+    
+    def _get_deep_dive_template(self) -> str:
+        """深掘りスタイルのテンプレート（30分以上）"""
+        return """以下の研究論文を基に、深掘り解説のYouTube原稿を作成してください。
+
+研究情報:
+- 研究タイトル: {title}
+- 研究者: {authors}
+- 発表年: {year}
+- 研究機関: {institutions}
+- 分野: {keywords}
+
+研究内容:
+{abstract}
+
+深掘り解説情報:
+{context}
+
+要求事項:
+1. 研究の核心部分を徹底的に深掘り
+2. 技術的詳細や数式も分かりやすく説明
+3. 実験の各段階を詳細に解説
+4. 失敗や課題も含めて、研究のリアルな側面を紹介
+5. 視聴者が研究者の思考プロセスを追体験できる構成
+
+出力形式:
+- 動画時間: 35-45分
+- 構成:
+  - 導入・研究の重要性(4分)
+  - 理論的背景・先行研究の詳細(8分)
+  - 研究手法の技術的詳細(10分)
+  - 実験・分析の詳細プロセス(10分)
+  - 結果の詳細解釈(6分)
+  - 技術的課題・限界(3分)
+  - 今後の研究方向性(2分)
+  - まとめ・質疑応答(2分)
+- トーン: 専門的で詳細、技術的だが理解しやすい"""
+    
+    def _get_lecture_template(self) -> str:
+        """講義形式のテンプレート（45分以上）"""
+        return """以下の研究論文を基に、大学講義レベルの詳細なYouTube原稿を作成してください。
+
+研究情報:
+- 研究タイトル: {title}
+- 研究者: {authors}
+- 発表年: {year}
+- 研究機関: {institutions}
+- 分野: {keywords}
+
+研究内容:
+{abstract}
+
+講義形式解説情報:
+{context}
+
+要求事項:
+1. 大学講義レベルの詳細な解説
+2. 基礎理論から応用まで体系的に説明
+3. 数式や技術的詳細も含めて完全解説
+4. 関連分野との接続点も明示
+5. 学生が独学できるレベルの詳細さ
+
+出力形式:
+- 動画時間: 50-60分
+- 構成:
+  - 講義概要・学習目標(3分)
+  - 基礎理論・概念の詳細解説(12分)
+  - 研究背景・先行研究の包括的レビュー(10分)
+  - 研究手法・理論的枠組みの詳細(15分)
+  - 実験・分析・結果の詳細解説(12分)
+  - 考察・解釈・応用可能性(5分)
+  - 今後の研究課題・発展方向(2分)
+  - まとめ・復習ポイント(1分)
+- トーン: 学術的で体系的、教育効果を重視"""
 
 
 def create_prompt_from_metadata(metadata: PaperMetadata, style: str = "popular") -> str:
@@ -227,6 +341,6 @@ if __name__ == "__main__":
     )
     
     generator = PromptGenerator()
-    prompt = generator.create_prompt_from_metadata(sample_metadata, "popular")
+    prompt = generator.create_prompt_from_metadata(sample_metadata, "comprehensive")
     print("生成されたプロンプト:")
     print(prompt) 

@@ -1,0 +1,51 @@
+FROM python:3.11-slim
+
+# システム依存関係のインストール
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    libportaudio2 \
+    portaudio19-dev \
+    python3-dev \
+    gcc \
+    g++ \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# Python依存関係のインストール
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# OpenTelemetry関連の追加インストール
+RUN pip install --no-cache-dir \
+    opentelemetry-api \
+    opentelemetry-sdk \
+    opentelemetry-instrumentation-fastapi \
+    opentelemetry-instrumentation-requests \
+    opentelemetry-exporter-prometheus \
+    opentelemetry-exporter-otlp-proto-grpc \
+    prometheus-client
+
+# アプリケーションファイルのコピー
+COPY . .
+
+# 環境変数の設定
+ENV PYTHONPATH=/app
+ENV OTEL_SERVICE_NAME=ai-systems-hybrid
+ENV OTEL_TRACES_EXPORTER=otlp
+ENV OTEL_METRICS_EXPORTER=prometheus
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+
+# ヘルスチェックの追加
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# ポートの公開
+EXPOSE 8000 8001
+
+# 起動コマンド
+CMD ["python", "main_hybrid.py"] 

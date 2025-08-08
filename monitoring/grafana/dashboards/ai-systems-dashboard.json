@@ -1,0 +1,73 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "AI Systems Dashboard",
+    "tags": ["ai-systems", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "システム健全性",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "ai_system_health_status",
+            "legendFormat": "健全性"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "API応答時間",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_api_response_time_seconds[5m])",
+            "legendFormat": "応答時間"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "エラー率",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_errors_total[5m])",
+            "legendFormat": "エラー率"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "処理済みリクエスト",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total[5m])",
+            "legendFormat": "リクエスト/秒"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+} 

@@ -1,0 +1,154 @@
+{
+  "title": "メモリ対応論文検証＆原稿生成Composer",
+  "version": "2.1.0",
+  "description": "セッション記憶対応のプロンプト連携システム",
+  "memoryEnabled": true,
+  "sessionTracking": true,
+  "chains": [
+    {
+      "name": "DeepResearchWithMemory",
+      "model": "GPT-4o",
+      "prompt": "厳格なファクトチェックと原文構造の保持（記憶対応）",
+      "temperature": 0.3,
+      "maxTokens": 4000,
+      "memoryContext": {
+        "previousResearch": true,
+        "userPreferences": true,
+        "styleHistory": true
+      },
+      "features": [
+        "factChecking",
+        "structurePreservation",
+        "academicRigor",
+        "memoryIntegration"
+      ]
+    },
+    {
+      "name": "SummarySimplifierWithMemory",
+      "model": "Claude 3 Opus",
+      "prompt": "読者目線の要約＋構成整理（記憶対応）",
+      "temperature": 0.7,
+      "maxTokens": 3000,
+      "memoryContext": {
+        "previousSummaries": true,
+        "audiencePreferences": true,
+        "toneHistory": true
+      },
+      "features": [
+        "readerPerspective",
+        "simplification",
+        "structureOrganization",
+        "memoryIntegration"
+      ]
+    },
+    {
+      "name": "TranslationCheckWithMemory",
+      "model": "GPT-4o",
+      "prompt": "翻訳精度検証と文化的適応（記憶対応）",
+      "temperature": 0.4,
+      "maxTokens": 2000,
+      "memoryContext": {
+        "translationHistory": true,
+        "culturalPreferences": true,
+        "languagePatterns": true
+      },
+      "features": [
+        "translationAccuracy",
+        "culturalAdaptation",
+        "idiomHandling",
+        "memoryIntegration"
+      ]
+    },
+    {
+      "name": "SalesRoleplayAnalysisWithMemory",
+      "model": "Claude 3 Opus",
+      "prompt": "営業会話の感情・構造分析（記憶対応）",
+      "temperature": 0.6,
+      "maxTokens": 2500,
+      "memoryContext": {
+        "conversationHistory": true,
+        "performanceMetrics": true,
+        "improvementPatterns": true
+      },
+      "features": [
+        "emotionAnalysis",
+        "conversationStructure",
+        "salesTechniqueIdentification",
+        "memoryIntegration"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "name": "AcademicToYouTubeWithMemory",
+      "description": "学術論文からYouTube原稿生成（記憶対応）",
+      "steps": [
+        {
+          "chain": "DeepResearchWithMemory",
+          "input": "paperMetadata",
+          "output": "verifiedContent",
+          "memoryKey": "research_verification"
+        },
+        {
+          "chain": "SummarySimplifierWithMemory",
+          "input": "verifiedContent",
+          "output": "simplifiedContent",
+          "memoryKey": "content_simplification"
+        },
+        {
+          "chain": "TranslationCheckWithMemory",
+          "input": "simplifiedContent",
+          "output": "finalScript",
+          "memoryKey": "translation_verification"
+        }
+      ]
+    },
+    {
+      "name": "SalesPerformanceAnalysisWithMemory",
+      "description": "営業会話のパフォーマンス分析（記憶対応）",
+      "steps": [
+        {
+          "chain": "SalesRoleplayAnalysisWithMemory",
+          "input": "conversationData",
+          "output": "analysisReport",
+          "memoryKey": "sales_analysis"
+        }
+      ]
+    }
+  ],
+  "memorySettings": {
+    "sessionRetention": "7days",
+    "contextWindow": 10,
+    "memoryCompression": true,
+    "autoCleanup": true,
+    "memoryTypes": [
+      "conversationHistory",
+      "userPreferences",
+      "performanceMetrics",
+      "stylePatterns",
+      "errorPatterns"
+    ]
+  },
+  "settings": {
+    "defaultTemperature": 0.5,
+    "defaultMaxTokens": 3000,
+    "retryAttempts": 3,
+    "timeoutSeconds": 60,
+    "qualityThreshold": 0.8,
+    "memoryEnabled": true
+  },
+  "prompts": {
+    "deepResearch": {
+      "file": ".cursor/prompts/deep-research.md",
+      "description": "深い研究分析とファクトチェック（記憶対応）"
+    },
+    "translationCheck": {
+      "file": ".cursor/prompts/translation-check.md",
+      "description": "翻訳精度検証（記憶対応）"
+    },
+    "salesRoleplayAnalysis": {
+      "file": ".cursor/prompts/sales-roleplay-analysis.md",
+      "description": "営業会話分析（記憶対応）"
+    }
+  }
+} 

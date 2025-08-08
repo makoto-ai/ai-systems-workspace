@@ -1,0 +1,227 @@
+version: '3.9'
+
+services:
+  # メインアプリケーション（MCP統合）
+  ai-systems-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile.hybrid
+    container_name: ai-systems-hybrid-app
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    ports:
+      - "8000:8000"
+      - "8001:8001"  # MCP API
+    environment:
+      - ENVIRONMENT=production
+      - MCP_ENABLED=true
+      - COMPOSER_ENABLED=true
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - VOICEVOX_URL=http://voicevox-engine:50021
+      - OLLAMA_URL=http://ollama:11434
+      - VAULT_ADDR=http://vault:8200
+      - PROMETHEUS_ENABLED=true
+      - OTEL_ENABLED=true
+    depends_on:
+      - vault
+      - voicevox-engine
+      - ollama
+      - redis
+      - postgres
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # MCP専用サービス
+  mcp-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    container_name: ai-systems-mcp
+    volumes:
+      - ./mcp:/app/mcp
+      - ./config:/app/config
+    environment:
+      - MCP_SERVER_PORT=8001
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    ports:
+      - "8001:8001"
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Composer専用サービス
+  composer-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.composer
+    container_name: ai-systems-composer
+    volumes:
+      - ./modules:/app/modules
+      - ./config:/app/config
+      - ./data:/app/data
+    environment:
+      - COMPOSER_ENABLED=true
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8002:8002"
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # VOICEVOX Engine
+  voicevox-engine:
+    image: voicevox/voicevox_engine:latest
+    container_name: voicevox-engine
+    ports:
+      - "50021:50021"
+    volumes:
+      - voicevox-data:/voicevox
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Ollama
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Vault
+  vault:
+    image: vault:latest
+    container_name: vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    volumes:
+      - vault-data:/vault/data
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=ai_systems
+      - POSTGRES_USER=ai_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./monitoring/otel-collector:/etc/otelcol
+    command:
+      - '--config=/etc/otelcol/config.yaml'
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+  # Node Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - ai-systems-network
+    restart: unless-stopped
+
+volumes:
+  voicevox-data:
+  ollama-data:
+  vault-data:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  ai-systems-network:
+    driver: bridge 

@@ -1,0 +1,56 @@
+{
+  "constitutionalAI": {
+    "description": "Groq Constitutional AI for YouTube Script Generation",
+    "version": "1.0",
+    "rules": {
+      "factualAccuracy": {
+        "description": "事実の正確性を確保するルール",
+        "rules": [
+          "研究論文の内容を正確に反映する",
+          "数値や統計は元の論文と一致させる",
+          "推測や憶測を避け、事実のみを述べる",
+          "不確実な情報には「可能性がある」「推測される」などの表現を使用する"
+        ]
+      },
+      "citationEnforcement": {
+        "description": "引用の適切な実施",
+        "rules": [
+          "全ての主張には適切な引用を付ける",
+          "著者名を明記する",
+          "DOIや論文タイトルを参照する",
+          "引用記号「」を使用する"
+        ]
+      },
+      "toneGuidelines": {
+        "description": "適切なトーンの維持",
+        "rules": [
+          "一般視聴者に分かりやすい表現を使用する",
+          "専門用語は必ず説明を付ける",
+          "親しみやすく、魅力的なトーンを保つ",
+          "否定的な表現を避け、建設的な表現を使用する"
+        ]
+      },
+      "safetyProtocols": {
+        "description": "安全性の確保",
+        "rules": [
+          "医療・健康に関する内容には適切な免責事項を付ける",
+          "投資・金融に関する内容にはリスク警告を付ける",
+          "心理学的な内容には専門家の助言を求めるよう促す",
+          "有害な情報や誤解を招く内容を避ける"
+        ]
+      }
+    },
+    "qualityThresholds": {
+      "readability_score": 0.3,
+      "engagement_score": 0.1,
+      "structure_score": 0.3,
+      "confidence_score": 0.3
+    },
+    "fallbackStrategies": {
+      "api_unavailable": "モック応答を使用",
+      "quality_low": "再生成を試行",
+      "citation_missing": "自動引用追加",
+      "safety_violation": "内容の修正"
+    }
+  }
+} 

@@ -1,0 +1,74 @@
+[
+  {
+    "script_length": 266,
+    "sections_found": [
+      "導入",
+      "本論",
+      "結論"
+    ],
+    "required_sections": [
+      "導入",
+      "本論",
+      "結論"
+    ],
+    "optional_sections": [
+      "アウトライン",
+      "まとめ",
+      "次の動画"
+    ],
+    "section_validations": {
+      "導入": {
+        "section": "導入",
+        "score": 85,
+        "issues": [
+          "問題提起が見つかりません"
+        ],
+        "has_hook": true,
+        "has_problem": false,
+        "has_purpose": true,
+        "length_validation": {
+          "section": "導入",
+          "word_count": 2,
+          "char_count": 68,
+          "min_length_met": true,
+          "recommended_min_length": 50
+        }
+      },
+      "本論": {
+        "section": "本論",
+        "score": 90,
+        "issues": [
+          "データや根拠が見つかりません"
+        ],
+        "structure_count": 3,
+        "has_examples": true,
+        "has_evidence": false,
+        "length_validation": {
+          "section": "本論",
+          "word_count": 4,
+          "char_count": 97,
+          "min_length_met": true,
+          "recommended_min_length": 50
+        }
+      },
+      "結論": {
+        "section": "結論",
+        "score": 100,
+        "issues": [],
+        "has_summary": true,
+        "has_action": true,
+        "length_validation": {
+          "section": "結論",
+          "word_count": 3,
+          "char_count": 80,
+          "min_length_met": true,
+          "recommended_min_length": 50
+        }
+      }
+    },
+    "overall_score": 91.66666666666667,
+    "issues": [],
+    "recommendations": [],
+    "validated_at": "2025-08-08T21:52:51.373650"
+  }
+]

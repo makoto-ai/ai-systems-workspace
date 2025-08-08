@@ -1,0 +1,313 @@
+{
+  "audit_config": {
+    "version": "2.0.1",
+    "description": "監査証跡・運用履歴ログ設定 - 強化版",
+    "last_updated": "2025-01-27",
+    "enforcement_level": "strict",
+    "compliance_standards": ["GDPR", "SOX", "ISO27001", "NIST"],
+    "auto_enable": true
+  },
+  "audit_logging": {
+    "log_file_path": "logs/audit_trail.json",
+    "log_format": "json",
+    "log_level": "INFO",
+    "retention_days": 365,
+    "compression_enabled": true,
+    "encryption_enabled": true,
+    "real_time_logging": true,
+    "backup_logs": true,
+    "log_rotation": {
+      "enabled": true,
+      "max_size_mb": 10,
+      "backup_count": 5
+    }
+  },
+  "audit_fields": {
+    "required_fields": [
+      "timestamp",
+      "user_id",
+      "session_id",
+      "ai_model",
+      "mcp_configuration",
+      "template_used",
+      "operation_type",
+      "input_files",
+      "output_files",
+      "purpose",
+      "duration_ms",
+      "status",
+      "error_message",
+      "security_level",
+      "compliance_status"
+    ],
+    "optional_fields": [
+      "ip_address",
+      "user_agent",
+      "api_version",
+      "model_parameters",
+      "token_usage",
+      "cost_estimate",
+      "performance_metrics",
+      "security_checks"
+    ],
+    "sensitive_fields": [
+      "api_keys",
+      "passwords",
+      "tokens",
+      "credentials"
+    ],
+    "validation_rules": {
+      "timestamp_format": "ISO 8601",
+      "required_timestamp": true,
+      "validate_json": true,
+      "check_required_fields": true
+    }
+  },
+  "ai_model_tracking": {
+    "supported_models": {
+      "claude": {
+        "claude-3-5-sonnet": "Anthropic Claude 3.5 Sonnet",
+        "claude-3-opus": "Anthropic Claude 3 Opus",
+        "claude-3-haiku": "Anthropic Claude 3 Haiku",
+        "claude-2.1": "Anthropic Claude 2.1",
+        "claude-3-5-sonnet-20241022": "Anthropic Claude 3.5 Sonnet (Latest)"
+      },
+      "openai": {
+        "gpt-4": "OpenAI GPT-4",
+        "gpt-4-turbo": "OpenAI GPT-4 Turbo",
+        "gpt-3.5-turbo": "OpenAI GPT-3.5 Turbo",
+        "gpt-4o": "OpenAI GPT-4o",
+        "gpt-4o-mini": "OpenAI GPT-4o Mini"
+      },
+      "groq": {
+        "llama3-70b-8192": "Groq Llama3 70B",
+        "llama3-8b-8192": "Groq Llama3 8B",
+        "mixtral-8x7b-32768": "Groq Mixtral 8x7B",
+        "gemma2-9b-it": "Groq Gemma2 9B"
+      },
+      "google": {
+        "gemini-pro": "Google Gemini Pro",
+        "gemini-flash": "Google Gemini Flash",
+        "gemini-1.5-pro": "Google Gemini 1.5 Pro"
+      },
+      "huggingface": {
+        "whisper-1": "OpenAI Whisper",
+        "whisper-large-v3": "Whisper Large V3"
+      }
+    },
+    "model_metadata": {
+      "track_parameters": true,
+      "track_performance": true,
+      "track_usage": true,
+      "track_costs": true,
+      "track_compliance": true
+    },
+    "model_validation": {
+      "validate_model_name": true,
+      "check_model_availability": true,
+      "log_model_switches": true
+    }
+  },
+  "mcp_configuration_tracking": {
+    "tracked_configs": [
+      "mcp_security.json",
+      "mcp_audit.json",
+      "mcp_guardrails.json",
+      "mcp_sparrow.json",
+      "mcp_groq_constitution.json",
+      "project-rules.json",
+      "mcp_prompt.json",
+      "mcp_query.json",
+      "composer.json",
+      "memory_composer.json"
+    ],
+    "config_validation": {
+      "validate_on_load": true,
+      "log_config_changes": true,
+      "backup_configs": true,
+      "version_control": true,
+      "integrity_checks": true,
+      "config_encryption": true
+    }
+  },
+  "template_tracking": {
+    "template_categories": {
+      "youtube_script": "YouTube原稿生成",
+      "academic_summary": "学術論文要約",
+      "business_report": "ビジネスレポート",
+      "code_generation": "コード生成",
+      "data_analysis": "データ分析",
+      "content_creation": "コンテンツ作成",
+      "security_audit": "セキュリティ監査",
+      "performance_optimization": "パフォーマンス最適化"
+    },
+    "template_metadata": {
+      "version": "string",
+      "author": "string",
+      "last_modified": "datetime",
+      "usage_count": "integer",
+      "success_rate": "float",
+      "compliance_status": "string"
+    },
+    "template_validation": {
+      "validate_template": true,
+      "check_template_permissions": true,
+      "log_template_usage": true
+    }
+  },
+  "operation_types": {
+    "file_operations": [
+      "file_create",
+      "file_read",
+      "file_update",
+      "file_delete",
+      "file_copy",
+      "file_move",
+      "file_backup",
+      "file_restore"
+    ],
+    "ai_operations": [
+      "content_generation",
+      "code_generation",
+      "data_analysis",
+      "text_summarization",
+      "translation",
+      "sentiment_analysis",
+      "voice_processing",
+      "image_processing"
+    ],
+    "system_operations": [
+      "config_load",
+      "config_update",
+      "security_check",
+      "audit_log",
+      "backup_create",
+      "restore_operation",
+      "performance_monitor",
+      "compliance_check"
+    ],
+    "security_operations": [
+      "access_control",
+      "authentication",
+      "authorization",
+      "encryption",
+      "decryption",
+      "key_management",
+      "threat_detection"
+    ]
+  },
+  "github_mcp_integration": {
+    "enabled": true,
+    "track_repository": true,
+    "track_branch": true,
+    "track_commit": true,
+    "track_pull_request": true,
+    "track_issue": true,
+    "log_github_operations": true,
+    "security_scanning": {
+      "enabled": true,
+      "scan_secrets": true,
+      "scan_vulnerabilities": true,
+      "scan_dependencies": true
+    },
+    "compliance_tracking": {
+      "license_compliance": true,
+      "security_compliance": true,
+      "code_quality": true,
+      "documentation": true
+    }
+  },
+  "compliance_reporting": {
+    "generate_reports": true,
+    "report_frequency": "weekly",
+    "report_formats": ["json", "csv", "pdf", "html"],
+    "report_retention": "1_year",
+    "gdpr_compliance": {
+      "data_subject_rights": true,
+      "data_portability": true,
+      "data_erasure": true,
+      "consent_tracking": true,
+      "privacy_by_design": true
+    },
+    "sox_compliance": {
+      "financial_controls": true,
+      "access_logging": true,
+      "change_management": true,
+      "risk_assessment": true
+    }
+  },
+  "alert_configuration": {
+    "security_alerts": {
+      "sensitive_data_access": true,
+      "unauthorized_operations": true,
+      "config_changes": true,
+      "model_switches": true,
+      "compliance_violations": true,
+      "performance_degradation": true
+    },
+    "performance_alerts": {
+      "high_latency": true,
+      "high_cost": true,
+      "error_rate": true,
+      "resource_usage": true,
+      "api_rate_limits": true
+    },
+    "notification_channels": {
+      "email": false,
+      "slack": false,
+      "webhook": false,
+      "log_file": true,
+      "console": true,
+      "dashboard": true
+    }
+  },
+  "data_retention": {
+    "audit_logs": "365_days",
+    "performance_metrics": "90_days",
+    "error_logs": "180_days",
+    "security_logs": "365_days",
+    "backup_files": "30_days",
+    "compliance_reports": "7_years"
+  },
+  "mode_specific_audit": {
+    "auto_mode": {
+      "enabled": true,
+      "enhanced_logging": true,
+      "real_time_monitoring": true,
+      "predictive_analysis": true
+    },
+    "claude_mode": {
+      "enabled": true,
+      "anthropic_compliance": true,
+      "constitutional_ai_tracking": true,
+      "ethical_ai_monitoring": true
+    },
+    "gpt_mode": {
+      "enabled": true,
+      "openai_compliance": true,
+      "content_filtering": true,
+      "usage_tracking": true
+    },
+    "max_mode": {
+      "enabled": true,
+      "advanced_security": true,
+      "real_time_protection": true,
+      "threat_intelligence": true
+    }
+  },
+  "privacy_protection": {
+    "data_minimization": true,
+    "pseudonymization": true,
+    "encryption_at_rest": true,
+    "encryption_in_transit": true,
+    "access_controls": true,
+    "audit_trail": true
+  },
+  "error_handling": {
+    "log_errors": true,
+    "error_retention": "180_days",
+    "error_notification": true,
+    "error_recovery": true,
+    "graceful_degradation": true
+  }
+} 
