@@ -23,13 +23,19 @@ class Settings(BaseSettings):
 
     # Semantic Scholar API設定 (承認済み - レート制限: 1req/sec)
     semantic_scholar_api_key: str = os.getenv(
-        "SEMANTIC_SCHOLAR_API_KEY",
-        "Bz4kPPH4YB6KbEpplfkj42ZyBPOIVDyD7dAXIIQn")
+        "SEMANTIC_SCHOLAR_API_KEY", "Bz4kPPH4YB6KbEpplfkj42ZyBPOIVDyD7dAXIIQn"
+    )
     semantic_scholar_base_url: str = "https://api.semanticscholar.org/graph/v1"
 
     # 検索設定
     max_results_per_api: int = 5
-    default_fields: List[str] = ["営業", "マネジメント", "心理学", "組織行動", "リーダーシップ"]
+    default_fields: List[str] = [
+        "営業",
+        "マネジメント",
+        "心理学",
+        "組織行動",
+        "リーダーシップ",
+    ]
 
     # 出力設定
     output_language: str = "ja"

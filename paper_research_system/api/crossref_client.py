@@ -11,6 +11,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -24,8 +25,7 @@ class CrossRefClient:
         self.base_url = settings.crossref_base_url
         self.timeout = settings.request_timeout
 
-    async def search_papers(self, query: str,
-                            max_results: int = None) -> List[Paper]:
+    async def search_papers(self, query: str, max_results: int = None) -> List[Paper]:
         """
         論文検索
 
@@ -46,7 +46,7 @@ class CrossRefClient:
                     "query": query,
                     "rows": max_results,
                     "sort": "score",  # 関連性順
-                    "filter": "type:journal-article,from-pub-date:1990"  # 学術論文、1990年以降
+                    "filter": "type:journal-article,from-pub-date:1990",  # 学術論文、1990年以降
                 }
 
                 logger.info(f"CrossRef検索実行: {query}")
@@ -76,8 +76,7 @@ class CrossRefClient:
             title = title_parts[0] if title_parts else ""
 
             # 発表年
-            published = item.get(
-                "published-print") or item.get("published-online", {})
+            published = item.get("published-print") or item.get("published-online", {})
             publication_year = None
             if published.get("date-parts"):
                 publication_year = published["date-parts"][0][0]
@@ -106,11 +105,13 @@ class CrossRefClient:
                 if affiliations:
                     affiliation = affiliations[0].get("name")
 
-                authors.append(Author(
-                    name=full_name,
-                    institution=affiliation,
-                    orcid=author_info.get("ORCID")
-                ))
+                authors.append(
+                    Author(
+                        name=full_name,
+                        institution=affiliation,
+                        orcid=author_info.get("ORCID"),
+                    )
+                )
 
             # 所属機関リスト（著者の所属から抽出）
             institutions = []
@@ -118,15 +119,16 @@ class CrossRefClient:
                 for affiliation in author_info.get("affiliation", []):
                     inst_name = affiliation.get("name")
                     if inst_name:
-                        institutions.append(Institution(
-                            name=inst_name,
-                            country=None,  # CrossRefには国情報がない場合が多い
-                            type=None
-                        ))
+                        institutions.append(
+                            Institution(
+                                name=inst_name,
+                                country=None,  # CrossRefには国情報がない場合が多い
+                                type=None,
+                            )
+                        )
 
             # 重複除去
-            institutions = list(
-                {inst.name: inst for inst in institutions}.values())
+            institutions = list({inst.name: inst for inst in institutions}.values())
 
             # ジャーナル情報
             journal = None
@@ -152,15 +154,14 @@ class CrossRefClient:
                 journal=journal,
                 source_api="crossref",
                 confidence_score=0.8,  # CrossRefは信頼性が高い
-                relevance_score=relevance_score
+                relevance_score=relevance_score,
             )
 
         except Exception as e:
             logger.error(f"CrossRef論文パース失敗: {e}")
             return None
 
-    def _calculate_relevance_score(
-            self, item: Dict[str, Any], query: str) -> float:
+    def _calculate_relevance_score(self, item: Dict[str, Any], query: str) -> float:
         """論文の関連性スコアを計算"""
         score = 0.0
 
@@ -178,8 +179,7 @@ class CrossRefClient:
         score += min(crossref_score / 100, 3.0)  # 最大3点に正規化
 
         # 発表年による重み付け（新しい論文に加点）
-        published = item.get(
-            "published-print") or item.get("published-online", {})
+        published = item.get("published-print") or item.get("published-online", {})
         if published.get("date-parts"):
             year = published["date-parts"][0][0]
             if year >= 2010:
@@ -188,6 +188,7 @@ class CrossRefClient:
                 score += 0.5
 
         return min(score, 10.0)  # 最大10点
+
 
 # 同期版の関数も提供
 

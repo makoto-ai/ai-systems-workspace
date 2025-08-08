@@ -14,6 +14,7 @@ from typing import List, Dict, Any
 import logging
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent))
 
 
@@ -27,27 +28,41 @@ def history_cli():
 
 
 @history_cli.command()
-@click.option('--limit', '-n', default=20, help='表示件数')
-@click.option('--search-type', '-t',
-              type=click.Choice(['integrated', 'specialized']), help='検索タイプフィルタ')
-@click.option('--domain', '-d', type=click.Choice(
-    ['sales_psychology', 'management_psychology', 'behavioral_economics', 'universal_psychology']), help='ドメインフィルタ')
-@click.option('--days', default=30, help='過去N日間')
-@click.option('--verbose', '-v', is_flag=True, help='詳細表示')
+@click.option("--limit", "-n", default=20, help="表示件数")
+@click.option(
+    "--search-type",
+    "-t",
+    type=click.Choice(["integrated", "specialized"]),
+    help="検索タイプフィルタ",
+)
+@click.option(
+    "--domain",
+    "-d",
+    type=click.Choice(
+        [
+            "sales_psychology",
+            "management_psychology",
+            "behavioral_economics",
+            "universal_psychology",
+        ]
+    ),
+    help="ドメインフィルタ",
+)
+@click.option("--days", default=30, help="過去N日間")
+@click.option("--verbose", "-v", is_flag=True, help="詳細表示")
 def list(limit: int, search_type: str, domain: str, days: int, verbose: bool):
     """検索履歴の一覧表示"""
-    console.print(Panel.fit(
-        "📚 Academic Paper Research Assistant\n🕒 検索履歴管理システム",
-        style="bold blue"
-    ))
+    console.print(
+        Panel.fit(
+            "📚 Academic Paper Research Assistant\n🕒 検索履歴管理システム",
+            style="bold blue",
+        )
+    )
 
     try:
         history_db = get_search_history_db()
         histories = history_db.get_search_history(
-            limit=limit,
-            search_type=search_type,
-            domain=domain,
-            days_back=days
+            limit=limit, search_type=search_type, domain=domain, days_back=days
         )
 
         if not histories:
@@ -58,9 +73,11 @@ def list(limit: int, search_type: str, domain: str, days: int, verbose: bool):
         _display_history_table(histories, verbose)
 
         console.print(
-            f"\n💡 詳細表示: [bold cyan]python3 main_history.py detail <ID>[/bold cyan]")
+            f"\n💡 詳細表示: [bold cyan]python3 main_history.py detail <ID>[/bold cyan]"
+        )
         console.print(
-            f"💡 統計表示: [bold cyan]python3 main_history.py stats[/bold cyan]")
+            f"💡 統計表示: [bold cyan]python3 main_history.py stats[/bold cyan]"
+        )
 
     except Exception as e:
         logger.error(f"履歴取得エラー: {e}")
@@ -68,13 +85,10 @@ def list(limit: int, search_type: str, domain: str, days: int, verbose: bool):
 
 
 @history_cli.command()
-@click.argument('history_id', type=int)
+@click.argument("history_id", type=int)
 def detail(history_id: int):
     """特定検索の詳細表示"""
-    console.print(Panel.fit(
-        f"📄 検索履歴詳細 - ID: {history_id}",
-        style="bold green"
-    ))
+    console.print(Panel.fit(f"📄 検索履歴詳細 - ID: {history_id}", style="bold green"))
 
     try:
         history_db = get_search_history_db()
@@ -83,7 +97,7 @@ def detail(history_id: int):
         histories = history_db.get_search_history(limit=1000)  # 全取得して該当IDを探す
         target_history = None
         for h in histories:
-            if h['id'] == history_id:
+            if h["id"] == history_id:
                 target_history = h
                 break
 
@@ -103,13 +117,10 @@ def detail(history_id: int):
 
 
 @history_cli.command()
-@click.option('--days', default=30, help='過去N日間')
+@click.option("--days", default=30, help="過去N日間")
 def stats(days: int):
     """検索統計の表示"""
-    console.print(Panel.fit(
-        f"📊 検索統計 - 過去{days}日間",
-        style="bold magenta"
-    ))
+    console.print(Panel.fit(f"📊 検索統計 - 過去{days}日間", style="bold magenta"))
 
     try:
         history_db = get_search_history_db()
@@ -127,15 +138,22 @@ def stats(days: int):
 
 
 @history_cli.command()
-@click.option('--days', default=30, help='過去N日間')
-@click.option('--granularity', '-g',
-              type=click.Choice(['day', 'week']), default='day', help='集計単位')
+@click.option("--days", default=30, help="過去N日間")
+@click.option(
+    "--granularity",
+    "-g",
+    type=click.Choice(["day", "week"]),
+    default="day",
+    help="集計単位",
+)
 def trends(days: int, granularity: str):
     """検索トレンド分析"""
-    console.print(Panel.fit(
-        f"📈 検索トレンド分析 - 過去{days}日間（{granularity}別）",
-        style="bold cyan"
-    ))
+    console.print(
+        Panel.fit(
+            f"📈 検索トレンド分析 - 過去{days}日間（{granularity}別）",
+            style="bold cyan",
+        )
+    )
 
     try:
         history_db = get_search_history_db()
@@ -155,13 +173,12 @@ def trends(days: int, granularity: str):
 
 
 @history_cli.command()
-@click.option('--days', default=30, help='過去N日間')
+@click.option("--days", default=30, help="過去N日間")
 def performance(days: int):
     """パフォーマンス分析"""
-    console.print(Panel.fit(
-        f"⚡ パフォーマンス分析 - 過去{days}日間",
-        style="bold red"
-    ))
+    console.print(
+        Panel.fit(f"⚡ パフォーマンス分析 - 過去{days}日間", style="bold red")
+    )
 
     try:
         history_db = get_search_history_db()
@@ -179,18 +196,15 @@ def performance(days: int):
 
 
 @history_cli.command()
-@click.argument('search_query', required=False)
-@click.option('--limit', '-n', default=10, help='表示件数')
+@click.argument("search_query", required=False)
+@click.option("--limit", "-n", default=10, help="表示件数")
 def search(search_query: str, limit: int):
     """履歴内検索"""
     if not search_query:
         console.print("❌ 検索クエリを指定してください")
         return
 
-    console.print(Panel.fit(
-        f"🔍 履歴内検索: '{search_query}'",
-        style="bold yellow"
-    ))
+    console.print(Panel.fit(f"🔍 履歴内検索: '{search_query}'", style="bold yellow"))
 
     try:
         history_db = get_search_history_db()
@@ -200,7 +214,7 @@ def search(search_query: str, limit: int):
         matching_histories = []
 
         for history in all_histories:
-            if search_query.lower() in history['query'].lower():
+            if search_query.lower() in history["query"].lower():
                 matching_histories.append(history)
 
         if not matching_histories:
@@ -215,15 +229,15 @@ def search(search_query: str, limit: int):
             console.print(
                 f"\n💡 {
                     len(matching_histories) -
-                    limit}件の追加結果があります。--limit オプションで表示数を増やせます。")
+                    limit}件の追加結果があります。--limit オプションで表示数を増やせます。"
+            )
 
     except Exception as e:
         logger.error(f"履歴検索エラー: {e}")
         console.print(f"❌ エラーが発生しました: {e}")
 
 
-def _display_history_table(
-        histories: List[Dict[str, Any]], verbose: bool = False):
+def _display_history_table(histories: List[Dict[str, Any]], verbose: bool = False):
     """履歴テーブル表示"""
     table = Table(title="📚 検索履歴一覧")
 
@@ -241,40 +255,48 @@ def _display_history_table(
 
     for history in histories:
         # 実行時間フォーマット
-        exec_time = f"{
-            history['execution_time_seconds']:.1f}s" if history['execution_time_seconds'] else "N/A"
+        exec_time = (
+            f"{
+            history['execution_time_seconds']:.1f}s"
+            if history["execution_time_seconds"]
+            else "N/A"
+        )
 
         # 日時フォーマット
-        timestamp = datetime.fromisoformat(
-            history['timestamp'].replace('Z', '+00:00'))
-        formatted_time = timestamp.strftime('%m/%d %H:%M')
+        timestamp = datetime.fromisoformat(history["timestamp"].replace("Z", "+00:00"))
+        formatted_time = timestamp.strftime("%m/%d %H:%M")
 
         # ドメイン名の短縮
         domain_short = {
-            'sales_psychology': '営業心理',
-            'management_psychology': 'マネジメント',
-            'behavioral_economics': '行動経済',
-            'universal_psychology': '汎用心理'
-        }.get(history['domain'], history['domain'] or '-')
+            "sales_psychology": "営業心理",
+            "management_psychology": "マネジメント",
+            "behavioral_economics": "行動経済",
+            "universal_psychology": "汎用心理",
+        }.get(history["domain"], history["domain"] or "-")
 
         # 基本カラム
         row = [
-            str(history['id']),
-            history['query'][:23] +
-            "..." if len(history['query']) > 23 else history['query'],
-            history['search_type'],
+            str(history["id"]),
+            (
+                history["query"][:23] + "..."
+                if len(history["query"]) > 23
+                else history["query"]
+            ),
+            history["search_type"],
             domain_short,
-            str(history['total_results']),
+            str(history["total_results"]),
             exec_time,
-            formatted_time
+            formatted_time,
         ]
 
         # 詳細カラム
         if verbose:
-            row.extend([
-                history['output_format'],
-                "✅" if history['saved_to_obsidian'] else "❌"
-            ])
+            row.extend(
+                [
+                    history["output_format"],
+                    "✅" if history["saved_to_obsidian"] else "❌",
+                ]
+            )
 
         table.add_row(*row)
 
@@ -282,8 +304,7 @@ def _display_history_table(
     console.print(f"\n📊 合計: {len(histories)}件")
 
 
-def _display_history_detail(
-        history: Dict[str, Any], results: List[Dict[str, Any]]):
+def _display_history_detail(history: Dict[str, Any], results: List[Dict[str, Any]]):
     """履歴詳細表示"""
     # 基本情報パネル
     info_text = f"""
@@ -299,14 +320,10 @@ def _display_history_detail(
 📅 実行日時: {history['timestamp']}
 """
 
-    if history['notes']:
+    if history["notes"]:
         info_text += f"\n📝 ノート: {history['notes']}"
 
-    console.print(
-        Panel(
-            info_text.strip(),
-            title="📋 検索情報",
-            border_style="blue"))
+    console.print(Panel(info_text.strip(), title="📋 検索情報", border_style="blue"))
 
     # 検索結果詳細
     if results:
@@ -319,20 +336,29 @@ def _display_history_detail(
         results_table.add_column("スコア", width=8)
 
         for result in results:
-            relevance_score = f"{
-                result['relevance_score']:.1f}" if result['relevance_score'] else "N/A"
-            title_truncated = result['title'][:33] + \
-                "..." if len(result['title']) > 33 else result['title']
+            relevance_score = (
+                f"{
+                result['relevance_score']:.1f}"
+                if result["relevance_score"]
+                else "N/A"
+            )
+            title_truncated = (
+                result["title"][:33] + "..."
+                if len(result["title"]) > 33
+                else result["title"]
+            )
 
             results_table.add_row(
-                str(result['rank_position']),
+                str(result["rank_position"]),
                 title_truncated,
-                str(result['publication_year']
-                    ) if result['publication_year'] else "N/A",
-                str(result['citation_count']
-                    ) if result['citation_count'] else "0",
-                result['api_source'],
-                relevance_score
+                (
+                    str(result["publication_year"])
+                    if result["publication_year"]
+                    else "N/A"
+                ),
+                str(result["citation_count"]) if result["citation_count"] else "0",
+                result["api_source"],
+                relevance_score,
             )
 
         console.print(results_table)
@@ -342,7 +368,7 @@ def _display_history_detail(
 
 def _display_statistics(stats: Dict[str, Any]):
     """統計表示"""
-    basic = stats.get('basic', {})
+    basic = stats.get("basic", {})
 
     # 基本統計
     basic_panel = f"""
@@ -353,14 +379,10 @@ def _display_statistics(stats: Dict[str, Any]):
 🗂️ Obsidian保存: {basic.get('saved_to_obsidian_count', 0)}件
 """
 
-    console.print(
-        Panel(
-            basic_panel.strip(),
-            title="📊 基本統計",
-            border_style="green"))
+    console.print(Panel(basic_panel.strip(), title="📊 基本統計", border_style="green"))
 
     # 人気キーワード
-    popular_keywords = stats.get('popular_keywords', [])
+    popular_keywords = stats.get("popular_keywords", [])
     if popular_keywords:
         keywords_table = Table(title="🔥 人気キーワード TOP10")
         keywords_table.add_column("順位", width=6)
@@ -369,15 +391,13 @@ def _display_statistics(stats: Dict[str, Any]):
 
         for i, keyword in enumerate(popular_keywords, 1):
             keywords_table.add_row(
-                str(i),
-                keyword['keyword'],
-                str(keyword['search_count'])
+                str(i), keyword["keyword"], str(keyword["search_count"])
             )
 
         console.print(keywords_table)
 
     # ドメイン別統計
-    domain_stats = stats.get('domain_stats', [])
+    domain_stats = stats.get("domain_stats", [])
     if domain_stats:
         domain_table = Table(title="🎯 ドメイン別検索")
         domain_table.add_column("ドメイン", width=20)
@@ -385,25 +405,25 @@ def _display_statistics(stats: Dict[str, Any]):
 
         for domain in domain_stats:
             domain_name = {
-                'sales_psychology': '営業心理学',
-                'management_psychology': 'マネジメント心理学',
-                'behavioral_economics': '行動経済学',
-                'universal_psychology': '汎用心理学'
-            }.get(domain['domain'], domain['domain'])
+                "sales_psychology": "営業心理学",
+                "management_psychology": "マネジメント心理学",
+                "behavioral_economics": "行動経済学",
+                "universal_psychology": "汎用心理学",
+            }.get(domain["domain"], domain["domain"])
 
-            domain_table.add_row(domain_name, str(domain['count']))
+            domain_table.add_row(domain_name, str(domain["count"]))
 
         console.print(domain_table)
 
     # API使用統計
-    api_stats = stats.get('api_stats', [])
+    api_stats = stats.get("api_stats", [])
     if api_stats:
         api_table = Table(title="🔌 API使用統計")
         api_table.add_column("API", width=15)
         api_table.add_column("使用回数", width=10)
 
         for api in api_stats:
-            api_table.add_row(api['api_source'].title(), str(api['count']))
+            api_table.add_row(api["api_source"].title(), str(api["count"]))
 
         console.print(api_table)
 
@@ -418,24 +438,23 @@ def _display_trend_analysis(histories: List[Dict[str, Any]], granularity: str):
     date_domains = defaultdict(Counter)
 
     for history in histories:
-        timestamp = datetime.fromisoformat(
-            history['timestamp'].replace('Z', '+00:00'))
+        timestamp = datetime.fromisoformat(history["timestamp"].replace("Z", "+00:00"))
 
-        if granularity == 'week':
+        if granularity == "week":
             # 週の開始日（月曜日）を計算
             days_since_monday = timestamp.weekday()
             week_start = timestamp - timedelta(days=days_since_monday)
-            date_key = week_start.strftime('%Y-%m-%d')
+            date_key = week_start.strftime("%Y-%m-%d")
         else:
-            date_key = timestamp.strftime('%Y-%m-%d')
+            date_key = timestamp.strftime("%Y-%m-%d")
 
         date_counts[date_key] += 1
 
-        if history['execution_time_seconds']:
-            date_exec_times[date_key].append(history['execution_time_seconds'])
+        if history["execution_time_seconds"]:
+            date_exec_times[date_key].append(history["execution_time_seconds"])
 
-        if history['domain']:
-            date_domains[date_key][history['domain']] += 1
+        if history["domain"]:
+            date_domains[date_key][history["domain"]] += 1
 
     # 日別検索回数テーブル
     if date_counts:
@@ -452,19 +471,24 @@ def _display_trend_analysis(histories: List[Dict[str, Any]], granularity: str):
 
             # 平均実行時間
             exec_times = date_exec_times[date_key]
-            avg_time = f"{
+            avg_time = (
+                f"{
                 sum(exec_times) /
-                len(exec_times):.1f}s" if exec_times else "N/A"
+                len(exec_times):.1f}s"
+                if exec_times
+                else "N/A"
+            )
 
             # 主要ドメイン
             domain_counter = date_domains[date_key]
-            top_domain = domain_counter.most_common(
-                1)[0][0] if domain_counter else "N/A"
+            top_domain = (
+                domain_counter.most_common(1)[0][0] if domain_counter else "N/A"
+            )
             domain_display = {
-                'sales_psychology': '営業心理',
-                'management_psychology': 'マネジメント',
-                'behavioral_economics': '行動経済',
-                'universal_psychology': '汎用心理'
+                "sales_psychology": "営業心理",
+                "management_psychology": "マネジメント",
+                "behavioral_economics": "行動経済",
+                "universal_psychology": "汎用心理",
             }.get(top_domain, top_domain)
 
             trend_table.add_row(date_key, str(count), avg_time, domain_display)
@@ -472,7 +496,7 @@ def _display_trend_analysis(histories: List[Dict[str, Any]], granularity: str):
         console.print(trend_table)
 
     # キーワード分析
-    keyword_analysis = _analyze_keywords([h['query'] for h in histories])
+    keyword_analysis = _analyze_keywords([h["query"] for h in histories])
     if keyword_analysis:
         keyword_table = Table(title="🔤 キーワード分析")
         keyword_table.add_column("キーワード", width=20)
@@ -480,8 +504,8 @@ def _display_trend_analysis(histories: List[Dict[str, Any]], granularity: str):
         keyword_table.add_column("関連語", width=30)
 
         for keyword, data in keyword_analysis.items():
-            related = ", ".join(data['related'][:3])  # 上位3つの関連語
-            keyword_table.add_row(keyword, str(data['count']), related)
+            related = ", ".join(data["related"][:3])  # 上位3つの関連語
+            keyword_table.add_row(keyword, str(data["count"]), related)
 
         console.print(keyword_table)
 
@@ -491,9 +515,10 @@ def _display_performance_analysis(histories: List[Dict[str, Any]]):
     from statistics import mean, median
 
     # 実行時間分析
-    exec_times = [h['execution_time_seconds']
-                  for h in histories if h['execution_time_seconds']]
-    result_counts = [h['total_results'] for h in histories]
+    exec_times = [
+        h["execution_time_seconds"] for h in histories if h["execution_time_seconds"]
+    ]
+    result_counts = [h["total_results"] for h in histories]
 
     if exec_times:
         perf_stats = f"""
@@ -511,22 +536,22 @@ def _display_performance_analysis(histories: List[Dict[str, Any]]):
 
         console.print(
             Panel(
-                perf_stats.strip(),
-                title="📊 基本パフォーマンス",
-                border_style="yellow"))
+                perf_stats.strip(), title="📊 基本パフォーマンス", border_style="yellow"
+            )
+        )
 
     # 検索タイプ別パフォーマンス
     type_performance = {}
     for history in histories:
-        search_type = history['search_type']
+        search_type = history["search_type"]
         if search_type not in type_performance:
-            type_performance[search_type] = {'times': [], 'results': []}
+            type_performance[search_type] = {"times": [], "results": []}
 
-        if history['execution_time_seconds']:
-            type_performance[search_type]['times'].append(
-                history['execution_time_seconds'])
-        type_performance[search_type]['results'].append(
-            history['total_results'])
+        if history["execution_time_seconds"]:
+            type_performance[search_type]["times"].append(
+                history["execution_time_seconds"]
+            )
+        type_performance[search_type]["results"].append(history["total_results"])
 
     if type_performance:
         type_table = Table(title="🔍 検索タイプ別パフォーマンス")
@@ -536,18 +561,23 @@ def _display_performance_analysis(histories: List[Dict[str, Any]]):
         type_table.add_column("検索回数", width=8)
 
         for search_type, data in type_performance.items():
-            avg_time = f"{
+            avg_time = (
+                f"{
                 mean(
-                    data['times']):.2f}s" if data['times'] else "N/A"
-            avg_results = f"{
+                    data['times']):.2f}s"
+                if data["times"]
+                else "N/A"
+            )
+            avg_results = (
+                f"{
                 mean(
-                    data['results']):.1f}" if data['results'] else "N/A"
+                    data['results']):.1f}"
+                if data["results"]
+                else "N/A"
+            )
 
             type_table.add_row(
-                search_type,
-                avg_time,
-                avg_results,
-                str(len(data['results']))
+                search_type, avg_time, avg_results, str(len(data["results"]))
             )
 
         console.print(type_table)
@@ -555,39 +585,36 @@ def _display_performance_analysis(histories: List[Dict[str, Any]]):
     # 時間帯別分析
     hour_counts = {}
     for history in histories:
-        timestamp = datetime.fromisoformat(
-            history['timestamp'].replace('Z', '+00:00'))
+        timestamp = datetime.fromisoformat(history["timestamp"].replace("Z", "+00:00"))
         hour = timestamp.hour
         hour_counts[hour] = hour_counts.get(hour, 0) + 1
 
     if hour_counts:
         # 最もアクティブな時間帯を特定
-        peak_hours = sorted(
-            hour_counts.items(),
-            key=lambda x: x[1],
-            reverse=True)[
-            :3]
-        peak_lines = [f"🕐 検索時間帯分析:",
-                      f"  • 最もアクティブ: {peak_hours[0][0]:02d}:00 ({peak_hours[0][1]}回)"]
+        peak_hours = sorted(hour_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+        peak_lines = [
+            f"🕐 検索時間帯分析:",
+            f"  • 最もアクティブ: {peak_hours[0][0]:02d}:00 ({peak_hours[0][1]}回)",
+        ]
 
         if len(peak_hours) > 1:
             peak_lines.append(
                 f"  • 2番目: {
                     peak_hours[1][0]:02d}:00 ({
-                    peak_hours[1][1]}回)")
+                    peak_hours[1][1]}回)"
+            )
         if len(peak_hours) > 2:
             peak_lines.append(
                 f"  • 3番目: {
                     peak_hours[2][0]:02d}:00 ({
-                    peak_hours[2][1]}回)")
+                    peak_hours[2][1]}回)"
+            )
 
         peak_text = "\n".join(peak_lines)
 
         console.print(
-            Panel(
-                peak_text.strip(),
-                title="🕒 時間帯分析",
-                border_style="green"))
+            Panel(peak_text.strip(), title="🕒 時間帯分析", border_style="green")
+        )
 
 
 def _analyze_keywords(queries: List[str]) -> Dict[str, Dict]:
@@ -601,34 +628,28 @@ def _analyze_keywords(queries: List[str]) -> Dict[str, Dict]:
 
     for query in queries:
         # 英語と日本語の単語を抽出
-        words = re.findall(r'\b[a-zA-Z]{3,}\b|[ぁ-んァ-ヶ一-龠]{2,}', query.lower())
+        words = re.findall(r"\b[a-zA-Z]{3,}\b|[ぁ-んァ-ヶ一-龠]{2,}", query.lower())
         all_words.extend(words)
 
         # 共起関係を記録
         for i, word1 in enumerate(words):
-            for word2 in words[i + 1:]:
+            for word2 in words[i + 1 :]:
                 word_cooccurrence[word1][word2] += 1
                 word_cooccurrence[word2][word1] += 1
 
     # 頻出キーワード（3回以上出現）
     word_counts = Counter(all_words)
-    frequent_words = {
-        word: count for word,
-        count in word_counts.items() if count >= 2}
+    frequent_words = {word: count for word, count in word_counts.items() if count >= 2}
 
     # 関連語の特定
     result = {}
     for word, count in frequent_words.items():
         related_words = word_cooccurrence[word].most_common(5)
-        result[word] = {
-            'count': count,
-            'related': [w for w, _ in related_words]
-        }
+        result[word] = {"count": count, "related": [w for w, _ in related_words]}
 
     # 頻度順でソート
-    return dict(
-        sorted(result.items(), key=lambda x: x[1]['count'], reverse=True)[:10])
+    return dict(sorted(result.items(), key=lambda x: x[1]["count"], reverse=True)[:10])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     history_cli()

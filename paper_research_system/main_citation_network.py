@@ -4,10 +4,18 @@ Citation Network Analysis CLI
 """
 
 import time
-from services.safe_rate_limited_search_service import get_safe_rate_limited_search_service
-from services.citation_visualization import get_citation_visualization, VisualizationConfig
+from services.safe_rate_limited_search_service import (
+    get_safe_rate_limited_search_service,
+)
+from services.citation_visualization import (
+    get_citation_visualization,
+    VisualizationConfig,
+)
 from services.citation_graph_db import get_citation_graph_db
-from services.citation_network_engine import get_citation_network_engine, CitationNetwork
+from services.citation_network_engine import (
+    get_citation_network_engine,
+    CitationNetwork,
+)
 import asyncio
 import click
 import logging
@@ -32,16 +40,26 @@ def citation_cli():
 
 
 @citation_cli.command()
-@click.argument('query', required=True)
-@click.option('--max-papers', '-n', default=5, help='基となる論文の最大数')
-@click.option('--max-depth', '-d', default=2, help='引用関係を辿る最大深度')
-@click.option('--direction', '-dir', default='both',
-              type=click.Choice(['forward', 'backward', 'both']),
-              help='引用関係の方向')
-@click.option('--save-name', '-s', help='ネットワーク保存名')
-@click.option('--verbose', '-v', is_flag=True, help='詳細出力')
-def build(query: str, max_papers: int, max_depth: int,
-          direction: str, save_name: str, verbose: bool):
+@click.argument("query", required=True)
+@click.option("--max-papers", "-n", default=5, help="基となる論文の最大数")
+@click.option("--max-depth", "-d", default=2, help="引用関係を辿る最大深度")
+@click.option(
+    "--direction",
+    "-dir",
+    default="both",
+    type=click.Choice(["forward", "backward", "both"]),
+    help="引用関係の方向",
+)
+@click.option("--save-name", "-s", help="ネットワーク保存名")
+@click.option("--verbose", "-v", is_flag=True, help="詳細出力")
+def build(
+    query: str,
+    max_papers: int,
+    max_depth: int,
+    direction: str,
+    save_name: str,
+    verbose: bool,
+):
     """
     検索クエリから引用ネットワークを構築
 
@@ -51,29 +69,36 @@ def build(query: str, max_papers: int, max_depth: int,
     例:
         python3 main_citation_network.py build "sales psychology" --max-depth 3
     """
-    console.print(Panel.fit(
-        "🌐 Citation Network Builder\n引用ネットワーク構築システム",
-        style="bold blue"
-    ))
+    console.print(
+        Panel.fit(
+            "🌐 Citation Network Builder\n引用ネットワーク構築システム",
+            style="bold blue",
+        )
+    )
 
     console.print(f"🔍 検索クエリ: [bold cyan]{query}[/bold cyan]")
-    console.print(f"📊 基論文数: {max_papers}, 最大深度: {max_depth}, 方向: {direction}")
+    console.print(
+        f"📊 基論文数: {max_papers}, 最大深度: {max_depth}, 方向: {direction}"
+    )
 
     if verbose:
         logging.basicConfig(level=logging.INFO)
 
     asyncio.run(
         _build_network_async(
-            query,
-            max_papers,
-            max_depth,
-            direction,
-            save_name,
-            verbose))
+            query, max_papers, max_depth, direction, save_name, verbose
+        )
+    )
 
 
-async def _build_network_async(query: str, max_papers: int,
-                               max_depth: int, direction: str, save_name: str, verbose: bool):
+async def _build_network_async(
+    query: str,
+    max_papers: int,
+    max_depth: int,
+    direction: str,
+    save_name: str,
+    verbose: bool,
+):
     """非同期でネットワーク構築"""
 
     # 基となる論文を検索
@@ -87,16 +112,19 @@ async def _build_network_async(query: str, max_papers: int,
         console.print("❌ 基となる論文が見つかりませんでした")
         return
 
-    console.print(f"✅ 基論文検索完了: {len(root_papers)}件 (検索時間: {search_time:.2f}秒)")
+    console.print(
+        f"✅ 基論文検索完了: {len(root_papers)}件 (検索時間: {search_time:.2f}秒)"
+    )
 
     # 引用ネットワーク構築
     citation_engine = get_citation_network_engine(
-        max_depth=max_depth, max_papers_per_level=10)
+        max_depth=max_depth, max_papers_per_level=10
+    )
 
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console
+        console=console,
     ) as progress:
         task = progress.add_task("引用ネットワーク構築中...", total=None)
 
@@ -105,7 +133,8 @@ async def _build_network_async(query: str, max_papers: int,
         network_time = time.time() - network_start
 
     console.print(
-        f"✅ ネットワーク構築完了: ノード{len(network.nodes)}件, エッジ{len(network.edges)}件")
+        f"✅ ネットワーク構築完了: ノード{len(network.nodes)}件, エッジ{len(network.edges)}件"
+    )
     console.print(f"⏱️ 構築時間: {network_time:.2f}秒")
 
     # ネットワーク統計表示
@@ -118,20 +147,21 @@ async def _build_network_async(query: str, max_papers: int,
         console.print(f"💾 ネットワーク保存完了: '{save_name}' (ID: {analysis_id})")
 
     console.print("\n💡 [bold cyan]次のステップ[/bold cyan]:")
-    console.print(
-        "  • 可視化: [bold]python3 main_citation_network.py visualize[/bold]")
-    console.print(
-        "  • 分析: [bold]python3 main_citation_network.py analyze[/bold]")
-    console.print(
-        "  • 検索: [bold]python3 main_citation_network.py search[/bold]")
+    console.print("  • 可視化: [bold]python3 main_citation_network.py visualize[/bold]")
+    console.print("  • 分析: [bold]python3 main_citation_network.py analyze[/bold]")
+    console.print("  • 検索: [bold]python3 main_citation_network.py search[/bold]")
 
 
 @citation_cli.command()
-@click.option('--analysis-name', '-a', help='分析名（指定しない場合は一覧表示）')
-@click.option('--diagram-type', '-t', default='network',
-              type=click.Choice(['network', 'summary', 'cluster', 'temporal']),
-              help='図表タイプ')
-@click.option('--max-nodes', default=15, help='最大ノード数')
+@click.option("--analysis-name", "-a", help="分析名（指定しない場合は一覧表示）")
+@click.option(
+    "--diagram-type",
+    "-t",
+    default="network",
+    type=click.Choice(["network", "summary", "cluster", "temporal"]),
+    help="図表タイプ",
+)
+@click.option("--max-nodes", default=15, help="最大ノード数")
 def visualize(analysis_name: str, diagram_type: str, max_nodes: int):
     """
     保存されたネットワークを可視化
@@ -141,10 +171,12 @@ def visualize(analysis_name: str, diagram_type: str, max_nodes: int):
     例:
         python3 main_citation_network.py visualize -a "sales_research" -t network
     """
-    console.print(Panel.fit(
-        "📊 Citation Network Visualizer\n引用ネットワーク可視化システム",
-        style="bold green"
-    ))
+    console.print(
+        Panel.fit(
+            "📊 Citation Network Visualizer\n引用ネットワーク可視化システム",
+            style="bold green",
+        )
+    )
 
     graph_db = get_citation_graph_db()
 
@@ -164,16 +196,17 @@ def visualize(analysis_name: str, diagram_type: str, max_nodes: int):
 
         for analysis in analyses:
             table.add_row(
-                analysis['analysis_name'],
-                str(analysis['total_nodes']),
-                str(analysis['total_edges']),
+                analysis["analysis_name"],
+                str(analysis["total_nodes"]),
+                str(analysis["total_edges"]),
                 f"{analysis['network_density']:.3f}",
-                analysis['created_at'][:16]
+                analysis["created_at"][:16],
             )
 
         console.print(table)
         console.print(
-            "\n💡 特定の分析を可視化するには: [bold]--analysis-name[/bold] を指定してください")
+            "\n💡 特定の分析を可視化するには: [bold]--analysis-name[/bold] を指定してください"
+        )
         return
 
     # ネットワーク読み込み
@@ -200,17 +233,20 @@ def visualize(analysis_name: str, diagram_type: str, max_nodes: int):
     console.print("\n" + "=" * 80)
     console.print(
         f"📊 [bold green]{
-            diagram_type.title()} Citation Network Diagram[/bold green]")
+            diagram_type.title()} Citation Network Diagram[/bold green]"
+    )
     console.print("=" * 80)
     console.print(diagram)
     console.print("=" * 80)
 
     console.print(f"\n✅ {diagram_type}図生成完了")
-    console.print("💡 上記のMermaidコードをMermaid対応エディタにコピーして可視化できます")
+    console.print(
+        "💡 上記のMermaidコードをMermaid対応エディタにコピーして可視化できます"
+    )
 
 
 @citation_cli.command()
-@click.option('--analysis-name', '-a', required=True, help='分析名')
+@click.option("--analysis-name", "-a", required=True, help="分析名")
 def analyze(analysis_name: str):
     """
     ネットワークの詳細分析を実行
@@ -220,10 +256,12 @@ def analyze(analysis_name: str):
     例:
         python3 main_citation_network.py analyze -a "sales_research"
     """
-    console.print(Panel.fit(
-        "🔬 Citation Network Analyzer\n引用ネットワーク詳細分析システム",
-        style="bold magenta"
-    ))
+    console.print(
+        Panel.fit(
+            "🔬 Citation Network Analyzer\n引用ネットワーク詳細分析システム",
+            style="bold magenta",
+        )
+    )
 
     graph_db = get_citation_graph_db()
 
@@ -253,7 +291,8 @@ def analyze(analysis_name: str):
         f"  • 弱連結: {
             'はい' if basic.get(
                 'is_connected',
-                False) else 'いいえ'}")
+                False) else 'いいえ'}"
+    )
 
     # 中心性分析
     if "centrality" in metrics:
@@ -263,17 +302,20 @@ def analyze(analysis_name: str):
         if "top_pagerank" in centrality:
             pr = centrality["top_pagerank"]
             console.print(
-                f"  • 最高PageRank: {pr['title'][:50]}... (スコア: {pr['score']:.4f})")
+                f"  • 最高PageRank: {pr['title'][:50]}... (スコア: {pr['score']:.4f})"
+            )
 
         if "most_cited" in centrality:
             mc = centrality["most_cited"]
             console.print(
-                f"  • 最多被引用: {mc['title'][:50]}... ({mc['citations']}件)")
+                f"  • 最多被引用: {mc['title'][:50]}... ({mc['citations']}件)"
+            )
 
         if "most_citing" in centrality:
             mcit = centrality["most_citing"]
             console.print(
-                f"  • 最多引用: {mcit['title'][:50]}... ({mcit['references']}件)")
+                f"  • 最多引用: {mcit['title'][:50]}... ({mcit['references']}件)"
+            )
 
     # 時系列分析
     if "temporal" in metrics:
@@ -288,11 +330,15 @@ def analyze(analysis_name: str):
 
 
 @citation_cli.command()
-@click.argument('search_query', required=True)
-@click.option('--analysis-name', '-a', required=True, help='検索対象の分析名')
-@click.option('--search-type', '-t', default='title',
-              type=click.Choice(['title', 'author', 'year']),
-              help='検索タイプ')
+@click.argument("search_query", required=True)
+@click.option("--analysis-name", "-a", required=True, help="検索対象の分析名")
+@click.option(
+    "--search-type",
+    "-t",
+    default="title",
+    type=click.Choice(["title", "author", "year"]),
+    help="検索タイプ",
+)
 def search(search_query: str, analysis_name: str, search_type: str):
     """
     ネットワーク内で論文を検索
@@ -302,10 +348,9 @@ def search(search_query: str, analysis_name: str, search_type: str):
     例:
         python3 main_citation_network.py search "machine learning" -a "sales_research"
     """
-    console.print(Panel.fit(
-        "🔍 Network Paper Search\nネットワーク内論文検索",
-        style="bold cyan"
-    ))
+    console.print(
+        Panel.fit("🔍 Network Paper Search\nネットワーク内論文検索", style="bold cyan")
+    )
 
     graph_db = get_citation_graph_db()
 
@@ -314,7 +359,8 @@ def search(search_query: str, analysis_name: str, search_type: str):
 
     # 検索実行
     results = graph_db.search_papers_in_network(
-        analysis_name, search_query, search_type)
+        analysis_name, search_query, search_type
+    )
 
     if not results:
         console.print("❌ 該当する論文が見つかりませんでした")
@@ -331,14 +377,16 @@ def search(search_query: str, analysis_name: str, search_type: str):
 
     for result in results[:20]:  # 上位20件
         table.add_row(
-            result['title'][:38] +
-            "..." if len(result['title']) > 38 else result['title'],
-            str(result['publication_year']
-                ) if result['publication_year'] else "N/A",
-            str(result['in_degree']),
-            str(result['out_degree']),
-            f"{result['pagerank_score']:.4f}" if result['pagerank_score'] else "0.0000",
-            result.get('paper_type_network', 'unknown')
+            (
+                result["title"][:38] + "..."
+                if len(result["title"]) > 38
+                else result["title"]
+            ),
+            str(result["publication_year"]) if result["publication_year"] else "N/A",
+            str(result["in_degree"]),
+            str(result["out_degree"]),
+            f"{result['pagerank_score']:.4f}" if result["pagerank_score"] else "0.0000",
+            result.get("paper_type_network", "unknown"),
         )
 
     console.print(table)
@@ -356,8 +404,7 @@ def _display_network_statistics(network: CitationNetwork):
     # 基本統計
     total_nodes = len(network.nodes)
     total_edges = len(network.edges)
-    density = total_edges / \
-        (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
+    density = total_edges / (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
 
     console.print(f"  • 総ノード数: {total_nodes}")
     console.print(f"  • 総エッジ数: {total_edges}")
@@ -382,14 +429,15 @@ def _display_network_statistics(network: CitationNetwork):
 
     # トップ論文
     most_cited = max(
-        network.nodes.values(),
-        key=lambda n: len(
-            n.cited_by),
-        default=None)
+        network.nodes.values(), key=lambda n: len(n.cited_by), default=None
+    )
     if most_cited:
         citations = len(most_cited.cited_by)
-        title = most_cited.title[:50] + \
-            "..." if len(most_cited.title) > 50 else most_cited.title
+        title = (
+            most_cited.title[:50] + "..."
+            if len(most_cited.title) > 50
+            else most_cited.title
+        )
         console.print(f"  • 最多被引用論文: {title} ({citations}件)")
 
 

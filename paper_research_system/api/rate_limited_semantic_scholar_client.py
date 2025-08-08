@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -40,8 +41,7 @@ class RateLimitedSemanticScholarClient:
 
         self.last_request_time = time.time()
 
-    async def search_papers(self, query: str,
-                            max_results: int = None) -> List[Paper]:
+    async def search_papers(self, query: str, max_results: int = None) -> List[Paper]:
         """
         論文検索（レート制限対応）
 
@@ -54,8 +54,8 @@ class RateLimitedSemanticScholarClient:
         """
         if max_results is None:
             max_results = min(
-                settings.max_results_per_api,
-                2)  # レート制限考慮でさらに少なめ
+                settings.max_results_per_api, 2
+            )  # レート制限考慮でさらに少なめ
 
         try:
             # レート制限待機
@@ -68,14 +68,16 @@ class RateLimitedSemanticScholarClient:
             if self.api_key:
                 headers["x-api-key"] = self.api_key
 
-            async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
+            async with httpx.AsyncClient(
+                timeout=self.timeout, headers=headers
+            ) as client:
                 # Semantic Scholarの検索エンドポイント
                 url = f"{self.base_url}/paper/search"
                 params = {
                     "query": query,
                     "limit": max_results,
                     "sort": "citationCount:desc",  # 引用数順
-                    "fields": "paperId,title,abstract,authors,venue,year,citationCount,openAccessPdf,externalIds"
+                    "fields": "paperId,title,abstract,authors,venue,year,citationCount,openAccessPdf,externalIds",
                 }
 
                 logger.info(f"Semantic Scholar検索実行 (安全モード): {query}")
@@ -95,7 +97,9 @@ class RateLimitedSemanticScholarClient:
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 429:
-                logger.warning(f"Semantic Scholar レート制限: {e} - 緊急停止（設定に問題あり）")
+                logger.warning(
+                    f"Semantic Scholar レート制限: {e} - 緊急停止（設定に問題あり）"
+                )
                 return []
             else:
                 logger.error(f"Semantic Scholar HTTPエラー: {e}")
@@ -105,7 +109,8 @@ class RateLimitedSemanticScholarClient:
             return []
 
     def _parse_work_safe(
-            self, paper_data: Dict[str, Any], query: str) -> Optional[Paper]:
+        self, paper_data: Dict[str, Any], query: str
+    ) -> Optional[Paper]:
         """Semantic Scholarのpaper情報をPaperオブジェクトに変換（安全版）"""
         try:
             # 基本情報（None チェック強化）
@@ -135,11 +140,13 @@ class RateLimitedSemanticScholarClient:
                 if not author_info:
                     continue
                 author_name = author_info.get("name") or "Unknown Author"
-                authors.append(Author(
-                    name=author_name,
-                    institution=None,  # 基本検索では取得困難
-                    orcid=None
-                ))
+                authors.append(
+                    Author(
+                        name=author_name,
+                        institution=None,  # 基本検索では取得困難
+                        orcid=None,
+                    )
+                )
 
             # 所属機関リスト（基本検索では取得困難）
             institutions = []
@@ -151,8 +158,7 @@ class RateLimitedSemanticScholarClient:
             abstract = paper_data.get("abstract")
 
             # 関連性スコア計算
-            relevance_score = self._calculate_relevance_score_safe(
-                paper_data, query)
+            relevance_score = self._calculate_relevance_score_safe(paper_data, query)
 
             return Paper(
                 title=title,
@@ -166,7 +172,7 @@ class RateLimitedSemanticScholarClient:
                 journal=journal,
                 source_api="semantic_scholar",
                 confidence_score=0.85,  # Semantic Scholarは高品質
-                relevance_score=relevance_score
+                relevance_score=relevance_score,
             )
 
         except Exception as e:
@@ -174,7 +180,8 @@ class RateLimitedSemanticScholarClient:
             return None
 
     def _calculate_relevance_score_safe(
-            self, paper_data: Dict[str, Any], query: str) -> float:
+        self, paper_data: Dict[str, Any], query: str
+    ) -> float:
         """論文の関連性スコアを計算（安全版）"""
         score = 0.0
 
@@ -189,8 +196,7 @@ class RateLimitedSemanticScholarClient:
 
             # 概要マッチング
             abstract = (paper_data.get("abstract") or "").lower()
-            abstract_matches = sum(
-                1 for word in query_words if word in abstract)
+            abstract_matches = sum(1 for word in query_words if word in abstract)
             score += min(abstract_matches * 0.5, 2.0)  # 最大2点
 
             # 引用数による重み付け
@@ -214,6 +220,7 @@ class RateLimitedSemanticScholarClient:
             pass
 
         return min(score, 10.0)  # 最大10点
+
 
 # 同期版の関数も提供
 

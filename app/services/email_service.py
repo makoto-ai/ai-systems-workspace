@@ -21,9 +21,11 @@ from jinja2 import Template
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class EmailConfig:
     """メール設定"""
+
     smtp_server: str
     smtp_port: int
     username: str
@@ -32,9 +34,11 @@ class EmailConfig:
     from_name: str = "営業ロールプレイシステム"
     use_tls: bool = True
 
+
 @dataclass
 class ReminderEmail:
     """リマインダーメール情報"""
+
     user_email: str
     user_name: str
     reminder_type: str  # "3days", "1day", "same_day"
@@ -43,40 +47,41 @@ class ReminderEmail:
     improvement_points: List[str]
     personalized_message: str
 
+
 class EmailService:
     """メール配信サービス"""
-    
+
     def __init__(self, config_path: str = "config/email_config.json"):
         """
         Initialize email service
-        
+
         Args:
             config_path: Path to email configuration file
         """
         self.config_path = Path(config_path)
         self.config: Optional[EmailConfig] = None
         self.templates_path = Path("app/templates/email")
-        
+
         # Create directories
         self.config_path.parent.mkdir(parents=True, exist_ok=True)
         self.templates_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Initialize Jinja2 environment
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(str(self.templates_path)),
-            autoescape=jinja2.select_autoescape(['html', 'xml'])
+            autoescape=jinja2.select_autoescape(["html", "xml"]),
         )
-        
+
         self._load_config()
         self._initialize_templates()
-        
+
         logger.info("Email service initialized")
-    
+
     def _load_config(self) -> None:
         """設定ファイルを読み込み"""
         try:
             if self.config_path.exists():
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, "r", encoding="utf-8") as f:
                     config_data = json.load(f)
                 self.config = EmailConfig(**config_data)
                 logger.info("Email configuration loaded")
@@ -85,7 +90,7 @@ class EmailService:
         except Exception as e:
             logger.error(f"Failed to load email config: {e}")
             self._create_default_config()
-    
+
     def _create_default_config(self) -> None:
         """デフォルト設定を作成"""
         default_config = {
@@ -95,36 +100,38 @@ class EmailService:
             "password": "",  # 設定が必要
             "from_email": "",
             "from_name": "営業ロールプレイシステム",
-            "use_tls": True
+            "use_tls": True,
         }
-        
+
         try:
-            with open(self.config_path, 'w', encoding='utf-8') as f:
+            with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(default_config, f, ensure_ascii=False, indent=2)
             logger.info(f"Default email config created at {self.config_path}")
-            logger.warning("Please configure email settings in config/email_config.json")
+            logger.warning(
+                "Please configure email settings in config/email_config.json"
+            )
         except Exception as e:
             logger.error(f"Failed to create default config: {e}")
-    
+
     def _initialize_templates(self) -> None:
         """メールテンプレートを初期化"""
         templates = {
             "3days_reminder.html": self._get_3days_template(),
             "1day_reminder.html": self._get_1day_template(),
             "same_day_reminder.html": self._get_same_day_template(),
-            "base.html": self._get_base_template()
+            "base.html": self._get_base_template(),
         }
-        
+
         for template_name, content in templates.items():
             template_path = self.templates_path / template_name
             if not template_path.exists():
                 try:
-                    with open(template_path, 'w', encoding='utf-8') as f:
+                    with open(template_path, "w", encoding="utf-8") as f:
                         f.write(content)
                     logger.debug(f"Created template: {template_name}")
                 except Exception as e:
                     logger.error(f"Failed to create template {template_name}: {e}")
-    
+
     def _get_base_template(self) -> str:
         """ベーステンプレート"""
         return """<!DOCTYPE html>
@@ -159,7 +166,7 @@ class EmailService:
     </div>
 </body>
 </html>"""
-    
+
     def _get_3days_template(self) -> str:
         """3日前リマインダーテンプレート"""
         return """{% extends "base.html" %}
@@ -205,7 +212,7 @@ class EmailService:
     <li>競合他社との差別化説明</li>
 </ul>
 {% endblock %}"""
-    
+
     def _get_1day_template(self) -> str:
         """前日リマインダーテンプレート"""
         return """{% extends "base.html" %}
@@ -242,7 +249,7 @@ class EmailService:
 
 <p><small>※ 短時間でも継続することで、確実にスキルは向上します！</small></p>
 {% endblock %}"""
-    
+
     def _get_same_day_template(self) -> str:
         """当日リマインダーテンプレート"""
         return """{% extends "base.html" %}
@@ -280,104 +287,106 @@ class EmailService:
 
 <p style="color: #e74c3c;"><strong>注意：</strong>今日を逃すと連続記録がリセットされます。たった10分で継続できます！</p>
 {% endblock %}"""
-    
+
     async def send_reminder_email(self, reminder: ReminderEmail) -> bool:
         """リマインダーメールを送信"""
         if not self.config or not self.config.username or not self.config.password:
             logger.warning("Email configuration not complete. Cannot send emails.")
             return False
-        
+
         try:
             # テンプレート選択
             template_name = f"{reminder.reminder_type}_reminder.html"
             template = self.jinja_env.get_template(template_name)
-            
+
             # HTML コンテンツ生成
             html_content = template.render(
                 user_name=reminder.user_name,
                 last_roleplay_date=reminder.last_roleplay_date,
                 streak_count=reminder.streak_count,
                 improvement_points=reminder.improvement_points,
-                personalized_message=reminder.personalized_message
+                personalized_message=reminder.personalized_message,
             )
-            
+
             # メッセージ作成
             message = MIMEMultipart("alternative")
             message["Subject"] = self._get_subject(reminder.reminder_type)
             message["From"] = f"{self.config.from_name} <{self.config.from_email}>"
             message["To"] = reminder.user_email
-            
+
             # HTML パート追加
             html_part = MIMEText(html_content, "html", "utf-8")
             message.attach(html_part)
-            
+
             # SMTP送信
             return await self._send_email(message, reminder.user_email)
-            
+
         except Exception as e:
             logger.error(f"Failed to send reminder email to {reminder.user_email}: {e}")
             return False
-    
+
     def _get_subject(self, reminder_type: str) -> str:
         """件名を取得"""
         subjects = {
             "3days": "📅 今週のロールプレイはいかがですか？",
             "1day": "⏰ 明日がロールプレイ期限です！",
-            "same_day": "🔥 本日中にロールプレイを完了しましょう"
+            "same_day": "🔥 本日中にロールプレイを完了しましょう",
         }
         return subjects.get(reminder_type, "営業ロールプレイリマインダー")
-    
+
     async def _send_email(self, message: MIMEMultipart, to_email: str) -> bool:
         """実際のメール送信"""
         try:
             # SMTP接続
             context = ssl.create_default_context()
-            
+
             with smtplib.SMTP(self.config.smtp_server, self.config.smtp_port) as server:
                 if self.config.use_tls:
                     server.starttls(context=context)
-                
+
                 server.login(self.config.username, self.config.password)
-                
+
                 # メール送信
                 text = message.as_string()
                 server.sendmail(self.config.from_email, to_email, text)
-                
+
             logger.info(f"Email sent successfully to {to_email}")
             return True
-            
+
         except Exception as e:
             logger.error(f"SMTP send error to {to_email}: {e}")
             return False
-    
+
     async def test_email_connection(self) -> Dict[str, Any]:
         """メール接続をテスト"""
         if not self.config:
             return {"success": False, "error": "Email configuration not loaded"}
-        
+
         if not self.config.username or not self.config.password:
             return {"success": False, "error": "Email credentials not configured"}
-        
+
         try:
             context = ssl.create_default_context()
-            
+
             with smtplib.SMTP(self.config.smtp_server, self.config.smtp_port) as server:
                 if self.config.use_tls:
                     server.starttls(context=context)
-                
+
                 server.login(self.config.username, self.config.password)
-                
+
             return {"success": True, "message": "Email connection successful"}
-            
+
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+
 # Dependency injection
 _email_service: Optional[EmailService] = None
+
 
 def get_email_service() -> EmailService:
     """Get email service instance"""
     global _email_service
     if _email_service is None:
         _email_service = EmailService()
-    return _email_service 
+    return _email_service

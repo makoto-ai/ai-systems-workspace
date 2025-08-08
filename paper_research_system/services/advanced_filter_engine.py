@@ -10,6 +10,7 @@ from datetime import datetime
 from dataclasses import dataclass
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchFilters:
     """検索フィルタ設定"""
+
     # 年代フィルタ
     year_from: Optional[int] = None
     year_to: Optional[int] = None
@@ -60,10 +62,7 @@ class AdvancedFilterEngine:
         """初期化"""
         self.current_year = datetime.now().year
 
-    def apply_filters(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+    def apply_filters(self, papers: List[Paper], filters: SearchFilters) -> List[Paper]:
         """
         論文リストにフィルタを適用
 
@@ -94,14 +93,14 @@ class AdvancedFilterEngine:
         logger.info(
             f"フィルタ適用: {original_count}件 → {final_count}件 ({
                 original_count -
-                final_count}件除外)")
+                final_count}件除外)"
+        )
 
         return filtered_papers
 
     def _apply_year_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """年代フィルタ適用"""
         if filters.year_from is None and filters.year_to is None:
             return papers
@@ -124,9 +123,8 @@ class AdvancedFilterEngine:
         return filtered
 
     def _apply_citation_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """引用数フィルタ適用"""
         if filters.min_citations is None and filters.max_citations is None:
             return papers
@@ -147,9 +145,8 @@ class AdvancedFilterEngine:
         return filtered
 
     def _apply_author_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """著者フィルタ適用"""
         if not filters.authors and not filters.exclude_authors:
             return papers
@@ -163,23 +160,28 @@ class AdvancedFilterEngine:
                 filtered.append(paper)
                 continue
 
-            author_names = {author.name.lower().strip()
-                            for author in paper.authors if author.name}
+            author_names = {
+                author.name.lower().strip() for author in paper.authors if author.name
+            }
 
             # 指定著者チェック
             if filters.authors:
-                required_authors = {name.lower().strip()
-                                    for name in filters.authors}
-                if not any(self._author_matches(req_author, author_names)
-                           for req_author in required_authors):
+                required_authors = {name.lower().strip() for name in filters.authors}
+                if not any(
+                    self._author_matches(req_author, author_names)
+                    for req_author in required_authors
+                ):
                     continue
 
             # 除外著者チェック
             if filters.exclude_authors:
-                excluded_authors = {name.lower().strip()
-                                    for name in filters.exclude_authors}
-                if any(self._author_matches(exc_author, author_names)
-                       for exc_author in excluded_authors):
+                excluded_authors = {
+                    name.lower().strip() for name in filters.exclude_authors
+                }
+                if any(
+                    self._author_matches(exc_author, author_names)
+                    for exc_author in excluded_authors
+                ):
                     continue
 
             filtered.append(paper)
@@ -187,10 +189,7 @@ class AdvancedFilterEngine:
         logger.debug(f"著者フィルタ適用: {len(papers)} → {len(filtered)}件")
         return filtered
 
-    def _author_matches(
-            self,
-            filter_author: str,
-            paper_authors: Set[str]) -> bool:
+    def _author_matches(self, filter_author: str, paper_authors: Set[str]) -> bool:
         """著者名マッチング（部分一致も対応）"""
         filter_author = filter_author.lower().strip()
 
@@ -213,9 +212,8 @@ class AdvancedFilterEngine:
         return False
 
     def _apply_journal_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """ジャーナル/会議フィルタ適用"""
         if not filters.journals and not filters.exclude_journals:
             return papers
@@ -226,18 +224,22 @@ class AdvancedFilterEngine:
 
             # 指定ジャーナルチェック
             if filters.journals:
-                required_journals = {j.lower().strip()
-                                     for j in filters.journals}
-                if not any(self._journal_matches(req_journal, journal)
-                           for req_journal in required_journals):
+                required_journals = {j.lower().strip() for j in filters.journals}
+                if not any(
+                    self._journal_matches(req_journal, journal)
+                    for req_journal in required_journals
+                ):
                     continue
 
             # 除外ジャーナルチェック
             if filters.exclude_journals:
-                excluded_journals = {j.lower().strip()
-                                     for j in filters.exclude_journals}
-                if any(self._journal_matches(exc_journal, journal)
-                       for exc_journal in excluded_journals):
+                excluded_journals = {
+                    j.lower().strip() for j in filters.exclude_journals
+                }
+                if any(
+                    self._journal_matches(exc_journal, journal)
+                    for exc_journal in excluded_journals
+                ):
                     continue
 
             filtered.append(paper)
@@ -245,10 +247,7 @@ class AdvancedFilterEngine:
         logger.debug(f"ジャーナルフィルタ適用: {len(papers)} → {len(filtered)}件")
         return filtered
 
-    def _journal_matches(
-            self,
-            filter_journal: str,
-            paper_journal: str) -> bool:
+    def _journal_matches(self, filter_journal: str, paper_journal: str) -> bool:
         """ジャーナル名マッチング"""
         if not filter_journal or not paper_journal:
             return False
@@ -257,9 +256,8 @@ class AdvancedFilterEngine:
         return filter_journal in paper_journal or paper_journal in filter_journal
 
     def _apply_content_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """コンテンツフィルタ適用（DOI・概要有無）"""
         filtered = []
         for paper in papers:
@@ -277,15 +275,13 @@ class AdvancedFilterEngine:
         return filtered
 
     def _apply_source_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """APIソースフィルタ適用"""
         if not filters.allowed_sources:
             return papers
 
-        allowed_sources = {source.lower()
-                           for source in filters.allowed_sources}
+        allowed_sources = {source.lower() for source in filters.allowed_sources}
 
         filtered = []
         for paper in papers:
@@ -296,9 +292,8 @@ class AdvancedFilterEngine:
         return filtered
 
     def _apply_keyword_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """キーワードフィルタ適用"""
         if not filters.required_keywords and not filters.excluded_keywords:
             return papers
@@ -309,14 +304,18 @@ class AdvancedFilterEngine:
 
             # 必須キーワードチェック
             if filters.required_keywords:
-                if not all(self._keyword_in_text(keyword, text_content)
-                           for keyword in filters.required_keywords):
+                if not all(
+                    self._keyword_in_text(keyword, text_content)
+                    for keyword in filters.required_keywords
+                ):
                     continue
 
             # 除外キーワードチェック
             if filters.excluded_keywords:
-                if any(self._keyword_in_text(keyword, text_content)
-                       for keyword in filters.excluded_keywords):
+                if any(
+                    self._keyword_in_text(keyword, text_content)
+                    for keyword in filters.excluded_keywords
+                ):
                     continue
 
             filtered.append(paper)
@@ -343,9 +342,8 @@ class AdvancedFilterEngine:
         return keyword in text
 
     def _apply_type_filter(
-            self,
-            papers: List[Paper],
-            filters: SearchFilters) -> List[Paper]:
+        self, papers: List[Paper], filters: SearchFilters
+    ) -> List[Paper]:
         """論文種別フィルタ適用"""
         if not filters.paper_types:
             return papers
@@ -364,28 +362,22 @@ class AdvancedFilterEngine:
         journal = (paper.journal or "").lower()
 
         # プレプリント判定
-        if any(
-            preprint in journal for preprint in [
-                'arxiv',
-                'biorxiv',
-                'preprint']):
-            return 'preprint'
+        if any(preprint in journal for preprint in ["arxiv", "biorxiv", "preprint"]):
+            return "preprint"
 
         # 会議判定
         if any(
-            conf in journal for conf in [
-                'conference',
-                'proceedings',
-                'workshop',
-                'symposium']):
-            return 'conference'
+            conf in journal
+            for conf in ["conference", "proceedings", "workshop", "symposium"]
+        ):
+            return "conference"
 
         # 書籍判定
-        if any(book in journal for book in ['book', 'chapter', 'handbook']):
-            return 'book'
+        if any(book in journal for book in ["book", "chapter", "handbook"]):
+            return "book"
 
         # デフォルトはジャーナル
-        return 'journal'
+        return "journal"
 
     def create_filter_summary(self, filters: SearchFilters) -> str:
         """フィルタ設定の要約を生成"""
@@ -427,7 +419,8 @@ class AdvancedFilterEngine:
         # キーワード
         if filters.required_keywords:
             summary_parts.append(
-                f"🔍 必須KW: {', '.join(filters.required_keywords[:2])}")
+                f"🔍 必須KW: {', '.join(filters.required_keywords[:2])}"
+            )
             if len(filters.required_keywords) > 2:
                 summary_parts[-1] += f", 他{len(filters.required_keywords) - 2}個"
 

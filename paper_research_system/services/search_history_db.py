@@ -14,6 +14,7 @@ from contextlib import contextmanager
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -31,12 +32,12 @@ class SearchHistoryDB:
             db_path: データベースファイルパス（デフォルト: database/search_history.db）
         """
         if db_path is None:
-            db_path = Path(__file__).parent.parent / \
-                "database" / "search_history.db"
+            db_path = Path(__file__).parent.parent / "database" / "search_history.db"
 
         self.db_path = Path(db_path)
-        self.schema_path = Path(__file__).parent.parent / \
-            "database" / "search_history_schema.sql"
+        self.schema_path = (
+            Path(__file__).parent.parent / "database" / "search_history_schema.sql"
+        )
 
         # データベースディレクトリ作成
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -48,7 +49,7 @@ class SearchHistoryDB:
         """データベースとテーブルを初期化"""
         try:
             # スキーマファイルを読み込んで実行
-            with open(self.schema_path, 'r', encoding='utf-8') as f:
+            with open(self.schema_path, "r", encoding="utf-8") as f:
                 schema_sql = f.read()
 
             with self.get_connection() as conn:
@@ -83,7 +84,7 @@ class SearchHistoryDB:
         thinking_mode: str = None,
         api_calls: Dict[str, int] = None,
         saved_to_obsidian: bool = False,
-        notes: str = None
+        notes: str = None,
     ) -> int:
         """
         検索履歴を記録
@@ -107,30 +108,40 @@ class SearchHistoryDB:
         try:
             with self.get_connection() as conn:
                 # 検索履歴メイン記録
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     INSERT INTO search_history (
                         query, search_type, domain, thinking_mode, max_results,
                         output_format, execution_time_seconds, total_results,
                         api_calls, saved_to_obsidian, notes
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    query, search_type, domain, thinking_mode, max_results,
-                    output_format, execution_time, len(results),
-                    json.dumps(api_calls) if api_calls else None,
-                    saved_to_obsidian, notes
-                ))
+                """,
+                    (
+                        query,
+                        search_type,
+                        domain,
+                        thinking_mode,
+                        max_results,
+                        output_format,
+                        execution_time,
+                        len(results),
+                        json.dumps(api_calls) if api_calls else None,
+                        saved_to_obsidian,
+                        notes,
+                    ),
+                )
 
                 search_history_id = cursor.lastrowid
 
                 # 検索結果詳細記録
                 for i, paper in enumerate(results):
-                    self._record_paper_result(
-                        conn, search_history_id, paper, i + 1)
+                    self._record_paper_result(conn, search_history_id, paper, i + 1)
 
                 conn.commit()
                 logger.info(
                     f"検索履歴記録完了: ID={search_history_id}, クエリ='{query}', 結果数={
-                        len(results)}")
+                        len(results)}"
+                )
                 return search_history_id
 
         except Exception as e:
@@ -138,48 +149,49 @@ class SearchHistoryDB:
             raise
 
     def _record_paper_result(
-            self,
-            conn: sqlite3.Connection,
-            search_history_id: int,
-            paper: Paper,
-            rank: int):
+        self, conn: sqlite3.Connection, search_history_id: int, paper: Paper, rank: int
+    ):
         """個別論文結果を記録"""
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO search_results (
                 search_history_id, title, authors, publication_year, citation_count,
                 doi, url, abstract, journal, venue, keywords, api_source,
                 relevance_score, total_score, domain_score, mode_score, rank_position
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-                     (search_history_id,
-                      paper.title,
-                      json.dumps([{"name": a.name,
-                                   "institution": a.institution} for a in paper.authors]),
-                         paper.publication_year,
-                         paper.citation_count,
-                         paper.doi,
-                         paper.url,
-                         paper.abstract,
-                         paper.journal,
-                         paper.venue,
-                         json.dumps(paper.keywords) if paper.keywords else None,
-                         paper.source_api,
-                         paper.relevance_score,
-                         paper.total_score,
-                         getattr(paper,
-                                 'domain_score',
-                                 None),
-                         getattr(paper,
-                                 'mode_score',
-                                 None),
-                         rank))
+            (
+                search_history_id,
+                paper.title,
+                json.dumps(
+                    [
+                        {"name": a.name, "institution": a.institution}
+                        for a in paper.authors
+                    ]
+                ),
+                paper.publication_year,
+                paper.citation_count,
+                paper.doi,
+                paper.url,
+                paper.abstract,
+                paper.journal,
+                paper.venue,
+                json.dumps(paper.keywords) if paper.keywords else None,
+                paper.source_api,
+                paper.relevance_score,
+                paper.total_score,
+                getattr(paper, "domain_score", None),
+                getattr(paper, "mode_score", None),
+                rank,
+            ),
+        )
 
     def get_search_history(
         self,
         limit: int = 50,
         search_type: str = None,
         domain: str = None,
-        days_back: int = None
+        days_back: int = None,
     ) -> List[Dict[str, Any]]:
         """
         検索履歴を取得
@@ -208,17 +220,22 @@ class SearchHistoryDB:
 
                 if days_back:
                     conditions.append(
-                        "timestamp >= datetime('now', '-{} days')".format(days_back))
+                        "timestamp >= datetime('now', '-{} days')".format(days_back)
+                    )
 
-                where_clause = " WHERE " + \
-                    " AND ".join(conditions) if conditions else ""
+                where_clause = (
+                    " WHERE " + " AND ".join(conditions) if conditions else ""
+                )
 
-                cursor = conn.execute(f"""
+                cursor = conn.execute(
+                    f"""
                     SELECT * FROM search_history
                     {where_clause}
                     ORDER BY timestamp DESC
                     LIMIT ?
-                """, params + [limit])
+                """,
+                    params + [limit],
+                )
 
                 return [dict(row) for row in cursor.fetchall()]
 
@@ -226,16 +243,18 @@ class SearchHistoryDB:
             logger.error(f"検索履歴取得エラー: {e}")
             return []
 
-    def get_search_results(
-            self, search_history_id: int) -> List[Dict[str, Any]]:
+    def get_search_results(self, search_history_id: int) -> List[Dict[str, Any]]:
         """特定の検索の結果詳細を取得"""
         try:
             with self.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT * FROM search_results
                     WHERE search_history_id = ?
                     ORDER BY rank_position
-                """, (search_history_id,))
+                """,
+                    (search_history_id,),
+                )
 
                 return [dict(row) for row in cursor.fetchall()]
 
@@ -248,7 +267,8 @@ class SearchHistoryDB:
         try:
             with self.get_connection() as conn:
                 # 基本統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT
                         COUNT(*) as total_searches,
                         COUNT(DISTINCT query) as unique_queries,
@@ -257,41 +277,54 @@ class SearchHistoryDB:
                         COUNT(CASE WHEN saved_to_obsidian THEN 1 END) as saved_to_obsidian_count
                     FROM search_history
                     WHERE timestamp >= datetime('now', '-{} days')
-                """.format(days_back))
+                """.format(
+                        days_back
+                    )
+                )
 
                 basic_stats = dict(cursor.fetchone())
 
                 # 人気キーワード
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT keyword, search_count
                     FROM popular_keywords
                     ORDER BY search_count DESC
                     LIMIT 10
-                """)
+                """
+                )
 
                 popular_keywords = [dict(row) for row in cursor.fetchall()]
 
                 # ドメイン別統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT domain, COUNT(*) as count
                     FROM search_history
                     WHERE domain IS NOT NULL
                     AND timestamp >= datetime('now', '-{} days')
                     GROUP BY domain
                     ORDER BY count DESC
-                """.format(days_back))
+                """.format(
+                        days_back
+                    )
+                )
 
                 domain_stats = [dict(row) for row in cursor.fetchall()]
 
                 # API使用統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT api_source, COUNT(*) as count
                     FROM search_results sr
                     JOIN search_history sh ON sr.search_history_id = sh.id
                     WHERE sh.timestamp >= datetime('now', '-{} days')
                     GROUP BY api_source
                     ORDER BY count DESC
-                """.format(days_back))
+                """.format(
+                        days_back
+                    )
+                )
 
                 api_stats = [dict(row) for row in cursor.fetchall()]
 
@@ -300,7 +333,7 @@ class SearchHistoryDB:
                     "popular_keywords": popular_keywords,
                     "domain_stats": domain_stats,
                     "api_stats": api_stats,
-                    "period_days": days_back
+                    "period_days": days_back,
                 }
 
         except Exception as e:
@@ -311,11 +344,14 @@ class SearchHistoryDB:
         """検索履歴にノートを追加"""
         try:
             with self.get_connection() as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE search_history
                     SET notes = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                """, (note, search_history_id))
+                """,
+                    (note, search_history_id),
+                )
                 conn.commit()
 
         except Exception as e:

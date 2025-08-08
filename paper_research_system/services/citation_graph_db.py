@@ -12,6 +12,7 @@ from typing import List, Dict, Set, Tuple, Optional, Any
 from pathlib import Path
 from dataclasses import asdict
 import sys
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -29,8 +30,9 @@ class CitationGraphDB:
             db_path: データベースファイルパス
         """
         if db_path is None:
-            self.db_path = Path(__file__).parent.parent / \
-                "database" / "citation_graph.db"
+            self.db_path = (
+                Path(__file__).parent.parent / "database" / "citation_graph.db"
+            )
         else:
             self.db_path = Path(db_path)
 
@@ -45,7 +47,7 @@ class CitationGraphDB:
             conn.execute("PRAGMA foreign_keys = ON")
 
             if schema_path.exists():
-                with open(schema_path, 'r', encoding='utf-8') as f:
+                with open(schema_path, "r", encoding="utf-8") as f:
                     schema_sql = f.read()
                     conn.executescript(schema_sql)
             else:
@@ -53,10 +55,7 @@ class CitationGraphDB:
 
         logger.info(f"引用グラフDB初期化完了: {self.db_path}")
 
-    def save_network(
-            self,
-            network: CitationNetwork,
-            analysis_name: str) -> int:
+    def save_network(self, network: CitationNetwork, analysis_name: str) -> int:
         """
         引用ネットワークをデータベースに保存
 
@@ -72,7 +71,8 @@ class CitationGraphDB:
 
             # 既存の同名分析を削除
             conn.execute(
-                "DELETE FROM network_analysis WHERE analysis_name = ?", (analysis_name,))
+                "DELETE FROM network_analysis WHERE analysis_name = ?", (analysis_name,)
+            )
 
             # ノード保存
             self._save_nodes(conn, network.nodes)
@@ -81,59 +81,60 @@ class CitationGraphDB:
             self._save_edges(conn, network.edges)
 
             # ネットワーク統計保存
-            analysis_id = self._save_network_analysis(
-                conn, network, analysis_name)
+            analysis_id = self._save_network_analysis(conn, network, analysis_name)
 
             conn.commit()
             logger.info(f"ネットワーク保存完了: {analysis_name} (ID: {analysis_id})")
 
         return analysis_id
 
-    def _save_nodes(self, conn: sqlite3.Connection,
-                    nodes: Dict[str, CitationNode]):
+    def _save_nodes(self, conn: sqlite3.Connection, nodes: Dict[str, CitationNode]):
         """ノード保存"""
         for node in nodes.values():
             authors_json = json.dumps(node.authors, ensure_ascii=False)
             title_normalized = node.title.lower().strip()
             year_range = f"{node.year // 10 * 10}s" if node.year else None
 
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO citation_nodes (
                     paper_id, title, authors, publication_year, citation_count,
                     doi, source_api, depth, in_degree, out_degree,
                     title_normalized, year_range, author_count
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-                         (node.paper_id,
-                          node.title,
-                          authors_json,
-                          node.year,
-                          node.citation_count,
-                          node.doi,
-                          node.source_api,
-                          node.depth,
-                          len(node.cited_by),
-                             len(node.references),
-                             title_normalized,
-                             year_range,
-                             len(node.authors)))
+                (
+                    node.paper_id,
+                    node.title,
+                    authors_json,
+                    node.year,
+                    node.citation_count,
+                    node.doi,
+                    node.source_api,
+                    node.depth,
+                    len(node.cited_by),
+                    len(node.references),
+                    title_normalized,
+                    year_range,
+                    len(node.authors),
+                ),
+            )
 
     def _save_edges(self, conn: sqlite3.Connection, edges: List[CitationEdge]):
         """エッジ保存"""
         for edge in edges:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT OR REPLACE INTO citation_edges (
                     from_paper_id, to_paper_id, citation_context, weight
                 ) VALUES (?, ?, ?, ?)
-            """, (
-                edge.from_paper_id, edge.to_paper_id, edge.citation_context, 1.0
-            ))
+            """,
+                (edge.from_paper_id, edge.to_paper_id, edge.citation_context, 1.0),
+            )
 
     def _save_network_analysis(
-            self,
-            conn: sqlite3.Connection,
-            network: CitationNetwork,
-            analysis_name: str) -> int:
+        self, conn: sqlite3.Connection, network: CitationNetwork, analysis_name: str
+    ) -> int:
         """ネットワーク分析結果保存"""
         root_papers_json = json.dumps(network.root_papers, ensure_ascii=False)
 
@@ -145,18 +146,28 @@ class CitationGraphDB:
         # ネットワーク密度計算
         total_nodes = len(network.nodes)
         total_edges = len(network.edges)
-        density = total_edges / \
-            (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
+        density = (
+            total_edges / (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0
+        )
 
-        cursor = conn.execute("""
+        cursor = conn.execute(
+            """
             INSERT INTO network_analysis (
                 analysis_name, root_papers, total_nodes, total_edges,
                 network_density, max_depth, year_range_start, year_range_end
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            analysis_name, root_papers_json, total_nodes, total_edges,
-            density, network.max_depth, year_start, year_end
-        ))
+        """,
+            (
+                analysis_name,
+                root_papers_json,
+                total_nodes,
+                total_edges,
+                density,
+                network.max_depth,
+                year_start,
+                year_end,
+            ),
+        )
 
         return cursor.lastrowid
 
@@ -174,9 +185,12 @@ class CitationGraphDB:
             conn.row_factory = sqlite3.Row
 
             # 分析情報取得
-            analysis_row = conn.execute("""
+            analysis_row = conn.execute(
+                """
                 SELECT * FROM network_analysis WHERE analysis_name = ?
-            """, (analysis_name,)).fetchone()
+            """,
+                (analysis_name,),
+            ).fetchone()
 
             if not analysis_row:
                 return None
@@ -192,7 +206,7 @@ class CitationGraphDB:
                 edges=edges,
                 root_papers=json.loads(analysis_row["root_papers"]),
                 total_citations=analysis_row["total_edges"],
-                max_depth=analysis_row["max_depth"]
+                max_depth=analysis_row["max_depth"],
             )
 
             logger.info(f"ネットワーク読み込み完了: {analysis_name}")
@@ -211,14 +225,20 @@ class CitationGraphDB:
             references = set()
 
             # エッジから引用関係を復元
-            citing_rows = conn.execute("""
+            citing_rows = conn.execute(
+                """
                 SELECT from_paper_id FROM citation_edges WHERE to_paper_id = ?
-            """, (row["paper_id"],)).fetchall()
+            """,
+                (row["paper_id"],),
+            ).fetchall()
             cited_by = {r["from_paper_id"] for r in citing_rows}
 
-            ref_rows = conn.execute("""
+            ref_rows = conn.execute(
+                """
                 SELECT to_paper_id FROM citation_edges WHERE from_paper_id = ?
-            """, (row["paper_id"],)).fetchall()
+            """,
+                (row["paper_id"],),
+            ).fetchall()
             references = {r["to_paper_id"] for r in ref_rows}
 
             node = CitationNode(
@@ -231,7 +251,7 @@ class CitationGraphDB:
                 source_api=row["source_api"],
                 cited_by=cited_by,
                 references=references,
-                depth=row["depth"]
+                depth=row["depth"],
             )
             nodes[row["paper_id"]] = node
 
@@ -246,7 +266,7 @@ class CitationGraphDB:
             edge = CitationEdge(
                 from_paper_id=row["from_paper_id"],
                 to_paper_id=row["to_paper_id"],
-                citation_context=row["citation_context"]
+                citation_context=row["citation_context"],
             )
             edges.append(edge)
 
@@ -271,10 +291,12 @@ class CitationGraphDB:
 
         # ノード追加
         for node in network.nodes.values():
-            G.add_node(node.paper_id,
-                       title=node.title,
-                       year=node.year,
-                       citation_count=node.citation_count)
+            G.add_node(
+                node.paper_id,
+                title=node.title,
+                year=node.year,
+                citation_count=node.citation_count,
+            )
 
         # エッジ追加
         for edge in network.edges:
@@ -286,7 +308,7 @@ class CitationGraphDB:
                 "nodes": len(G.nodes()),
                 "edges": len(G.edges()),
                 "density": nx.density(G),
-                "is_connected": nx.is_weakly_connected(G)
+                "is_connected": nx.is_weakly_connected(G),
             }
         }
 
@@ -310,18 +332,18 @@ class CitationGraphDB:
                     "top_pagerank": {
                         "paper_id": top_pagerank[0],
                         "score": top_pagerank[1],
-                        "title": network.nodes[top_pagerank[0]].title
+                        "title": network.nodes[top_pagerank[0]].title,
                     },
                     "most_cited": {
                         "paper_id": top_cited[0],
                         "citations": top_cited[1],
-                        "title": network.nodes[top_cited[0]].title
+                        "title": network.nodes[top_cited[0]].title,
                     },
                     "most_citing": {
                         "paper_id": top_citing[0],
                         "references": top_citing[1],
-                        "title": network.nodes[top_citing[0]].title
-                    }
+                        "title": network.nodes[top_citing[0]].title,
+                    },
                 }
 
             except Exception as e:
@@ -334,28 +356,27 @@ class CitationGraphDB:
             metrics["temporal"] = {
                 "year_range": (min(years), max(years)),
                 "span_years": max(years) - min(years),
-                "papers_per_year": len(years) / (max(years) - min(years) + 1)
+                "papers_per_year": len(years) / (max(years) - min(years) + 1),
             }
 
         return metrics
 
-    def _update_pagerank_scores(
-            self, analysis_name: str, pagerank: Dict[str, float]):
+    def _update_pagerank_scores(self, analysis_name: str, pagerank: Dict[str, float]):
         """PageRankスコアをデータベースに更新"""
         with sqlite3.connect(self.db_path) as conn:
             for paper_id, score in pagerank.items():
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE citation_nodes
                     SET pagerank_score = ?
                     WHERE paper_id = ?
-                """, (score, paper_id))
+                """,
+                    (score, paper_id),
+                )
             conn.commit()
 
     def search_papers_in_network(
-        self,
-        analysis_name: str,
-        query: str,
-        search_type: str = "title"
+        self, analysis_name: str, query: str, search_type: str = "title"
     ) -> List[Dict[str, Any]]:
         """
         ネットワーク内で論文を検索
@@ -372,27 +393,36 @@ class CitationGraphDB:
             conn.row_factory = sqlite3.Row
 
             if search_type == "title":
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM paper_network_stats
                     WHERE title_normalized LIKE ?
                     ORDER BY pagerank_score DESC
-                """, (f"%{query.lower()}%",)).fetchall()
+                """,
+                    (f"%{query.lower()}%",),
+                ).fetchall()
 
             elif search_type == "author":
-                rows = conn.execute("""
+                rows = conn.execute(
+                    """
                     SELECT * FROM paper_network_stats
                     WHERE authors LIKE ?
                     ORDER BY pagerank_score DESC
-                """, (f"%{query}%",)).fetchall()
+                """,
+                    (f"%{query}%",),
+                ).fetchall()
 
             elif search_type == "year":
                 try:
                     year = int(query)
-                    rows = conn.execute("""
+                    rows = conn.execute(
+                        """
                         SELECT * FROM paper_network_stats
                         WHERE publication_year = ?
                         ORDER BY pagerank_score DESC
-                    """, (year,)).fetchall()
+                    """,
+                        (year,),
+                    ).fetchall()
                 except ValueError:
                     return []
 
@@ -401,8 +431,9 @@ class CitationGraphDB:
 
             return [dict(row) for row in rows]
 
-    def get_citation_path(self, start_paper_id: str,
-                          end_paper_id: str) -> Optional[List[str]]:
+    def get_citation_path(
+        self, start_paper_id: str, end_paper_id: str
+    ) -> Optional[List[str]]:
         """
         2つの論文間の引用経路を取得
 
@@ -415,10 +446,13 @@ class CitationGraphDB:
         """
         with sqlite3.connect(self.db_path) as conn:
             # キャッシュから検索
-            row = conn.execute("""
+            row = conn.execute(
+                """
                 SELECT path_nodes FROM citation_paths
                 WHERE start_paper_id = ? AND end_paper_id = ?
-            """, (start_paper_id, end_paper_id)).fetchone()
+            """,
+                (start_paper_id, end_paper_id),
+            ).fetchone()
 
             if row:
                 return json.loads(row[0])
@@ -437,11 +471,14 @@ class CitationGraphDB:
 
                 # キャッシュに保存
                 path_json = json.dumps(path)
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO citation_paths
                     (start_paper_id, end_paper_id, path_length, path_nodes)
                     VALUES (?, ?, ?, ?)
-                """, (start_paper_id, end_paper_id, len(path), path_json))
+                """,
+                    (start_paper_id, end_paper_id, len(path), path_json),
+                )
                 conn.commit()
 
                 return path
@@ -453,12 +490,14 @@ class CitationGraphDB:
         """保存されている分析の一覧を取得"""
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute("""
+            rows = conn.execute(
+                """
                 SELECT analysis_name, total_nodes, total_edges,
                        network_density, max_depth, created_at
                 FROM network_analysis
                 ORDER BY created_at DESC
-            """).fetchall()
+            """
+            ).fetchall()
 
             return [dict(row) for row in rows]
 

@@ -10,6 +10,7 @@ from typing import List, Dict, Set, Tuple, Optional, Any
 from dataclasses import dataclass
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class VisualizationConfig:
     """可視化設定"""
+
     max_nodes: int = 20
     max_edges: int = 50
     show_years: bool = True
@@ -38,13 +40,11 @@ class CitationVisualization:
             "2010s": "#A23B72",  # 紫
             "2000s": "#F18F01",  # オレンジ
             "1990s": "#C73E1D",  # 赤
-            "unknown": "#6C757D"  # グレー
+            "unknown": "#6C757D",  # グレー
         }
 
     def generate_mermaid_diagram(
-        self,
-        network: CitationNetwork,
-        config: VisualizationConfig = None
+        self, network: CitationNetwork, config: VisualizationConfig = None
     ) -> str:
         """
         Mermaid引用関係図を生成
@@ -65,7 +65,8 @@ class CitationVisualization:
         logger.info(
             f"Mermaid図生成: ノード{
                 len(filtered_nodes)}件, エッジ{
-                len(filtered_edges)}件")
+                len(filtered_edges)}件"
+        )
 
         # Mermaidコード生成
         mermaid_lines = []
@@ -79,8 +80,7 @@ class CitationVisualization:
 
             mermaid_lines.append(f'    {node_id}["{label}"]')
             if style:
-                mermaid_lines.append(
-                    f'    {node_id} --> {node_id}_style["{style}"]')
+                mermaid_lines.append(f'    {node_id} --> {node_id}_style["{style}"]')
 
         # エッジ定義
         for edge in filtered_edges:
@@ -88,13 +88,13 @@ class CitationVisualization:
             to_id = self._sanitize_id(edge.to_paper_id)
 
             if from_id in [
-                self._sanitize_id(
-                    n.paper_id) for n in filtered_nodes.values()] and to_id in [
-                self._sanitize_id(
-                    n.paper_id) for n in filtered_nodes.values()]:
+                self._sanitize_id(n.paper_id) for n in filtered_nodes.values()
+            ] and to_id in [
+                self._sanitize_id(n.paper_id) for n in filtered_nodes.values()
+            ]:
 
                 edge_style = self._get_edge_style(edge, filtered_nodes, config)
-                mermaid_lines.append(f'    {from_id} {edge_style} {to_id}')
+                mermaid_lines.append(f"    {from_id} {edge_style} {to_id}")
 
         # スタイル定義
         mermaid_lines.extend(self._generate_mermaid_styles(config))
@@ -126,34 +126,38 @@ class CitationVisualization:
         total_edges = len(network.edges)
         mermaid_lines.append(
             f'    Stats["Total Papers: {total_nodes}<br/>Citations: {total_edges}<br/>Max Depth: {
-                network.max_depth}"]')
+                network.max_depth}"]'
+        )
 
         # 年代分布
         for year_range, count in year_stats.items():
             if count > 0:
                 year_id = year_range.replace("s", "")
-                mermaid_lines.append(
-                    f'    {year_id}["{year_range}: {count} papers"]')
-                mermaid_lines.append(f'    Stats --> {year_id}')
+                mermaid_lines.append(f'    {year_id}["{year_range}: {count} papers"]')
+                mermaid_lines.append(f"    Stats --> {year_id}")
 
         # トップ論文
         for i, (node_id, node) in enumerate(top_nodes.items()):
             top_id = f"Top{i + 1}"
-            title_short = node.title[:30] + \
-                "..." if len(node.title) > 30 else node.title
+            title_short = (
+                node.title[:30] + "..." if len(node.title) > 30 else node.title
+            )
             citations = len(node.cited_by)
             mermaid_lines.append(
-                f'    {top_id}["{title_short}<br/>Citations: {citations}"]')
-            mermaid_lines.append(f'    Stats --> {top_id}')
+                f'    {top_id}["{title_short}<br/>Citations: {citations}"]'
+            )
+            mermaid_lines.append(f"    Stats --> {top_id}")
 
-        mermaid_lines.append('    end')
+        mermaid_lines.append("    end")
 
         # スタイル
         mermaid_lines.append(
-            '    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px')
+            "    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px"
+        )
         mermaid_lines.append(
-            '    classDef statsNode fill:#e1f5fe,stroke:#01579b,stroke-width:3px')
-        mermaid_lines.append('    class Stats statsNode')
+            "    classDef statsNode fill:#e1f5fe,stroke:#01579b,stroke-width:3px"
+        )
+        mermaid_lines.append("    class Stats statsNode")
 
         return "\n".join(mermaid_lines)
 
@@ -179,50 +183,55 @@ class CitationVisualization:
                 continue
 
             cluster_id += 1
-            mermaid_lines.append(
-                f'    subgraph "Cluster {cluster_id}: {year_range}"')
+            mermaid_lines.append(f'    subgraph "Cluster {cluster_id}: {year_range}"')
 
             # クラスター内論文
             for paper in papers[:8]:  # 最大8件まで表示
                 node_id = self._sanitize_id(paper.paper_id)
-                title_short = paper.title[:25] + \
-                    "..." if len(paper.title) > 25 else paper.title
+                title_short = (
+                    paper.title[:25] + "..." if len(paper.title) > 25 else paper.title
+                )
                 citations = len(paper.cited_by)
                 mermaid_lines.append(
-                    f'    {node_id}["{title_short}<br/>({citations} cites)"]')
+                    f'    {node_id}["{title_short}<br/>({citations} cites)"]'
+                )
 
-            mermaid_lines.append('    end')
+            mermaid_lines.append("    end")
 
         # クラスター間の関係
         cluster_connections = self._find_cluster_connections(
-            year_clusters, network.edges)
+            year_clusters, network.edges
+        )
         for from_cluster, to_cluster, strength in cluster_connections:
             if strength > 1:  # 複数の引用関係があるもののみ
                 mermaid_lines.append(
-                    f'    Cluster{from_cluster} -.->|{strength} citations| Cluster{to_cluster}')
+                    f"    Cluster{from_cluster} -.->|{strength} citations| Cluster{to_cluster}"
+                )
 
         return "\n".join(mermaid_lines)
 
     def _filter_network(
-        self,
-        network: CitationNetwork,
-        config: VisualizationConfig
+        self, network: CitationNetwork, config: VisualizationConfig
     ) -> Tuple[Dict[str, CitationNode], List[CitationEdge]]:
         """ネットワークをフィルタリング"""
         # ノードを重要度でソート（PageRank風）
-        nodes_by_importance = sorted(network.nodes.values(), key=lambda n: len(
-            n.cited_by) + len(n.references) + (n.citation_count or 0), reverse=True)
+        nodes_by_importance = sorted(
+            network.nodes.values(),
+            key=lambda n: len(n.cited_by) + len(n.references) + (n.citation_count or 0),
+            reverse=True,
+        )
 
         # 上位ノードを選択
         selected_nodes = {
-            node.paper_id: node
-            for node in nodes_by_importance[:config.max_nodes]
+            node.paper_id: node for node in nodes_by_importance[: config.max_nodes]
         }
 
         # 選択されたノード間のエッジのみ抽出
         filtered_edges = [
-            edge for edge in network.edges[:config.max_edges]
-            if edge.from_paper_id in selected_nodes and edge.to_paper_id in selected_nodes
+            edge
+            for edge in network.edges[: config.max_edges]
+            if edge.from_paper_id in selected_nodes
+            and edge.to_paper_id in selected_nodes
         ]
 
         return selected_nodes, filtered_edges
@@ -230,14 +239,12 @@ class CitationVisualization:
     def _sanitize_id(self, paper_id: str) -> str:
         """MermaidID用にサニタイズ"""
         # 英数字とアンダースコアのみ許可
-        sanitized = "".join(c if c.isalnum() or c ==
-                            "_" else "_" for c in paper_id)
+        sanitized = "".join(c if c.isalnum() or c == "_" else "_" for c in paper_id)
         return f"N{sanitized}"  # 数字開始を避ける
 
     def _create_node_label(
-            self,
-            node: CitationNode,
-            config: VisualizationConfig) -> str:
+        self, node: CitationNode, config: VisualizationConfig
+    ) -> str:
         """ノードラベル作成"""
         title = node.title[:40] + "..." if len(node.title) > 40 else node.title
         label_parts = [title]
@@ -252,10 +259,7 @@ class CitationVisualization:
 
         return "<br/>".join(label_parts)
 
-    def _get_node_style(
-            self,
-            node: CitationNode,
-            config: VisualizationConfig) -> str:
+    def _get_node_style(self, node: CitationNode, config: VisualizationConfig) -> str:
         """ノードスタイル取得"""
         if not config.color_by_year:
             return ""
@@ -269,7 +273,7 @@ class CitationVisualization:
         self,
         edge: CitationEdge,
         nodes: Dict[str, CitationNode],
-        config: VisualizationConfig
+        config: VisualizationConfig,
     ) -> str:
         """エッジスタイル取得"""
         if not config.edge_thickness_by_citations:
@@ -287,8 +291,7 @@ class CitationVisualization:
         else:
             return "-->"  # 通常エッジ
 
-    def _generate_mermaid_styles(
-            self, config: VisualizationConfig) -> List[str]:
+    def _generate_mermaid_styles(self, config: VisualizationConfig) -> List[str]:
         """Mermaidスタイル定義生成"""
         styles = []
 
@@ -296,10 +299,10 @@ class CitationVisualization:
             for year_range, color in self.year_colors.items():
                 class_name = f"year{year_range.replace('s', '')}"
                 styles.append(
-                    f"    classDef {class_name} fill:{color},stroke:#333,stroke-width:2px")
+                    f"    classDef {class_name} fill:{color},stroke:#333,stroke-width:2px"
+                )
 
-        styles.append(
-            "    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px")
+        styles.append("    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px")
 
         return styles
 
@@ -311,8 +314,7 @@ class CitationVisualization:
         decade = (year // 10) * 10
         return f"{decade}s"
 
-    def _calculate_year_distribution(
-            self, network: CitationNetwork) -> Dict[str, int]:
+    def _calculate_year_distribution(self, network: CitationNetwork) -> Dict[str, int]:
         """年代分布計算"""
         year_counts = {}
 
@@ -322,20 +324,19 @@ class CitationVisualization:
 
         return year_counts
 
-    def _get_top_nodes(self, network: CitationNetwork,
-                       top_k: int = 5) -> Dict[str, CitationNode]:
+    def _get_top_nodes(
+        self, network: CitationNetwork, top_k: int = 5
+    ) -> Dict[str, CitationNode]:
         """最重要ノード取得"""
         nodes_by_citations = sorted(
-            network.nodes.values(),
-            key=lambda n: len(n.cited_by),
-            reverse=True
+            network.nodes.values(), key=lambda n: len(n.cited_by), reverse=True
         )
 
         return {node.paper_id: node for node in nodes_by_citations[:top_k]}
 
-    def _cluster_by_year(self,
-                         network: CitationNetwork) -> Dict[str,
-                                                           List[CitationNode]]:
+    def _cluster_by_year(
+        self, network: CitationNetwork
+    ) -> Dict[str, List[CitationNode]]:
         """年代別クラスタリング"""
         clusters = {}
 
@@ -348,9 +349,7 @@ class CitationVisualization:
         return clusters
 
     def _find_cluster_connections(
-        self,
-        clusters: Dict[str, List[CitationNode]],
-        edges: List[CitationEdge]
+        self, clusters: Dict[str, List[CitationNode]], edges: List[CitationEdge]
     ) -> List[Tuple[str, str, int]]:
         """クラスター間接続検出"""
         # 年代範囲からクラスターIDへのマッピング
@@ -401,7 +400,7 @@ class CitationVisualization:
                 nodes_by_year[year].append(node)
 
         if not nodes_by_year:
-            return "graph LR\n    NoData[\"No temporal data available\"]"
+            return 'graph LR\n    NoData["No temporal data available"]'
 
         mermaid_lines = []
         mermaid_lines.append("graph LR")
@@ -416,21 +415,26 @@ class CitationVisualization:
             top_paper = max(papers, key=lambda n: len(n.cited_by))
 
             node_id = f"Y{year}"
-            title_short = top_paper.title[:25] + \
-                "..." if len(top_paper.title) > 25 else top_paper.title
+            title_short = (
+                top_paper.title[:25] + "..."
+                if len(top_paper.title) > 25
+                else top_paper.title
+            )
             citations = len(top_paper.cited_by)
 
             mermaid_lines.append(
-                f'    {node_id}["{year}<br/>{title_short}<br/>({citations} cites)"]')
+                f'    {node_id}["{year}<br/>{title_short}<br/>({citations} cites)"]'
+            )
 
             # 時系列つながり
             if i > 0:
                 prev_year_id = f"Y{sorted_years[i - 1]}"
-                mermaid_lines.append(f'    {prev_year_id} --> {node_id}')
+                mermaid_lines.append(f"    {prev_year_id} --> {node_id}")
 
         # スタイル
         mermaid_lines.append(
-            '    classDef default fill:#e3f2fd,stroke:#1976d2,stroke-width:2px')
+            "    classDef default fill:#e3f2fd,stroke:#1976d2,stroke-width:2px"
+        )
 
         return "\n".join(mermaid_lines)
 

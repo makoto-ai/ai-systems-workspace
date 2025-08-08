@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -26,8 +27,7 @@ class OpenAlexClient:
         self.timeout = settings.request_timeout
         self.query_translator = get_query_translator()
 
-    async def search_papers(self, query: str,
-                            max_results: int = None) -> List[Paper]:
+    async def search_papers(self, query: str, max_results: int = None) -> List[Paper]:
         """
         論文検索（改良版）
 
@@ -50,16 +50,19 @@ class OpenAlexClient:
             # User-Agentヘッダーを設定（403エラー回避）
             headers = {
                 "User-Agent": "Academic-Paper-Research-Assistant/1.0 (https://github.com/research-assistant)",
-                "Accept": "application/json"
+                "Accept": "application/json",
             }
-            async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
+            async with httpx.AsyncClient(
+                timeout=self.timeout, headers=headers
+            ) as client:
                 # 複数クエリで検索して結果をマージ
                 for search_query in search_queries[:3]:  # 上位3クエリのみ
                     logger.info(f"検索実行中: '{search_query}'")
                     # per-pageが0にならないよう最小値を保証
-                    per_query_results = max(
-                        1, max_results // len(search_queries[:3]))
-                    papers = await self._search_single_query(client, search_query, per_query_results)
+                    per_query_results = max(1, max_results // len(search_queries[:3]))
+                    papers = await self._search_single_query(
+                        client, search_query, per_query_results
+                    )
                     logger.info(f"'{search_query}' → {len(papers)}件取得")
                     all_papers.extend(papers)
 
@@ -73,14 +76,14 @@ class OpenAlexClient:
                         unique_papers.append(paper)
 
                 # 引用数順でソート
-                unique_papers.sort(
-                    key=lambda p: p.citation_count or 0, reverse=True)
+                unique_papers.sort(key=lambda p: p.citation_count or 0, reverse=True)
 
                 # 最大結果数に制限
                 result_papers = unique_papers[:max_results]
 
                 logger.info(
-                    f"OpenAlex: {len(result_papers)}件の論文を取得 (検索クエリ数: {len(search_queries[:3])})")
+                    f"OpenAlex: {len(result_papers)}件の論文を取得 (検索クエリ数: {len(search_queries[:3])})"
+                )
                 return result_papers
 
         except Exception as e:
@@ -93,44 +96,49 @@ class OpenAlexClient:
         if self._contains_japanese(original_query):
             # 日本語→英語変換
             translated_queries = self.query_translator.translate_japanese_query(
-                original_query)
+                original_query
+            )
             logger.info(
-                f"日本語クエリを変換: '{original_query}' → {translated_queries[:3]}")
+                f"日本語クエリを変換: '{original_query}' → {translated_queries[:3]}"
+            )
             return translated_queries
         else:
             # 英語クエリの場合は拡張
             enhanced_query = self.query_translator.enhance_query_for_sales_psychology(
-                original_query)
+                original_query
+            )
             return [enhanced_query, original_query]
 
     def _contains_japanese(self, text: str) -> bool:
         """日本語が含まれているかチェック"""
         import re
-        return bool(re.search(r'[ぁ-んァ-ヶ一-龯]', text))
+
+        return bool(re.search(r"[ぁ-んァ-ヶ一-龯]", text))
 
     async def _search_single_query(
-            self, client: httpx.AsyncClient, query: str, max_results: int) -> List[Paper]:
+        self, client: httpx.AsyncClient, query: str, max_results: int
+    ) -> List[Paper]:
         """単一クエリでの検索"""
         url = f"{self.base_url}/works"
 
         # 営業・心理学分野に特化したフィルタ（改良版）
         filters = [
             "type:article",  # 論文のみ
-            "publication_year:>1990"  # 1990年以降の研究
+            "publication_year:>1990",  # 1990年以降の研究
         ]
 
         # 営業・心理学に特化した概念フィルタ
         sales_psychology_concepts = [
-            "C138885662",   # Psychology
+            "C138885662",  # Psychology
             "C2522767166",  # Social psychology
-            "C144024400",   # Organizational behavior
-            "C41008148",    # Marketing
-            "C15744967",    # Consumer behaviour
-            "C162324750",   # Economics (behavioral economics)
-            "C74844659",    # Business administration
-            "C192562407",   # Management
-            "C141071460",   # Communication
-            "C86803240"     # Personality psychology
+            "C144024400",  # Organizational behavior
+            "C41008148",  # Marketing
+            "C15744967",  # Consumer behaviour
+            "C162324750",  # Economics (behavioral economics)
+            "C74844659",  # Business administration
+            "C192562407",  # Management
+            "C141071460",  # Communication
+            "C86803240",  # Personality psychology
         ]
 
         # より柔軟な概念フィルタ（OR条件）
@@ -142,7 +150,7 @@ class OpenAlexClient:
             "per-page": max_results,
             "sort": "cited_by_count:desc",
             "filter": ",".join(filters),
-            "select": "id,title,display_name,publication_year,doi,cited_by_count,authorships,primary_location,abstract_inverted_index,concepts"
+            "select": "id,title,display_name,publication_year,doi,cited_by_count,authorships,primary_location,abstract_inverted_index,concepts",
         }
 
         logger.info(f"OpenAlex詳細検索: {query}")
@@ -171,8 +179,7 @@ class OpenAlexClient:
 
         return papers
 
-    def _parse_work_enhanced(
-            self, work: Dict[str, Any], query: str) -> Optional[Paper]:
+    def _parse_work_enhanced(self, work: Dict[str, Any], query: str) -> Optional[Paper]:
         """OpenAlexのwork情報をPaperオブジェクトに変換（改良版）"""
         try:
             # 基本情報
@@ -197,11 +204,13 @@ class OpenAlexClient:
                         institution_name = institution.get("display_name")
                         break
 
-                authors.append(Author(
-                    name=author_name,
-                    institution=institution_name,
-                    orcid=author_info.get("orcid")
-                ))
+                authors.append(
+                    Author(
+                        name=author_name,
+                        institution=institution_name,
+                        orcid=author_info.get("orcid"),
+                    )
+                )
 
             # 所属機関リスト
             institutions = []
@@ -209,15 +218,16 @@ class OpenAlexClient:
                 for institution in authorship.get("institutions", []):
                     inst_name = institution.get("display_name")
                     if inst_name:
-                        institutions.append(Institution(
-                            name=inst_name,
-                            country=institution.get("country_code"),
-                            type=institution.get("type")
-                        ))
+                        institutions.append(
+                            Institution(
+                                name=inst_name,
+                                country=institution.get("country_code"),
+                                type=institution.get("type"),
+                            )
+                        )
 
             # 重複除去
-            institutions = list(
-                {inst.name: inst for inst in institutions}.values())
+            institutions = list({inst.name: inst for inst in institutions}.values())
 
             # ジャーナル情報
             journal = None
@@ -226,8 +236,7 @@ class OpenAlexClient:
                 journal = venue["source"].get("display_name")
 
             # 概要（inverted indexから復元）
-            abstract = self._reconstruct_abstract(
-                work.get("abstract_inverted_index"))
+            abstract = self._reconstruct_abstract(work.get("abstract_inverted_index"))
 
             # 関連性スコア計算
             relevance_score = self._calculate_relevance_score(work, query)
@@ -244,15 +253,14 @@ class OpenAlexClient:
                 journal=journal,
                 source_api="openalex",
                 confidence_score=0.9,
-                relevance_score=relevance_score
+                relevance_score=relevance_score,
             )
 
         except Exception as e:
             logger.error(f"OpenAlex論文パース失敗: {e}")
             return None
 
-    def _reconstruct_abstract(
-            self, inverted_index: Optional[Dict]) -> Optional[str]:
+    def _reconstruct_abstract(self, inverted_index: Optional[Dict]) -> Optional[str]:
         """inverted indexから概要を復元"""
         if not inverted_index:
             return None
@@ -266,15 +274,13 @@ class OpenAlexClient:
 
             # 位置順にソートして文章を復元
             sorted_positions = sorted(position_word_map.keys())
-            abstract_words = [position_word_map[pos]
-                              for pos in sorted_positions]
+            abstract_words = [position_word_map[pos] for pos in sorted_positions]
 
             return " ".join(abstract_words)
         except Exception:
             return None
 
-    def _calculate_relevance_score(
-            self, work: Dict[str, Any], query: str) -> float:
+    def _calculate_relevance_score(self, work: Dict[str, Any], query: str) -> float:
         """論文の関連性スコアを計算"""
         score = 0.0
 
@@ -289,9 +295,14 @@ class OpenAlexClient:
         # 概念マッチング
         concepts = work.get("concepts", [])
         sales_psychology_concepts = [
-            "psychology", "social psychology", "marketing",
-            "organizational behavior", "consumer behavior",
-            "business", "economics", "decision making"
+            "psychology",
+            "social psychology",
+            "marketing",
+            "organizational behavior",
+            "consumer behavior",
+            "business",
+            "economics",
+            "decision making",
         ]
 
         for concept in concepts:
@@ -333,11 +344,13 @@ class OpenAlexClient:
                         institution_name = institution.get("display_name")
                         break
 
-                authors.append(Author(
-                    name=author_name,
-                    institution=institution_name,
-                    orcid=author_info.get("orcid")
-                ))
+                authors.append(
+                    Author(
+                        name=author_name,
+                        institution=institution_name,
+                        orcid=author_info.get("orcid"),
+                    )
+                )
 
             # 所属機関リスト
             institutions = []
@@ -345,15 +358,16 @@ class OpenAlexClient:
                 for institution in authorship.get("institutions", []):
                     inst_name = institution.get("display_name")
                     if inst_name:
-                        institutions.append(Institution(
-                            name=inst_name,
-                            country=institution.get("country_code"),
-                            type=institution.get("type")
-                        ))
+                        institutions.append(
+                            Institution(
+                                name=inst_name,
+                                country=institution.get("country_code"),
+                                type=institution.get("type"),
+                            )
+                        )
 
             # 重複除去
-            institutions = list(
-                {inst.name: inst for inst in institutions}.values())
+            institutions = list({inst.name: inst for inst in institutions}.values())
 
             # ジャーナル情報
             journal = None
@@ -376,12 +390,13 @@ class OpenAlexClient:
                 journal=journal,
                 source_api="openalex",
                 confidence_score=0.9,  # OpenAlexは信頼性が高い
-                relevance_score=None  # 後で計算
+                relevance_score=None,  # 後で計算
             )
 
         except Exception as e:
             logger.error(f"OpenAlex論文パース失敗: {e}")
             return None
+
 
 # 同期版の関数も提供
 

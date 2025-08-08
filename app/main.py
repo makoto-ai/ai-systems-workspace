@@ -16,7 +16,7 @@ from pathlib import Path
 try:
     from api import (
         health,
-        voice, 
+        voice,
         conversation,
         chat,
         ai,
@@ -29,12 +29,12 @@ try:
         context,
         reminder,
         file_upload,
-        sales_roleplay
+        sales_roleplay,
     )
 except ImportError:
     from app.api import (
         health,
-        voice, 
+        voice,
         conversation,
         chat,
         ai,
@@ -47,7 +47,7 @@ except ImportError:
         context,
         reminder,
         file_upload,
-        sales_roleplay
+        sales_roleplay,
     )
 
 # Import configuration
@@ -59,17 +59,18 @@ except ImportError:
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, config.LOG_LEVEL),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
     logger.info("🚀 Voice Roleplay System starting up...")
-    
+
     # Initialize Voice Service
     try:
         try:
@@ -83,13 +84,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Could not initialize voice service: {e}")
         app.state.voice_service = None
-    
+
     # Check configuration warnings
     warnings = config.check_warnings()
     if warnings:
         for warning in warnings:
             logger.warning(f"⚠️  {warning}")
-    
+
     # Start reminder scheduler
     try:
         try:
@@ -100,19 +101,20 @@ async def lifespan(app: FastAPI):
         logger.info("📧 Reminder scheduler initialized")
     except Exception as e:
         logger.warning(f"⚠️  Could not start reminder scheduler: {e}")
-    
+
     logger.info("✅ Voice Roleplay System ready!")
     logger.info("🔒 Privacy-aware context understanding enabled")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("👋 Voice Roleplay System shutting down...")
-    
+
     # Cleanup voice service
-    if hasattr(app.state, 'voice_service') and app.state.voice_service:
+    if hasattr(app.state, "voice_service") and app.state.voice_service:
         await app.state.voice_service.cleanup()
         logger.info("🎤 Voice service cleaned up")
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -121,7 +123,7 @@ app = FastAPI(
     version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS middleware
@@ -149,6 +151,8 @@ app.include_router(context.router, prefix="/api")
 app.include_router(reminder.router, prefix="/api")
 app.include_router(file_upload.router, prefix="/api")
 app.include_router(sales_roleplay.router, prefix="/api")
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
@@ -158,10 +162,9 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "success": False,
             "error": "Internal server error",
-            "detail": str(exc) if config.DEBUG else "An unexpected error occurred"
-        }
+            "detail": str(exc) if config.DEBUG else "An unexpected error occurred",
+        },
     )
-
 
 
 @app.get("/")
@@ -180,28 +183,29 @@ async def root():
             "ab_testing": True,
             "advanced_voice_analysis": True,
             "voice_cloning": True,
-            "document_processing": True
+            "document_processing": True,
         },
         "privacy": {
             "personal_info_storage": False,
             "audio_storage": False,
             "context_anonymization": True,
-            "gdpr_compliant": True
+            "gdpr_compliant": True,
         },
         "docs": "/docs",
-        "redoc": "/redoc"
+        "redoc": "/redoc",
     }
+
 
 if __name__ == "__main__":
     # Create output directories
     output_dir = Path("data/voicevox")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Run the application
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
         reload=config.RELOAD,
-        log_level=config.LOG_LEVEL.lower()
-    ) 
+        log_level=config.LOG_LEVEL.lower(),
+    )

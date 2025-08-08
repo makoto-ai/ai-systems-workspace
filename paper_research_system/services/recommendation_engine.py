@@ -3,7 +3,9 @@ Recommendation Engine for Academic Papers
 学術論文推薦エンジン
 """
 
-from services.safe_rate_limited_search_service import get_safe_rate_limited_search_service
+from services.safe_rate_limited_search_service import (
+    get_safe_rate_limited_search_service,
+)
 from services.similarity_engine import get_similarity_engine
 from core.paper_model import Paper
 import asyncio
@@ -14,6 +16,7 @@ from collections import Counter, defaultdict
 import random
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -35,7 +38,7 @@ class RecommendationEngine:
         self,
         source_papers: List[Paper],
         max_recommendations: int = 10,
-        expand_search: bool = True
+        expand_search: bool = True,
     ) -> List[Tuple[Paper, float, str]]:
         """
         検索結果に基づいて関連論文を推薦
@@ -56,7 +59,8 @@ class RecommendationEngine:
             logger.info(
                 f"推薦生成開始: 基論文数={
                     len(source_papers)}, 拡張検索={
-                    '有効' if expand_search else '無効'}")
+                    '有効' if expand_search else '無効'}"
+            )
 
             # 候補論文収集
             candidate_papers = []
@@ -69,11 +73,11 @@ class RecommendationEngine:
 
             # 類似度ベース推薦
             similarity_recommendations = self._calculate_similarity_recommendations(
-                source_papers, candidate_papers)
+                source_papers, candidate_papers
+            )
 
             # 多様性の確保
-            diverse_recommendations = self._ensure_diversity(
-                similarity_recommendations)
+            diverse_recommendations = self._ensure_diversity(similarity_recommendations)
 
             # 最終スコアリングとランキング
             final_recommendations = self._final_ranking(
@@ -88,7 +92,8 @@ class RecommendationEngine:
             return []
 
     async def _expand_search_candidates(
-            self, source_papers: List[Paper]) -> List[Paper]:
+        self, source_papers: List[Paper]
+    ) -> List[Paper]:
         """拡張検索による候補論文収集"""
         candidate_papers = []
 
@@ -101,13 +106,13 @@ class RecommendationEngine:
         candidate_papers.extend(author_candidates)
 
         # 重複除去
-        unique_candidates = self._remove_duplicates(
-            candidate_papers, source_papers)
+        unique_candidates = self._remove_duplicates(candidate_papers, source_papers)
 
         return unique_candidates
 
     async def _keyword_expansion_search(
-            self, source_papers: List[Paper]) -> List[Paper]:
+        self, source_papers: List[Paper]
+    ) -> List[Paper]:
         """キーワード拡張検索"""
         # 重要キーワードを抽出
         important_keywords = self._extract_important_keywords(source_papers)
@@ -133,8 +138,7 @@ class RecommendationEngine:
 
         return all_results
 
-    async def _author_based_search(
-            self, source_papers: List[Paper]) -> List[Paper]:
+    async def _author_based_search(self, source_papers: List[Paper]) -> List[Paper]:
         """著者ベース検索"""
         # 著者別の重要度計算
         author_importance = self._calculate_author_importance(source_papers)
@@ -156,20 +160,23 @@ class RecommendationEngine:
         return all_results
 
     def _extract_important_keywords(
-            self, papers: List[Paper]) -> List[Tuple[str, float]]:
+        self, papers: List[Paper]
+    ) -> List[Tuple[str, float]]:
         """重要キーワードの抽出"""
         keyword_scores = defaultdict(float)
 
         for paper in papers:
             # タイトルからキーワード抽出（高重み）
             title_keywords = self._extract_keywords_from_text(
-                paper.title or "", weight=3.0)
+                paper.title or "", weight=3.0
+            )
             for keyword, score in title_keywords.items():
                 keyword_scores[keyword] += score
 
             # 概要からキーワード抽出（中重み）
             abstract_keywords = self._extract_keywords_from_text(
-                paper.abstract or "", weight=2.0)
+                paper.abstract or "", weight=2.0
+            )
             for keyword, score in abstract_keywords.items():
                 keyword_scores[keyword] += score
 
@@ -180,44 +187,42 @@ class RecommendationEngine:
 
         # スコア順でソート
         sorted_keywords = sorted(
-            keyword_scores.items(),
-            key=lambda x: x[1],
-            reverse=True)
+            keyword_scores.items(), key=lambda x: x[1], reverse=True
+        )
 
         # フィルタリング（一般的すぎるキーワードを除外）
         filtered_keywords = []
         common_words = {
-            'research',
-            'study',
-            'analysis',
-            'method',
-            'approach',
-            'paper',
-            'article',
-            'review'}
+            "research",
+            "study",
+            "analysis",
+            "method",
+            "approach",
+            "paper",
+            "article",
+            "review",
+        }
 
         for keyword, score in sorted_keywords:
-            if (len(keyword) > 3 and
-                keyword not in common_words and
-                    score > 1.0):
+            if len(keyword) > 3 and keyword not in common_words and score > 1.0:
                 filtered_keywords.append((keyword, score))
 
         return filtered_keywords[:20]  # 上位20キーワード
 
     def _extract_keywords_from_text(
-            self, text: str, weight: float = 1.0) -> Dict[str, float]:
+        self, text: str, weight: float = 1.0
+    ) -> Dict[str, float]:
         """テキストからキーワードを抽出"""
         if not text:
             return {}
 
         # テキスト正規化
-        text = re.sub(r'[^\w\s]', ' ', text.lower())
+        text = re.sub(r"[^\w\s]", " ", text.lower())
         words = text.split()
 
         # ストップワード除去
         stop_words = self.similarity_engine.stop_words
-        words = [
-            word for word in words if word not in stop_words and len(word) > 2]
+        words = [word for word in words if word not in stop_words and len(word) > 2]
 
         # N-gram生成（1-gram, 2-gram）
         keywords = {}
@@ -234,7 +239,8 @@ class RecommendationEngine:
         return keywords
 
     def _calculate_author_importance(
-            self, papers: List[Paper]) -> List[Tuple[str, float]]:
+        self, papers: List[Paper]
+    ) -> List[Tuple[str, float]]:
         """著者の重要度計算"""
         author_scores = defaultdict(float)
 
@@ -250,16 +256,11 @@ class RecommendationEngine:
                     author_scores[author.name] += citation_weight
 
         # スコア順でソート
-        sorted_authors = sorted(
-            author_scores.items(),
-            key=lambda x: x[1],
-            reverse=True)
+        sorted_authors = sorted(author_scores.items(), key=lambda x: x[1], reverse=True)
         return sorted_authors[:10]  # 上位10著者
 
     def _calculate_similarity_recommendations(
-        self,
-        source_papers: List[Paper],
-        candidate_papers: List[Paper]
+        self, source_papers: List[Paper], candidate_papers: List[Paper]
     ) -> List[Tuple[Paper, float, str]]:
         """類似度ベース推薦計算"""
         recommendations = []
@@ -271,7 +272,8 @@ class RecommendationEngine:
             # 各基論文との最大類似度を計算
             for source in source_papers:
                 similarity = self.similarity_engine.calculate_similarity(
-                    source, candidate)
+                    source, candidate
+                )
                 if similarity > best_similarity:
                     best_similarity = similarity
                     best_source = source
@@ -279,16 +281,15 @@ class RecommendationEngine:
             # 閾値以上の類似度の場合、推薦候補に追加
             if best_similarity >= self.min_similarity_threshold:
                 reason = self._generate_recommendation_reason(
-                    candidate, best_source, best_similarity)
+                    candidate, best_source, best_similarity
+                )
                 recommendations.append((candidate, best_similarity, reason))
 
         return recommendations
 
     def _generate_recommendation_reason(
-            self,
-            paper: Paper,
-            source_paper: Paper,
-            similarity: float) -> str:
+        self, paper: Paper, source_paper: Paper, similarity: float
+    ) -> str:
         """推薦理由の生成"""
         reasons = []
 
@@ -302,8 +303,7 @@ class RecommendationEngine:
 
         # 著者関連性
         if source_paper.authors and paper.authors:
-            source_authors = {a.name.lower()
-                              for a in source_paper.authors if a.name}
+            source_authors = {a.name.lower() for a in source_paper.authors if a.name}
             paper_authors = {a.name.lower() for a in paper.authors if a.name}
             if source_authors.intersection(paper_authors):
                 reasons.append("共通著者")
@@ -320,12 +320,9 @@ class RecommendationEngine:
 
         return " | ".join(reasons)
 
-    def _ensure_diversity(self,
-                          recommendations: List[Tuple[Paper,
-                                                      float,
-                                                      str]]) -> List[Tuple[Paper,
-                                                                           float,
-                                                                           str]]:
+    def _ensure_diversity(
+        self, recommendations: List[Tuple[Paper, float, str]]
+    ) -> List[Tuple[Paper, float, str]]:
         """推薦の多様性を確保"""
         if not recommendations:
             return []
@@ -337,7 +334,9 @@ class RecommendationEngine:
         for paper, similarity, reason in recommendations:
             if paper.authors:
                 # 最初の著者で分類
-                first_author = paper.authors[0].name if paper.authors[0].name else "unknown"
+                first_author = (
+                    paper.authors[0].name if paper.authors[0].name else "unknown"
+                )
                 author_groups[first_author].append((paper, similarity, reason))
             else:
                 no_author_papers.append((paper, similarity, reason))
@@ -349,20 +348,16 @@ class RecommendationEngine:
             # 類似度でソート
             papers.sort(key=lambda x: x[1], reverse=True)
             # 最大制限数まで選択
-            diverse_recommendations.extend(papers[:self.max_papers_per_author])
+            diverse_recommendations.extend(papers[: self.max_papers_per_author])
 
         # 著者なし論文も追加
         diverse_recommendations.extend(no_author_papers)
 
         return diverse_recommendations
 
-    def _final_ranking(self,
-                       recommendations: List[Tuple[Paper,
-                                                   float,
-                                                   str]],
-                       max_count: int) -> List[Tuple[Paper,
-                                                     float,
-                                                     str]]:
+    def _final_ranking(
+        self, recommendations: List[Tuple[Paper, float, str]], max_count: int
+    ) -> List[Tuple[Paper, float, str]]:
         """最終ランキング"""
         if not recommendations:
             return []
@@ -388,13 +383,13 @@ class RecommendationEngine:
         if paper.citation_count:
             # 対数スケールで正規化
             import math
+
             score += min(math.log(paper.citation_count + 1) / 10, 0.5)
 
         # 年度による評価（新しい方が良い）
         if paper.publication_year:
             current_year = 2025
-            year_score = max(0, (paper.publication_year -
-                             1990) / (current_year - 1990))
+            year_score = max(0, (paper.publication_year - 1990) / (current_year - 1990))
             score += year_score * 0.3
 
         # 概要の有無
@@ -408,9 +403,8 @@ class RecommendationEngine:
         return min(score, 1.0)
 
     def _remove_duplicates(
-            self,
-            candidates: List[Paper],
-            source_papers: List[Paper]) -> List[Paper]:
+        self, candidates: List[Paper], source_papers: List[Paper]
+    ) -> List[Paper]:
         """重複除去"""
         seen_titles = set()
         seen_dois = set()
@@ -457,8 +451,8 @@ class RecommendationEngine:
             return False
 
         # 単語レベルでの類似度チェック
-        words1 = set(re.findall(r'\w+', title1))
-        words2 = set(re.findall(r'\w+', title2))
+        words1 = set(re.findall(r"\w+", title1))
+        words2 = set(re.findall(r"\w+", title2))
 
         if not words1 or not words2:
             return False

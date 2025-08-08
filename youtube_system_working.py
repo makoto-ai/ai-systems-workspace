@@ -14,67 +14,76 @@ import os
 # プロジェクトルートを追加
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from paper_research_system.services.safe_rate_limited_search_service import SafeRateLimitedSearchService
+from paper_research_system.services.safe_rate_limited_search_service import (
+    SafeRateLimitedSearchService,
+)
+
 
 class YouTubeSystemWorking:
     """実用的なYouTube原稿作成システム"""
-    
+
     def __init__(self):
         self.paper_service = SafeRateLimitedSearchService()
-        
+
         # ユーザー話し方パターン（学習済み）
         self.user_patterns = {
             "endings": ["んです", "そうです", "わけです", "かと思います", "になります"],
             "questions": ["でしょうか？", "ですよね？", "じゃないですか？"],
             "transitions": ["つまり〜", "だからこそ〜", "例えばですが〜", "実は〜"],
-            "engagement": ["いかがでしょうか？", "コメント欄で教えてください"]
+            "engagement": ["いかがでしょうか？", "コメント欄で教えてください"],
         }
-    
+
     async def create_ultimate_script(self):
         """最適化されたYouTube原稿を作成"""
-        
+
         print("🚀 YouTube原稿作成システム実行開始")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        
+
         # Step 1: 論文検索でハルシネーション排除
         print("\n📚 Step 1: 論文検索実行（ハルシネーション完全排除）")
         papers = await self._search_verified_papers()
-        
+
         # Step 2: YouTube最適化原稿作成
         print("\n🎯 Step 2: YouTube最適化原稿作成")
         script = self._create_optimized_script(papers)
-        
+
         # Step 3: ユーザー話し方適用
         print("\n🗣️ Step 3: ユーザー話し方パターン適用")
         final_script = self._apply_user_speaking_style(script)
-        
+
         # Step 4: 質の良い顧客獲得要素追加
         print("\n👥 Step 4: 質の良い顧客獲得要素統合")
         customer_optimized = self._optimize_for_quality_customers(final_script)
-        
+
         return customer_optimized
-    
+
     async def _search_verified_papers(self):
         """検証済み論文を検索"""
         try:
-            papers = await self.paper_service.search_papers("sales personality traits effectiveness", max_results=5)
+            papers = await self.paper_service.search_papers(
+                "sales personality traits effectiveness", max_results=5
+            )
             verified_papers = []
-            
+
             for paper in papers:
                 try:
                     paper_data = {
                         "title": paper.title,
-                        "authors": str(paper.authors) if hasattr(paper, 'authors') else "不明",
-                        "year": getattr(paper, 'publication_year', getattr(paper, 'year', "不明")),
-                        "abstract": getattr(paper, 'abstract', "要約なし")
+                        "authors": (
+                            str(paper.authors) if hasattr(paper, "authors") else "不明"
+                        ),
+                        "year": getattr(
+                            paper, "publication_year", getattr(paper, "year", "不明")
+                        ),
+                        "abstract": getattr(paper, "abstract", "要約なし"),
                     }
                     verified_papers.append(paper_data)
                 except Exception as e:
                     continue
-            
+
             print(f"   ✅ 検証済み論文: {len(verified_papers)}件取得")
             return verified_papers
-            
+
         except Exception as e:
             print(f"   ⚠️ 論文検索エラー: {e}")
             # フォールバック：知られている信頼できる研究
@@ -83,16 +92,16 @@ class YouTubeSystemWorking:
                     "title": "The Big Five Personality Traits and Job Performance Meta-Analysis",
                     "authors": "Barrick & Mount",
                     "year": "1991",
-                    "abstract": "営業成績に対するパーソナリティ特性の影響を調査した大規模メタ分析"
+                    "abstract": "営業成績に対するパーソナリティ特性の影響を調査した大規模メタ分析",
                 }
             ]
-    
+
     def _create_optimized_script(self, papers):
         """YouTube最適化原稿作成"""
-        
+
         # 論文から得られた科学的根拠
         evidence_section = self._build_evidence_section(papers)
-        
+
         # YouTube最適化構造
         script = f"""【営業の真実】才能で9割決まる？それでも"確実に勝てる方法"を完全公開
 
@@ -442,9 +451,9 @@ class YouTubeSystemWorking:
 ✅ エンゲージメント適切配置
 ✅ 総動画時間23分（最適範囲）
 """
-        
+
         return script
-    
+
     def _build_evidence_section(self, papers):
         """論文根拠セクション構築"""
         evidence = """
@@ -457,7 +466,7 @@ class YouTubeSystemWorking:
 全て査読済みの学術研究です。
 
 【4:15-4:45】【画面：研究1】"""
-        
+
         if papers:
             for i, paper in enumerate(papers[:3], 1):
                 evidence += f"""
@@ -465,7 +474,7 @@ class YouTubeSystemWorking:
 著者: {paper['authors']}
 年: {paper['year']}
 """
-        
+
         evidence += """
 【4:45-5:15】【画面：研究結果】
 これらの研究から明らかになったのは：
@@ -496,44 +505,45 @@ class YouTubeSystemWorking:
 【7:30-8:00】【画面：次セクション】
 それでは、才能を超える具体的戦略をお伝えします。
 """
-        
+
         return evidence
-    
+
     def _apply_user_speaking_style(self, script):
         """ユーザー話し方パターンを適用"""
-        
+
         # ユーザーの特徴的パターンを適度に適用
         replacements = [
             ("です。", "んです。"),
-            ("ます。", "になります。"), 
+            ("ます。", "になります。"),
             ("でしょう。", "でしょうか？"),
             ("ですが、", "ですが、実は"),
             ("つまり、", "つまり〜ということは、"),
             ("だから、", "だからこそ、"),
-            ("例えば、", "例えばですが、")
+            ("例えば、", "例えばですが、"),
         ]
-        
+
         enhanced_script = script
-        
+
         # 適度な頻度で置換（過度にならないよう30%程度）
         import random
+
         for original, replacement in replacements:
             if original in enhanced_script and random.random() < 0.3:
                 enhanced_script = enhanced_script.replace(original, replacement, 1)
-        
+
         return enhanced_script
-    
+
     def _optimize_for_quality_customers(self, script):
         """質の良い顧客獲得に最適化"""
-        
+
         # 25-45歳営業職に響く要素を確認・強化
         quality_elements = {
             "実践性": ["明日から使える", "具体的な", "ステップバイステップ"],
             "科学性": ["研究で証明", "データに基づく", "検証済み"],
             "ROI明示": ["成約率38%向上", "年収247万アップ", "リピート率72%"],
-            "専門性": ["営業界", "業界研究", "学術論文"]
+            "専門性": ["営業界", "業界研究", "学術論文"],
         }
-        
+
         optimization_note = f"""
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -561,7 +571,7 @@ class YouTubeSystemWorking:
 
 🎯 **結果**: 毎回最適解を目指すシステム完成
 """
-        
+
         return script + optimization_note
 
 
@@ -569,24 +579,25 @@ async def main():
     """メイン実行"""
     system = YouTubeSystemWorking()
     final_script = await system.create_ultimate_script()
-    
+
     # ファイル出力
     with open("youtube_script_system_perfect.txt", "w", encoding="utf-8") as f:
         f.write(final_script)
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("🎉 YouTube原稿作成システム完了！")
-    print("="*80)
+    print("=" * 80)
     print("✅ ハルシネーション完全排除")
-    print("✅ ユーザー話し方継承")  
+    print("✅ ユーザー話し方継承")
     print("✅ YouTubeアルゴリズム最適化")
     print("✅ 質の良い顧客獲得特化")
     print("✅ システム完全統合")
     print()
     print("📄 原稿ファイル: youtube_script_system_perfect.txt")
     print("🎯 目的: YouTube成長 + 質の良い顧客獲得 + リストイン増加")
-    
+
     return final_script
+
 
 if __name__ == "__main__":
     result = asyncio.run(main())

@@ -10,6 +10,7 @@ from dataclasses import dataclass
 @dataclass
 class Author:
     """著者情報"""
+
     name: str
     name_japanese: Optional[str] = None  # カタカナ併記用
     institution: Optional[str] = None
@@ -19,6 +20,7 @@ class Author:
 @dataclass
 class Institution:
     """所属機関情報"""
+
     name: str
     name_japanese: Optional[str] = None  # カタカナ併記用
     country: Optional[str] = None
@@ -28,6 +30,7 @@ class Institution:
 @dataclass
 class Paper:
     """論文情報"""
+
     title: str
     title_japanese: Optional[str] = None  # 日本語タイトル（翻訳用）
     authors: List[Author] = None

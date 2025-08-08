@@ -11,6 +11,7 @@ from collections import Counter
 import math
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -31,13 +32,73 @@ class SimilarityEngine:
         """英語ストップワードをロード"""
         # 基本的な英語ストップワード
         stop_words = {
-            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-            'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have',
-            'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
-            'this', 'that', 'these', 'those', 'it', 'its', 'they', 'them', 'their',
-            'we', 'us', 'our', 'you', 'your', 'he', 'him', 'his', 'she', 'her',
-            'from', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
-            'not', 'no', 'very', 'more', 'most', 'other', 'some', 'any', 'may', 'can'
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "this",
+            "that",
+            "these",
+            "those",
+            "it",
+            "its",
+            "they",
+            "them",
+            "their",
+            "we",
+            "us",
+            "our",
+            "you",
+            "your",
+            "he",
+            "him",
+            "his",
+            "she",
+            "her",
+            "from",
+            "into",
+            "through",
+            "during",
+            "before",
+            "after",
+            "above",
+            "below",
+            "not",
+            "no",
+            "very",
+            "more",
+            "most",
+            "other",
+            "some",
+            "any",
+            "may",
+            "can",
         }
         return stop_words
 
@@ -60,9 +121,9 @@ class SimilarityEngine:
 
             # 重み付き総合類似度
             total_similarity = (
-                content_sim * self.content_weight +
-                author_sim * self.author_weight +
-                keyword_sim * self.keyword_weight
+                content_sim * self.content_weight
+                + author_sim * self.author_weight
+                + keyword_sim * self.keyword_weight
             )
 
             logger.debug(
@@ -70,7 +131,8 @@ class SimilarityEngine:
                     content_sim:.3f}, author={
                     author_sim:.3f}, keyword={
                     keyword_sim:.3f}, total={
-                    total_similarity:.3f}")
+                    total_similarity:.3f}"
+            )
 
             return min(total_similarity, 1.0)
 
@@ -78,8 +140,7 @@ class SimilarityEngine:
             logger.error(f"類似度計算エラー: {e}")
             return 0.0
 
-    def _calculate_content_similarity(
-            self, paper1: Paper, paper2: Paper) -> float:
+    def _calculate_content_similarity(self, paper1: Paper, paper2: Paper) -> float:
         """コンテンツ類似度計算（タイトル + 概要）"""
         # テキスト結合
         text1 = self._combine_text(paper1)
@@ -97,16 +158,17 @@ class SimilarityEngine:
         # コサイン類似度計算
         return self._cosine_similarity(tf_idf1, tf_idf2)
 
-    def _calculate_author_similarity(
-            self, paper1: Paper, paper2: Paper) -> float:
+    def _calculate_author_similarity(self, paper1: Paper, paper2: Paper) -> float:
         """著者類似度計算"""
         if not paper1.authors or not paper2.authors:
             return 0.0
 
-        authors1 = {author.name.lower().strip()
-                    for author in paper1.authors if author.name}
-        authors2 = {author.name.lower().strip()
-                    for author in paper2.authors if author.name}
+        authors1 = {
+            author.name.lower().strip() for author in paper1.authors if author.name
+        }
+        authors2 = {
+            author.name.lower().strip() for author in paper2.authors if author.name
+        }
 
         if not authors1 or not authors2:
             return 0.0
@@ -117,8 +179,7 @@ class SimilarityEngine:
 
         return intersection / union if union > 0 else 0.0
 
-    def _calculate_keyword_similarity(
-            self, paper1: Paper, paper2: Paper) -> float:
+    def _calculate_keyword_similarity(self, paper1: Paper, paper2: Paper) -> float:
         """キーワード類似度計算"""
         keywords1 = self._extract_keywords(paper1)
         keywords2 = self._extract_keywords(paper2)
@@ -129,12 +190,11 @@ class SimilarityEngine:
         # 重み付きJaccard係数
         all_keywords = keywords1.keys() | keywords2.keys()
         dot_product = 0.0
-        norm1 = sum(keywords1[k]**2 for k in keywords1)
-        norm2 = sum(keywords2[k]**2 for k in keywords2)
+        norm1 = sum(keywords1[k] ** 2 for k in keywords1)
+        norm2 = sum(keywords2[k] ** 2 for k in keywords2)
 
         for keyword in all_keywords:
-            dot_product += keywords1.get(keyword, 0) * \
-                keywords2.get(keyword, 0)
+            dot_product += keywords1.get(keyword, 0) * keywords2.get(keyword, 0)
 
         if norm1 == 0 or norm2 == 0:
             return 0.0
@@ -166,12 +226,13 @@ class SimilarityEngine:
             return {}
 
         # テキスト正規化
-        text = re.sub(r'[^\w\s]', ' ', text.lower())
+        text = re.sub(r"[^\w\s]", " ", text.lower())
         words = text.split()
 
         # ストップワード除去
         words = [
-            word for word in words if word not in self.stop_words and len(word) > 2]
+            word for word in words if word not in self.stop_words and len(word) > 2
+        ]
 
         # 頻度計算
         word_counts = Counter(words)
@@ -187,18 +248,18 @@ class SimilarityEngine:
 
         return keyword_weights
 
-    def _calculate_tf_idf(self,
-                          text1: str,
-                          text2: str) -> Tuple[List[str],
-                                               List[float],
-                                               List[float]]:
+    def _calculate_tf_idf(
+        self, text1: str, text2: str
+    ) -> Tuple[List[str], List[float], List[float]]:
         """TF-IDF計算"""
+
         # テキスト正規化
         def normalize_text(text):
-            text = re.sub(r'[^\w\s]', ' ', text.lower())
+            text = re.sub(r"[^\w\s]", " ", text.lower())
             words = text.split()
             return [
-                word for word in words if word not in self.stop_words and len(word) > 2]
+                word for word in words if word not in self.stop_words and len(word) > 2
+            ]
 
         words1 = normalize_text(text1)
         words2 = normalize_text(text2)
@@ -222,8 +283,7 @@ class SimilarityEngine:
         # IDF計算（2文書の簡易版）
         idf = []
         for word in vocab:
-            doc_freq = (1 if word in words1 else 0) + \
-                (1 if word in words2 else 0)
+            doc_freq = (1 if word in words1 else 0) + (1 if word in words2 else 0)
             idf.append(math.log(2 / doc_freq) if doc_freq > 0 else 0)
 
         # TF-IDF計算
@@ -232,10 +292,7 @@ class SimilarityEngine:
 
         return vocab, tf_idf1, tf_idf2
 
-    def _cosine_similarity(
-            self,
-            vec1: List[float],
-            vec2: List[float]) -> float:
+    def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
         """コサイン類似度計算"""
         if not vec1 or not vec2 or len(vec1) != len(vec2):
             return 0.0
@@ -249,11 +306,9 @@ class SimilarityEngine:
 
         return dot_product / (norm1 * norm2)
 
-    def find_most_similar(self,
-                          target_paper: Paper,
-                          candidate_papers: List[Paper],
-                          top_k: int = 5) -> List[Tuple[Paper,
-                                                        float]]:
+    def find_most_similar(
+        self, target_paper: Paper, candidate_papers: List[Paper], top_k: int = 5
+    ) -> List[Tuple[Paper, float]]:
         """
         最も類似した論文を見つける
 
@@ -290,20 +345,20 @@ class SimilarityEngine:
         # タイトルが90%以上類似
         if paper1.title and paper2.title:
             title_sim = self._calculate_content_similarity_simple(
-                paper1.title, paper2.title)
+                paper1.title, paper2.title
+            )
             if title_sim > 0.9:
                 return True
 
         return False
 
-    def _calculate_content_similarity_simple(
-            self, text1: str, text2: str) -> float:
+    def _calculate_content_similarity_simple(self, text1: str, text2: str) -> float:
         """シンプルなコンテンツ類似度（タイトル比較用）"""
         if not text1 or not text2:
             return 0.0
 
-        words1 = set(re.findall(r'\w+', text1.lower()))
-        words2 = set(re.findall(r'\w+', text2.lower()))
+        words1 = set(re.findall(r"\w+", text1.lower()))
+        words2 = set(re.findall(r"\w+", text2.lower()))
 
         if not words1 or not words2:
             return 0.0

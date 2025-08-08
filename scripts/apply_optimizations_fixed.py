@@ -10,34 +10,38 @@ import re
 from pathlib import Path
 from typing import Dict, List, Any
 
+
 class SafeOptimizationApplicator:
     """安全な最適化適用システム"""
-    
+
     def __init__(self, project_root: str = "."):
         self.project_root = Path(project_root)
         self.scripts_dir = self.project_root / "scripts"
-        
+
         print("🔧 安全な最適化適用システム初期化完了")
-    
+
     def apply_smart_threat_filtering(self) -> Dict[str, Any]:
         """スマート脅威フィルタリング適用"""
-        
+
         print("🔍 スマート脅威フィルタリング適用中...")
-        
+
         # security_alert_system.pyのcalculate_threat_level関数を最適化
         alert_system_file = self.scripts_dir / "security_alert_system.py"
-        
+
         if not alert_system_file.exists():
-            return {"success": False, "message": "security_alert_system.pyが見つかりません"}
-        
-        with open(alert_system_file, 'r', encoding='utf-8') as f:
+            return {
+                "success": False,
+                "message": "security_alert_system.pyが見つかりません",
+            }
+
+        with open(alert_system_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # バックアップ作成
-        backup_file = alert_system_file.with_suffix('.py.safe_backup')
-        with open(backup_file, 'w', encoding='utf-8') as f:
+        backup_file = alert_system_file.with_suffix(".py.safe_backup")
+        with open(backup_file, "w", encoding="utf-8") as f:
             f.write(content)
-        
+
         # 開発環境用の賢い脅威判定を追加
         smart_filtering_code = '''
     def is_development_safe_threat(self, threat: Dict[str, Any]) -> bool:
@@ -94,50 +98,55 @@ class SafeOptimizationApplicator:
         else:
             return "GREEN", "問題なし"
 '''
-        
+
         # メソッドを追加（既存コードの末尾に）
         content += smart_filtering_code
-        
+
         # 元のcalculate_threat_level関数をcalculate_threat_level_optimizedに置換
-        if 'def calculate_threat_level(' in content:
+        if "def calculate_threat_level(" in content:
             content = content.replace(
-                'def calculate_threat_level(',
-                'def calculate_threat_level_original('
+                "def calculate_threat_level(", "def calculate_threat_level_original("
             )
             content = content.replace(
-                'def calculate_threat_level_optimized(',
-                'def calculate_threat_level('
+                "def calculate_threat_level_optimized(", "def calculate_threat_level("
             )
-        
+
         # ファイル保存
-        with open(alert_system_file, 'w', encoding='utf-8') as f:
+        with open(alert_system_file, "w", encoding="utf-8") as f:
             f.write(content)
-        
+
         return {
             "success": True,
             "message": "スマート脅威フィルタリング適用完了",
             "backup_file": str(backup_file),
-            "modifications": ["開発環境安全判定追加", "脅威レベル計算最適化", "閾値緩和適用"]
+            "modifications": [
+                "開発環境安全判定追加",
+                "脅威レベル計算最適化",
+                "閾値緩和適用",
+            ],
         }
-    
+
     def apply_enhanced_auto_repair(self) -> Dict[str, Any]:
         """強化された自動修復適用"""
-        
+
         print("🔧 強化された自動修復適用中...")
-        
+
         repair_system_file = self.scripts_dir / "auto_repair_system.py"
-        
+
         if not repair_system_file.exists():
-            return {"success": False, "message": "auto_repair_system.pyが見つかりません"}
-        
-        with open(repair_system_file, 'r', encoding='utf-8') as f:
+            return {
+                "success": False,
+                "message": "auto_repair_system.pyが見つかりません",
+            }
+
+        with open(repair_system_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # バックアップ作成
-        backup_file = repair_system_file.with_suffix('.py.safe_backup')
-        with open(backup_file, 'w', encoding='utf-8') as f:
+        backup_file = repair_system_file.with_suffix(".py.safe_backup")
+        with open(backup_file, "w", encoding="utf-8") as f:
             f.write(content)
-        
+
         # 強化された修復ロジックを追加
         enhanced_repair_code = '''
     def smart_repair_strategy(self, threats: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -212,37 +221,44 @@ class SafeOptimizationApplicator:
         
         return False
 '''
-        
+
         # 強化コードを追加
         content += enhanced_repair_code
-        
+
         # ファイル保存
-        with open(repair_system_file, 'w', encoding='utf-8') as f:
+        with open(repair_system_file, "w", encoding="utf-8") as f:
             f.write(content)
-        
+
         return {
             "success": True,
             "message": "強化された自動修復適用完了",
             "backup_file": str(backup_file),
-            "enhancements": ["スマート修復戦略追加", "修復可能脅威フィルタリング", "安全な修復ロジック実装"]
+            "enhancements": [
+                "スマート修復戦略追加",
+                "修復可能脅威フィルタリング",
+                "安全な修復ロジック実装",
+            ],
         }
-    
+
     def apply_memory_security_integration(self) -> Dict[str, Any]:
         """記憶・セキュリティ統合適用"""
-        
+
         print("🧠 記憶・セキュリティ統合適用中...")
-        
+
         # security_master_system.pyに記憶システム統合を追加
         master_system_file = self.scripts_dir / "security_master_system.py"
-        
+
         if not master_system_file.exists():
-            return {"success": False, "message": "security_master_system.pyが見つかりません"}
-        
-        with open(master_system_file, 'r', encoding='utf-8') as f:
+            return {
+                "success": False,
+                "message": "security_master_system.pyが見つかりません",
+            }
+
+        with open(master_system_file, "r", encoding="utf-8") as f:
             content = f.read()
-        
+
         # 記憶システム統合のインポートを追加（ファイルの先頭に）
-        memory_integration_import = '''
+        memory_integration_import = """
 # 記憶システム統合（セキュリティ最適化）
 try:
     import sys
@@ -255,95 +271,102 @@ except ImportError:
     MEMORY_INTEGRATION_ENABLED = False
     print("⚠️ 記憶システム統合: 無効（インポートエラー）")
 
-'''
-        
+"""
+
         # ファイルの先頭に追加
         content = memory_integration_import + content
-        
+
         # ファイル保存
-        with open(master_system_file, 'w', encoding='utf-8') as f:
+        with open(master_system_file, "w", encoding="utf-8") as f:
             f.write(content)
-        
+
         return {
             "success": True,
             "message": "記憶・セキュリティ統合適用完了",
-            "integration": "memory_consistency_engine統合追加"
+            "integration": "memory_consistency_engine統合追加",
         }
-    
+
     def test_optimizations(self) -> Dict[str, Any]:
         """最適化テスト"""
-        
+
         print("🧪 最適化テスト実行中...")
-        
+
         try:
             # 構文チェック
             alert_system_file = self.scripts_dir / "security_alert_system.py"
-            with open(alert_system_file, 'r', encoding='utf-8') as f:
+            with open(alert_system_file, "r", encoding="utf-8") as f:
                 alert_code = f.read()
-            
+
             # compile関数で構文チェック
-            compile(alert_code, str(alert_system_file), 'exec')
+            compile(alert_code, str(alert_system_file), "exec")
             syntax_check = True
         except SyntaxError as e:
             syntax_check = False
             syntax_error = str(e)
-        
+
         return {
             "syntax_check": syntax_check,
             "syntax_error": syntax_error if not syntax_check else None,
             "optimizations_applied": 3,
-            "ready_for_testing": syntax_check
+            "ready_for_testing": syntax_check,
         }
-    
+
     def apply_all_safe_optimizations(self) -> Dict[str, Any]:
         """全ての安全な最適化を適用"""
-        
+
         print("🚀 安全な最適化システム全適用開始...")
-        
+
         results = {}
-        
+
         # Phase 1: スマート脅威フィルタリング
         results["threat_filtering"] = self.apply_smart_threat_filtering()
-        
+
         # Phase 2: 強化された自動修復
         results["auto_repair"] = self.apply_enhanced_auto_repair()
-        
+
         # Phase 3: 記憶・セキュリティ統合
         results["memory_integration"] = self.apply_memory_security_integration()
-        
+
         # Phase 4: 最適化テスト
         results["testing"] = self.test_optimizations()
-        
+
         # 結果分析
         success_count = sum(1 for r in results.values() if r.get("success", True))
-        
+
         final_result = {
             "total_phases": len(results),
             "successful_phases": success_count,
             "success_rate": f"{success_count}/{len(results)}",
             "results": results,
-            "ready_for_security_test": results["testing"].get("ready_for_testing", False)
+            "ready_for_security_test": results["testing"].get(
+                "ready_for_testing", False
+            ),
         }
-        
+
         if final_result["ready_for_security_test"]:
             print("✅ 全安全最適化適用完了 - セキュリティテスト準備完了")
         else:
             print("⚠️ 最適化適用に問題があります")
-        
+
         return final_result
+
 
 if __name__ == "__main__":
     # 安全な最適化適用実行
     applicator = SafeOptimizationApplicator()
-    
+
     print("🔧 安全な最適化適用システム開始")
-    
+
     # 全最適化適用
     result = applicator.apply_all_safe_optimizations()
-    
+
     print(f"\n📊 適用結果: {result['success_rate']}")
-    print(f"🧪 テスト準備: {'✅ 完了' if result['ready_for_security_test'] else '❌ 未完了'}")
-    
-    if result['ready_for_security_test']:
+    print(
+        f"🧪 テスト準備: {'✅ 完了' if result['ready_for_security_test'] else '❌ 未完了'}"
+    )
+
+    if result["ready_for_security_test"]:
         print("\n💡 次のステップ:")
-        print("   python3 scripts/security_master_system.py  # 最適化後セキュリティテスト実行")
+        print(
+            "   python3 scripts/security_master_system.py  # 最適化後セキュリティテスト実行"
+        )

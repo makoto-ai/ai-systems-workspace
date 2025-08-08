@@ -10,10 +10,12 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class Speaker:
     id: int
     name: str
+
 
 @dataclass
 class EmotionParams:
@@ -42,24 +44,35 @@ class EmotionParams:
 
     def apply_to_query(self, query: Dict[str, Any]) -> Dict[str, Any]:
         """感情パラメータをクエリに適用する"""
-        query.update({
-            "speedScale": self.speed,
-            "pitchScale": self.pitch,
-            "intonationScale": self.intonation,
-            "volumeScale": self.volume,
-            "prePhonemeLength": self.pre_phoneme,
-            "postPhonemeLength": self.post_phoneme
-        })
+        query.update(
+            {
+                "speedScale": self.speed,
+                "pitchScale": self.pitch,
+                "intonationScale": self.intonation,
+                "volumeScale": self.volume,
+                "prePhonemeLength": self.pre_phoneme,
+                "postPhonemeLength": self.post_phoneme,
+            }
+        )
         return query
+
 
 class VoicevoxConnectionError(Exception):
     """VOICEVOXサーバーとの通信エラー"""
+
     pass
+
 
 class VoicevoxClient:
     _instances = weakref.WeakValueDictionary()
 
-    def __new__(cls, host: str = "localhost", port: str = "50021", max_retries: int = 3, retry_interval: float = 1.0):
+    def __new__(
+        cls,
+        host: str = "localhost",
+        port: str = "50021",
+        max_retries: int = 3,
+        retry_interval: float = 1.0,
+    ):
         """シングルトンインスタンスを作成または取得します"""
         key = (host, port)
         if key not in cls._instances:
@@ -68,7 +81,13 @@ class VoicevoxClient:
             cls._instances[key] = instance
         return cls._instances[key]
 
-    def __init__(self, host: str = "localhost", port: str = "50021", max_retries: int = 3, retry_interval: float = 1.0):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: str = "50021",
+        max_retries: int = 3,
+        retry_interval: float = 1.0,
+    ):
         """初期化（シングルトンインスタンスの場合は一度だけ実行）"""
         if not hasattr(self, "_initialized") or not self._initialized:
             self.host = host
@@ -94,14 +113,16 @@ class VoicevoxClient:
             async with session.get(f"{self.base_url}/speakers") as response:
                 if response.status != 200:
                     logger.error(f"Failed to get speakers: {response.status}")
-                    raise VoicevoxConnectionError(f"Failed to get speakers: {response.status}")
+                    raise VoicevoxConnectionError(
+                        f"Failed to get speakers: {response.status}"
+                    )
                 data = await response.json()
                 speakers = []
                 for speaker_data in data:
                     for style in speaker_data["styles"]:
                         speaker = Speaker(
                             id=style["id"],
-                            name=f"{speaker_data['name']} ({style['name']})"
+                            name=f"{speaker_data['name']} ({style['name']})",
                         )
                         speakers.append(speaker)
                         logger.info(f"Found speaker: {speaker.name} (ID: {speaker.id})")
@@ -114,16 +135,14 @@ class VoicevoxClient:
         """音声合成用のクエリを作成する"""
         try:
             session = await self._get_session()
-            params = {
-                "text": text,
-                "speaker": speaker_id
-            }
+            params = {"text": text, "speaker": speaker_id}
             async with session.post(
-                f"{self.base_url}/audio_query",
-                params=params
+                f"{self.base_url}/audio_query", params=params
             ) as response:
                 if response.status != 200:
-                    raise VoicevoxConnectionError(f"Failed to create audio query: {response.status}")
+                    raise VoicevoxConnectionError(
+                        f"Failed to create audio query: {response.status}"
+                    )
                 return await response.json()
         except Exception as e:
             logger.error(f"Error creating audio query: {e}")
@@ -135,12 +154,12 @@ class VoicevoxClient:
             session = await self._get_session()
             params = {"speaker": speaker_id}
             async with session.post(
-                f"{self.base_url}/synthesis",
-                params=params,
-                json=audio_query
+                f"{self.base_url}/synthesis", params=params, json=audio_query
             ) as response:
                 if response.status != 200:
-                    raise VoicevoxConnectionError(f"Failed to synthesize audio: {response.status}")
+                    raise VoicevoxConnectionError(
+                        f"Failed to synthesize audio: {response.status}"
+                    )
                 return await response.read()
         except Exception as e:
             logger.error(f"Error synthesizing audio: {e}")
@@ -157,7 +176,9 @@ class VoicevoxClient:
             logger.error(f"Error closing VoicevoxClient session: {e}")
             raise VoicevoxConnectionError(f"Failed to close session: {e}")
 
-    def _apply_emotion_params(self, audio_query: Dict[str, Any], emotion: Optional[EmotionParams] = None) -> Dict[str, Any]:
+    def _apply_emotion_params(
+        self, audio_query: Dict[str, Any], emotion: Optional[EmotionParams] = None
+    ) -> Dict[str, Any]:
         """感情パラメータを適用"""
         if emotion is None:
             return audio_query
@@ -166,17 +187,17 @@ class VoicevoxClient:
     def _process_text_with_pauses(self, text: str) -> List[str]:
         """テキストをポーズ制御付きで処理"""
         # カスタムポーズマーカーの処理 (例: <p>, <pause>, ...)
-        text = re.sub(r'<p>', '。。。', text)
-        text = re.sub(r'<pause>', '。。。', text)
-        
+        text = re.sub(r"<p>", "。。。", text)
+        text = re.sub(r"<pause>", "。。。", text)
+
         # 文末の処理
-        text = re.sub(r'([。、．，!?！？])', r'\1。', text)
-        
+        text = re.sub(r"([。、．，!?！？])", r"\1。", text)
+
         # 長いポーズの処理
-        text = re.sub(r'。{3,}', '。。。', text)
-        
+        text = re.sub(r"。{3,}", "。。。", text)
+
         # テキストを文に分割
-        sentences = re.split(r'([。、．，!?！？]。)', text)
+        sentences = re.split(r"([。、．，!?！？]。)", text)
         return [s for s in sentences if s.strip()]
 
     async def text_to_speech(
@@ -185,7 +206,7 @@ class VoicevoxClient:
         speaker_id: int,
         output_path: Optional[Path] = None,
         enable_interrogative_upspeak: bool = True,
-        emotion: Optional[EmotionParams] = None
+        emotion: Optional[EmotionParams] = None,
     ) -> Path:
         """テキストから音声を生成し、ファイルに保存します"""
         try:
@@ -211,7 +232,7 @@ class VoicevoxClient:
             # 出力パスが指定されていない場合は一時ファイルを作成
             if output_path is None:
                 output_path = Path("data/voicevox/output.wav")
-            
+
             # 出力ディレクトリが存在しない場合は作成
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -223,4 +244,4 @@ class VoicevoxClient:
             return output_path
 
         except Exception as e:
-            raise VoicevoxConnectionError(f"Failed to generate voice: {e}") 
+            raise VoicevoxConnectionError(f"Failed to generate voice: {e}")

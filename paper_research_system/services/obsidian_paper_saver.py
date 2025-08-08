@@ -24,7 +24,7 @@ class ObsidianPaperSaver:
     def __init__(self, obsidian_vault_path: str = None):
         # 日本語化機能の初期化
         self._init_japanese_support()
-        
+
         # デフォルトのObsidianパスを設定（voice-roleplay-systemのdocs/obsidian-knowledge）
         if obsidian_vault_path is None:
             # paper_research_systemから相対的にvault_pathを設定
@@ -37,11 +37,19 @@ class ObsidianPaperSaver:
         # 論文専用フォルダ構造
         self.folders = {
             "research-papers": self.vault_path / "research-papers",
-            "sales-psychology": self.vault_path / "research-papers" / "sales-psychology",
-            "management-psychology": self.vault_path / "research-papers" / "management-psychology",
-            "behavioral-economics": self.vault_path / "research-papers" / "behavioral-economics",
-            "general-psychology": self.vault_path / "research-papers" / "general-psychology",
-            "search-sessions": self.vault_path / "research-papers" / "search-sessions"
+            "sales-psychology": self.vault_path
+            / "research-papers"
+            / "sales-psychology",
+            "management-psychology": self.vault_path
+            / "research-papers"
+            / "management-psychology",
+            "behavioral-economics": self.vault_path
+            / "research-papers"
+            / "behavioral-economics",
+            "general-psychology": self.vault_path
+            / "research-papers"
+            / "general-psychology",
+            "search-sessions": self.vault_path / "research-papers" / "search-sessions",
         }
 
         # フォルダ作成
@@ -53,7 +61,7 @@ class ObsidianPaperSaver:
             "sales_psychology": "sales-psychology",
             "management_psychology": "management-psychology",
             "behavioral_economics": "behavioral-economics",
-            "general_human_psychology": "general-psychology"
+            "general_human_psychology": "general-psychology",
         }
 
         # 思考モードタグ
@@ -61,56 +69,142 @@ class ObsidianPaperSaver:
             "thesis": "テーゼ",
             "antithesis": "アンチテーゼ",
             "synthesis": "ジンテーゼ",
-            "meta_analysis": "メタ分析"
+            "meta_analysis": "メタ分析",
         }
-        
+
     def _init_japanese_support(self):
         """日本語化サポート機能の初期化"""
         # 英語名→カタカナ変換辞書（一般的な研究者名）
         self.name_katakana_dict = {
-            "John": "ジョン", "Jane": "ジェーン", "Michael": "マイケル", "David": "デヴィッド",
-            "Robert": "ロバート", "William": "ウィリアム", "Richard": "リチャード", "Thomas": "トーマス",
-            "Christopher": "クリストファー", "Daniel": "ダニエル", "Matthew": "マシュー", "Anthony": "アンソニー",
-            "Mark": "マーク", "Donald": "ドナルド", "Steven": "スティーブン", "Paul": "ポール",
-            "Andrew": "アンドリュー", "Joshua": "ジョシュア", "Kenneth": "ケネス", "Kevin": "ケビン",
-            "Brian": "ブライアン", "George": "ジョージ", "Edward": "エドワード", "Ronald": "ロナルド",
-            "Timothy": "ティモシー", "Jason": "ジェイソン", "Jeffrey": "ジェフリー", "Ryan": "ライアン",
-            "Jacob": "ジェイコブ", "Gary": "ゲアリー", "Nicholas": "ニコラス", "Eric": "エリック",
-            "Jonathan": "ジョナサン", "Stephen": "スティーブン", "Larry": "ラリー", "Justin": "ジャスティン",
-            "Scott": "スコット", "Brandon": "ブランドン", "Benjamin": "ベンジャミン", "Samuel": "サミュエル",
-            "Frank": "フランク", "Gregory": "グレゴリー", "Raymond": "レイモンド", "Alexander": "アレクサンダー",
-            "Patrick": "パトリック", "Jack": "ジャック", "Dennis": "デニス", "Jerry": "ジェリー",
-            "Mary": "メアリー", "Patricia": "パトリシア", "Jennifer": "ジェニファー", "Linda": "リンダ",
-            "Elizabeth": "エリザベス", "Barbara": "バーバラ", "Susan": "スーザン", "Jessica": "ジェシカ",
-            "Sarah": "サラ", "Karen": "カレン", "Nancy": "ナンシー", "Lisa": "リサ",
-            "Betty": "ベティ", "Helen": "ヘレン", "Sandra": "サンドラ", "Donna": "ドナ",
-            "Carol": "キャロル", "Ruth": "ルース", "Sharon": "シャロン", "Michelle": "ミシェル",
-            "Laura": "ローラ", "Sarah": "サラ", "Kimberly": "キンバリー", "Deborah": "デボラ",
-            "Dorothy": "ドロシー", "Amy": "エイミー", "Angela": "アンジェラ", "Ashley": "アシュリー",
-            "Brenda": "ブレンダ", "Emma": "エマ", "Olivia": "オリビア", "Cynthia": "シンシア"
+            "John": "ジョン",
+            "Jane": "ジェーン",
+            "Michael": "マイケル",
+            "David": "デヴィッド",
+            "Robert": "ロバート",
+            "William": "ウィリアム",
+            "Richard": "リチャード",
+            "Thomas": "トーマス",
+            "Christopher": "クリストファー",
+            "Daniel": "ダニエル",
+            "Matthew": "マシュー",
+            "Anthony": "アンソニー",
+            "Mark": "マーク",
+            "Donald": "ドナルド",
+            "Steven": "スティーブン",
+            "Paul": "ポール",
+            "Andrew": "アンドリュー",
+            "Joshua": "ジョシュア",
+            "Kenneth": "ケネス",
+            "Kevin": "ケビン",
+            "Brian": "ブライアン",
+            "George": "ジョージ",
+            "Edward": "エドワード",
+            "Ronald": "ロナルド",
+            "Timothy": "ティモシー",
+            "Jason": "ジェイソン",
+            "Jeffrey": "ジェフリー",
+            "Ryan": "ライアン",
+            "Jacob": "ジェイコブ",
+            "Gary": "ゲアリー",
+            "Nicholas": "ニコラス",
+            "Eric": "エリック",
+            "Jonathan": "ジョナサン",
+            "Stephen": "スティーブン",
+            "Larry": "ラリー",
+            "Justin": "ジャスティン",
+            "Scott": "スコット",
+            "Brandon": "ブランドン",
+            "Benjamin": "ベンジャミン",
+            "Samuel": "サミュエル",
+            "Frank": "フランク",
+            "Gregory": "グレゴリー",
+            "Raymond": "レイモンド",
+            "Alexander": "アレクサンダー",
+            "Patrick": "パトリック",
+            "Jack": "ジャック",
+            "Dennis": "デニス",
+            "Jerry": "ジェリー",
+            "Mary": "メアリー",
+            "Patricia": "パトリシア",
+            "Jennifer": "ジェニファー",
+            "Linda": "リンダ",
+            "Elizabeth": "エリザベス",
+            "Barbara": "バーバラ",
+            "Susan": "スーザン",
+            "Jessica": "ジェシカ",
+            "Sarah": "サラ",
+            "Karen": "カレン",
+            "Nancy": "ナンシー",
+            "Lisa": "リサ",
+            "Betty": "ベティ",
+            "Helen": "ヘレン",
+            "Sandra": "サンドラ",
+            "Donna": "ドナ",
+            "Carol": "キャロル",
+            "Ruth": "ルース",
+            "Sharon": "シャロン",
+            "Michelle": "ミシェル",
+            "Laura": "ローラ",
+            "Sarah": "サラ",
+            "Kimberly": "キンバリー",
+            "Deborah": "デボラ",
+            "Dorothy": "ドロシー",
+            "Amy": "エイミー",
+            "Angela": "アンジェラ",
+            "Ashley": "アシュリー",
+            "Brenda": "ブレンダ",
+            "Emma": "エマ",
+            "Olivia": "オリビア",
+            "Cynthia": "シンシア",
         }
-        
+
         # 学術用語翻訳辞書
         self.academic_translation_dict = {
-            "Abstract": "要約", "Introduction": "序論", "Methods": "手法", "Results": "結果",
-            "Discussion": "考察", "Conclusion": "結論", "References": "参考文献",
-            "Keywords": "キーワード", "Background": "背景", "Methodology": "方法論",
-            "Analysis": "分析", "Findings": "知見", "Implications": "示唆",
-            "Limitations": "限界", "Future work": "今後の課題", "Data": "データ",
-            "Statistics": "統計", "Survey": "調査", "Study": "研究", "Research": "研究",
-            "Business": "ビジネス", "Management": "マネジメント", "Psychology": "心理学",
-            "Economics": "経済学", "Marketing": "マーケティング", "Sales": "営業",
-            "Leadership": "リーダーシップ", "Organization": "組織", "Strategy": "戦略",
-            "Performance": "パフォーマンス", "Success": "成功", "Failure": "失敗",
-            "Growth": "成長", "Development": "発展", "Innovation": "イノベーション",
-            "Entrepreneurship": "起業家精神", "Startup": "スタートアップ", "Enterprise": "企業"
+            "Abstract": "要約",
+            "Introduction": "序論",
+            "Methods": "手法",
+            "Results": "結果",
+            "Discussion": "考察",
+            "Conclusion": "結論",
+            "References": "参考文献",
+            "Keywords": "キーワード",
+            "Background": "背景",
+            "Methodology": "方法論",
+            "Analysis": "分析",
+            "Findings": "知見",
+            "Implications": "示唆",
+            "Limitations": "限界",
+            "Future work": "今後の課題",
+            "Data": "データ",
+            "Statistics": "統計",
+            "Survey": "調査",
+            "Study": "研究",
+            "Research": "研究",
+            "Business": "ビジネス",
+            "Management": "マネジメント",
+            "Psychology": "心理学",
+            "Economics": "経済学",
+            "Marketing": "マーケティング",
+            "Sales": "営業",
+            "Leadership": "リーダーシップ",
+            "Organization": "組織",
+            "Strategy": "戦略",
+            "Performance": "パフォーマンス",
+            "Success": "成功",
+            "Failure": "失敗",
+            "Growth": "成長",
+            "Development": "発展",
+            "Innovation": "イノベーション",
+            "Entrepreneurship": "起業家精神",
+            "Startup": "スタートアップ",
+            "Enterprise": "企業",
         }
-        
+
         # 検索クエリ→日本語ファイル名変換辞書
         self.query_japanese_dict = {
             "business failure": "事業失敗統計",
             "startup survival": "スタートアップ生存率",
-            "entrepreneur development": "起業家発展段階", 
+            "entrepreneur development": "起業家発展段階",
             "small business": "中小企業研究",
             "success timeline": "成功タイムライン",
             "leadership coaching": "リーダーシップコーチング",
@@ -120,18 +214,18 @@ class ObsidianPaperSaver:
             "growth strategy": "成長戦略",
             "business model": "ビジネスモデル",
             "organizational behavior": "組織行動",
-            "performance management": "パフォーマンス管理"
+            "performance management": "パフォーマンス管理",
         }
-        
+
     def _convert_name_to_katakana(self, name: str) -> str:
         """英語名をカタカナに変換"""
         if not name:
             return name
-            
+
         # フルネームを分割
         name_parts = name.strip().split()
         katakana_parts = []
-        
+
         for part in name_parts:
             # 辞書にある場合はそれを使用
             if part in self.name_katakana_dict:
@@ -143,56 +237,99 @@ class ObsidianPaperSaver:
                     katakana_parts.append(f"{part}（{katakana}）")
                 else:
                     katakana_parts.append(part)
-        
+
         return " ".join(katakana_parts)
-    
+
     def _simple_katakana_conversion(self, name: str) -> str:
         """簡易的なカタカナ変換（基本的なルールベース）"""
         if not name or len(name) < 2:
             return ""
-            
+
         # 基本的な音素変換ルール
         conversion_rules = {
-            'ch': 'チ', 'sh': 'シ', 'th': 'ス', 'ph': 'フ',
-            'a': 'ア', 'e': 'エ', 'i': 'イ', 'o': 'オ', 'u': 'ウ',
-            'ka': 'カ', 'ke': 'ケ', 'ki': 'キ', 'ko': 'コ', 'ku': 'ク',
-            'sa': 'サ', 'se': 'セ', 'si': 'シ', 'so': 'ソ', 'su': 'ス',
-            'ta': 'タ', 'te': 'テ', 'ti': 'チ', 'to': 'ト', 'tu': 'ツ',
-            'na': 'ナ', 'ne': 'ネ', 'ni': 'ニ', 'no': 'ノ', 'nu': 'ヌ',
-            'ha': 'ハ', 'he': 'ヘ', 'hi': 'ヒ', 'ho': 'ホ', 'hu': 'フ',
-            'ma': 'マ', 'me': 'メ', 'mi': 'ミ', 'mo': 'モ', 'mu': 'ム',
-            'ya': 'ヤ', 'ye': 'イェ', 'yi': 'イ', 'yo': 'ヨ', 'yu': 'ユ',
-            'ra': 'ラ', 're': 'レ', 'ri': 'リ', 'ro': 'ロ', 'ru': 'ル',
-            'wa': 'ワ', 'we': 'ウェ', 'wi': 'ウィ', 'wo': 'ウォ', 'wu': 'ウ'
+            "ch": "チ",
+            "sh": "シ",
+            "th": "ス",
+            "ph": "フ",
+            "a": "ア",
+            "e": "エ",
+            "i": "イ",
+            "o": "オ",
+            "u": "ウ",
+            "ka": "カ",
+            "ke": "ケ",
+            "ki": "キ",
+            "ko": "コ",
+            "ku": "ク",
+            "sa": "サ",
+            "se": "セ",
+            "si": "シ",
+            "so": "ソ",
+            "su": "ス",
+            "ta": "タ",
+            "te": "テ",
+            "ti": "チ",
+            "to": "ト",
+            "tu": "ツ",
+            "na": "ナ",
+            "ne": "ネ",
+            "ni": "ニ",
+            "no": "ノ",
+            "nu": "ヌ",
+            "ha": "ハ",
+            "he": "ヘ",
+            "hi": "ヒ",
+            "ho": "ホ",
+            "hu": "フ",
+            "ma": "マ",
+            "me": "メ",
+            "mi": "ミ",
+            "mo": "モ",
+            "mu": "ム",
+            "ya": "ヤ",
+            "ye": "イェ",
+            "yi": "イ",
+            "yo": "ヨ",
+            "yu": "ユ",
+            "ra": "ラ",
+            "re": "レ",
+            "ri": "リ",
+            "ro": "ロ",
+            "ru": "ル",
+            "wa": "ワ",
+            "we": "ウェ",
+            "wi": "ウィ",
+            "wo": "ウォ",
+            "wu": "ウ",
         }
-        
+
         name_lower = name.lower()
-        
+
         # 既知のパターンから簡易変換を試行（限定的）
-        if name_lower.endswith('son'):
+        if name_lower.endswith("son"):
             return "ソン"
-        elif name_lower.endswith('man'):
+        elif name_lower.endswith("man"):
             return "マン"
-        elif name_lower.endswith('er'):
+        elif name_lower.endswith("er"):
             return "ー"
-            
+
         return ""  # 変換できない場合は空文字
-    
+
     def _translate_abstract_to_japanese(self, abstract: str) -> str:
         """英語要約を日本語に翻訳"""
         if not abstract:
             return abstract
-            
+
         # 最初に辞書ベースの部分翻訳を試行
         japanese_abstract = abstract
         for english_term, japanese_term in self.academic_translation_dict.items():
             japanese_abstract = re.sub(
-                r'\b' + re.escape(english_term) + r'\b', 
-                japanese_term, 
-                japanese_abstract, 
-                flags=re.IGNORECASE
+                r"\b" + re.escape(english_term) + r"\b",
+                japanese_term,
+                japanese_abstract,
+                flags=re.IGNORECASE,
             )
-        
+
         # 簡易的な翻訳処理を追加（基本的な文構造の認識）
         if "This study" in abstract:
             japanese_abstract = japanese_abstract.replace("This study", "本研究は")
@@ -202,39 +339,43 @@ class ObsidianPaperSaver:
             japanese_abstract = japanese_abstract.replace("We found", "我々は発見した")
         if "Our findings" in abstract:
             japanese_abstract = japanese_abstract.replace("Our findings", "我々の知見")
-        
+
         return f"【日本語翻訳】{japanese_abstract}\n\n【原文】{abstract}"
-    
+
     def _generate_japanese_filename(self, search_query: str) -> str:
         """検索クエリから日本語ファイル名を生成"""
         # まず、既知のパターンマッチング
         query_lower = search_query.lower()
-        
+
         for english_pattern, japanese_title in self.query_japanese_dict.items():
             if english_pattern in query_lower:
                 return japanese_title
-        
+
         # パターンマッチしない場合は、キーワード翻訳を試行
         japanese_keywords = []
-        words = re.split(r'[^\w]+', search_query.lower())
-        
+        words = re.split(r"[^\w]+", search_query.lower())
+
         for word in words:
             if word in self.academic_translation_dict:
                 japanese_keywords.append(self.academic_translation_dict[word])
             elif len(word) > 2:  # 短すぎる単語は除外
                 japanese_keywords.append(word)
-        
+
         if japanese_keywords:
-            return "_".join(japanese_keywords[:3])  # 最大3個のキーワード（特殊文字回避）
-        
+            return "_".join(
+                japanese_keywords[:3]
+            )  # 最大3個のキーワード（特殊文字回避）
+
         return "論文検索結果"  # デフォルト
 
-    def save_search_results(self,
-                            papers: List[Paper],
-                            search_query: str,
-                            domain: str = "sales_psychology",
-                            thinking_mode: str = "thesis",
-                            metadata: Dict = None) -> Path:
+    def save_search_results(
+        self,
+        papers: List[Paper],
+        search_query: str,
+        domain: str = "sales_psychology",
+        thinking_mode: str = "thesis",
+        metadata: Dict = None,
+    ) -> Path:
         """検索結果をObsidianに保存"""
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -253,11 +394,12 @@ class ObsidianPaperSaver:
 
         # Markdownコンテンツ生成
         markdown_content = self._generate_markdown_content(
-            papers, search_query, domain, thinking_mode, timestamp, tags, metadata)
+            papers, search_query, domain, thinking_mode, timestamp, tags, metadata
+        )
 
         # ファイル保存
         file_path = folder / filename
-        file_path.write_text(markdown_content, encoding='utf-8')
+        file_path.write_text(markdown_content, encoding="utf-8")
 
         print(f"📚 論文検索結果をObsidianに保存: {filename}")
         print(f"📁 カテゴリ: {folder_name}")
@@ -266,19 +408,21 @@ class ObsidianPaperSaver:
         return file_path
 
     def _generate_tags(
-            self,
-            domain: str,
-            thinking_mode: str,
-            papers: List[Paper]) -> List[str]:
+        self, domain: str, thinking_mode: str, papers: List[Paper]
+    ) -> List[str]:
         """タグを自動生成"""
         tags = ["論文検索", "学術研究"]
 
         # ドメインタグ
         domain_tags = {
             "sales_psychology": ["営業心理学", "セールス", "顧客心理"],
-            "management_psychology": ["マネジメント心理学", "リーダーシップ", "組織行動"],
+            "management_psychology": [
+                "マネジメント心理学",
+                "リーダーシップ",
+                "組織行動",
+            ],
             "behavioral_economics": ["行動経済学", "意思決定", "認知バイアス"],
-            "general_human_psychology": ["人間心理学", "社会心理学", "認知心理学"]
+            "general_human_psychology": ["人間心理学", "社会心理学", "認知心理学"],
         }
         tags.extend(domain_tags.get(domain, []))
 
@@ -288,39 +432,47 @@ class ObsidianPaperSaver:
 
         # 論文の特徴から追加タグ
         high_citation_count = any(
-            p.citation_count and p.citation_count > 1000 for p in papers if p.citation_count)
+            p.citation_count and p.citation_count > 1000
+            for p in papers
+            if p.citation_count
+        )
         if high_citation_count:
             tags.append("高被引用論文")
 
-        recent_papers = any(p.publication_year and p.publication_year >=
-                            2020 for p in papers if p.publication_year)
+        recent_papers = any(
+            p.publication_year and p.publication_year >= 2020
+            for p in papers
+            if p.publication_year
+        )
         if recent_papers:
             tags.append("最新研究")
 
         return tags
 
-    def _generate_markdown_content(self,
-                                   papers: List[Paper],
-                                   search_query: str,
-                                   domain: str,
-                                   thinking_mode: str,
-                                   timestamp: str,
-                                   tags: List[str],
-                                   metadata: Dict = None) -> str:
+    def _generate_markdown_content(
+        self,
+        papers: List[Paper],
+        search_query: str,
+        domain: str,
+        thinking_mode: str,
+        timestamp: str,
+        tags: List[str],
+        metadata: Dict = None,
+    ) -> str:
         """Markdownコンテンツを生成"""
 
         domain_names = {
             "sales_psychology": "営業心理学",
             "management_psychology": "マネジメント心理学",
             "behavioral_economics": "行動経済学",
-            "general_human_psychology": "汎用人間心理学"
+            "general_human_psychology": "汎用人間心理学",
         }
 
         thinking_mode_names = {
             "thesis": "テーゼ（主流理論）",
             "antithesis": "アンチテーゼ（反論・新視点）",
             "synthesis": "ジンテーゼ（統合理論）",
-            "meta_analysis": "メタ分析重視"
+            "meta_analysis": "メタ分析重視",
         }
 
         content = f"""# 📚 {search_query} - 論文検索結果
@@ -352,7 +504,7 @@ class ObsidianPaperSaver:
             content += self._format_paper(paper, i)
 
         # メタデータセクション
-        if metadata and metadata.get('generated_queries'):
+        if metadata and metadata.get("generated_queries"):
             content += f"""
 ## 🔍 生成された検索クエリ
 
@@ -391,17 +543,17 @@ class ObsidianPaperSaver:
 
     def _format_paper(self, paper: Paper, index: int) -> str:
         """個別論文のフォーマット（日本語化対応）"""
-        
+
         # 著者名をカタカナ付きで表示
         if paper.authors:
             author_names_with_katakana = []
             for author in paper.authors:
                 katakana_name = self._convert_name_to_katakana(author.name)
                 author_names_with_katakana.append(katakana_name)
-            authors_display = ', '.join(author_names_with_katakana)
+            authors_display = ", ".join(author_names_with_katakana)
         else:
-            authors_display = 'N/A'
-        
+            authors_display = "N/A"
+
         content = f"""### {index}. 📄 {paper.title}
 
 **基本情報**:
@@ -425,17 +577,20 @@ class ObsidianPaperSaver:
             translated_abstract = self._translate_abstract_to_japanese(paper.abstract)
             # 概要を適切な長さに制限
             if len(translated_abstract) > 500:
-                translated_abstract = translated_abstract[:500] + "...\n\n（続きは元論文をご確認ください）"
+                translated_abstract = (
+                    translated_abstract[:500]
+                    + "...\n\n（続きは元論文をご確認ください）"
+                )
             content += f"**要約**: \n{translated_abstract}\n\n"
 
         # スコア情報
-        if hasattr(paper, 'total_score') and paper.total_score:
+        if hasattr(paper, "total_score") and paper.total_score:
             content += f"**総合スコア**: {paper.total_score:.1f}\n"
 
-        if hasattr(paper, 'domain_score') and paper.domain_score:
+        if hasattr(paper, "domain_score") and paper.domain_score:
             content += f"**ドメインスコア**: {paper.domain_score:.1f}\n"
 
-        if hasattr(paper, 'mode_score') and paper.mode_score:
+        if hasattr(paper, "mode_score") and paper.mode_score:
             content += f"**モードスコア**: {paper.mode_score:.1f}\n"
 
         content += "\n---\n\n"
@@ -475,11 +630,12 @@ class ObsidianPaperSaver:
 """
 
         file_path = folder / filename
-        file_path.write_text(content, encoding='utf-8')
+        file_path.write_text(content, encoding="utf-8")
 
         print(f"📝 検索セッション記録をObsidianに保存: {filename}")
 
         return file_path
+
 
 # 使用例とテスト用の関数
 
@@ -498,7 +654,7 @@ def test_obsidian_paper_saver():
             abstract="This meta-analysis examines the relationship between trust and sales performance across 50 studies...",
             journal="Journal of Sales Research",
             doi="https://doi.org/10.1000/test.2023.001",
-            source_api="semantic_scholar"
+            source_api="semantic_scholar",
         )
     ]
 
@@ -509,7 +665,7 @@ def test_obsidian_paper_saver():
         search_query="信頼関係と営業成績",
         domain="sales_psychology",
         thinking_mode="thesis",
-        metadata={"total_found": 15, "after_filtering": 8, "final_results": 1}
+        metadata={"total_found": 15, "after_filtering": 8, "final_results": 1},
     )
 
     print(f"✅ テスト保存完了: {file_path}")

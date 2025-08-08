@@ -6,14 +6,15 @@ Obsidian保存コマンドデモ
 
 from obsidian_flexible_saver import ObsidianFlexibleSaver
 
+
 def save_command_demo():
     """保存コマンドのデモ実行"""
-    
+
     saver = ObsidianFlexibleSaver()
-    
+
     print("🎯 「〇〇をobsidianに保存して」コマンドデモ")
     print("=" * 50)
-    
+
     # 例1: 重要な気づき
     insight = """
 今日の開発で学んだ最重要ポイント：
@@ -30,15 +31,15 @@ def save_command_demo():
    - 99種類→10種類で営業効率化
    - 過剰な選択肢は使いにくさを生む
     """
-    
+
     file1 = saver.save_custom_content(
         content=insight,
         title="今日の重要な気づき：開発の極意",
         category="learning-notes",
-        tags=["重要発見", "開発ノウハウ", "問題解決"]
+        tags=["重要発見", "開発ノウハウ", "問題解決"],
     )
-    
-    # 例2: コードスニペット  
+
+    # 例2: コードスニペット
     code_snippet = """
 # 営業特化スピーカー自動選択の核心コード
 def get_speaker_by_scenario(scenario: str, gender: str = "random"):
@@ -59,13 +60,13 @@ def get_speaker_by_scenario(scenario: str, gender: str = "random"):
         gender_choice = random.choice(["male", "female"])
         return get_speaker_by_scenario(scenario, gender_choice)
     """
-    
+
     file2 = saver.save_code_snippet(
         code=code_snippet,
         description="営業シナリオ別スピーカー自動選択システム",
-        language="python"
+        language="python",
     )
-    
+
     # 例3: プロジェクトアイデア
     idea = """
 ## 🚀 次世代音声AIシステムのアイデア
@@ -87,20 +88,21 @@ def get_speaker_by_scenario(scenario: str, gender: str = "random"):
 営業スキル向上の完全プライベート化により、
 恥ずかしがり屋の営業パーソンも安心して練習可能
     """
-    
+
     file3 = saver.save_custom_content(
         content=idea,
         title="次世代音声AI：セルフクローニングシステム",
-        category="project-ideas", 
-        tags=["次世代", "音声クローニング", "プライベート練習", "革新的"]
+        category="project-ideas",
+        tags=["次世代", "音声クローニング", "プライベート練習", "革新的"],
     )
-    
+
     print(f"\n🎉 保存コマンドデモ完了！")
     print(f"📄 気づき保存: {file1.name}")
     print(f"💻 コード保存: {file2.name}")
     print(f"💡 アイデア保存: {file3.name}")
-    
+
     print(f"\n✨ これで何でもObsidianに保存できます！")
+
 
 if __name__ == "__main__":
     save_command_demo()

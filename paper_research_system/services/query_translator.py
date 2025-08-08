@@ -31,7 +31,6 @@ class QueryTranslator:
             "購買": ["purchasing", "buying behavior"],
             "購買意思決定": ["buying decision", "purchase decision"],
             "消費者行動": ["consumer behavior", "buyer behavior"],
-
             # 心理学関連
             "心理学": ["psychology", "psychological"],
             "心理": ["psychology", "psychological", "mental"],
@@ -48,7 +47,6 @@ class QueryTranslator:
             "社会心理学": ["social psychology", "social psychological"],
             "組織心理学": ["organizational psychology", "industrial psychology"],
             "消費者心理": ["consumer psychology", "buyer psychology"],
-
             # ビジネス心理学
             "ビジネス心理学": ["business psychology", "organizational psychology"],
             "組織行動": ["organizational behavior", "organizational behaviour"],
@@ -57,7 +55,6 @@ class QueryTranslator:
             "コーチング": ["coaching", "business coaching"],
             "交渉": ["negotiation", "bargaining"],
             "プレゼンテーション": ["presentation", "presentation skills"],
-
             # 効果測定
             "効果": ["effectiveness", "effect", "impact"],
             "成果": ["performance", "results", "outcomes"],
@@ -70,15 +67,25 @@ class QueryTranslator:
 
         # 学術分野フィルタ
         self.academic_concepts = [
-            "concept", "theory", "model", "framework", "approach",
-            "study", "research", "analysis", "investigation",
-            "empirical", "experimental", "quantitative", "qualitative"
+            "concept",
+            "theory",
+            "model",
+            "framework",
+            "approach",
+            "study",
+            "research",
+            "analysis",
+            "investigation",
+            "empirical",
+            "experimental",
+            "quantitative",
+            "qualitative",
         ]
 
     def translate_japanese_query(self, query: str) -> List[str]:
         """日本語クエリを英語クエリリストに変換"""
         # 1. 基本的な単語分割
-        words = re.findall(r'[ぁ-んァ-ヶ一-龯]+|[a-zA-Z]+', query)
+        words = re.findall(r"[ぁ-んァ-ヶ一-龯]+|[a-zA-Z]+", query)
 
         # 2. 各単語を英語変換
         english_terms = []
@@ -101,7 +108,7 @@ class QueryTranslator:
         if len(english_terms) >= 2:
             # 複合クエリ（AND検索）
             for i, term1 in enumerate(english_terms[:3]):
-                for term2 in english_terms[i + 1:4]:
+                for term2 in english_terms[i + 1 : 4]:
                     queries.append(f"{term1} AND {term2}")
 
         # 5. 個別キーワード
@@ -123,37 +130,46 @@ class QueryTranslator:
         base_lower = base_query.lower()
 
         # 営業関連の場合
-        if any(
-            term in base_lower for term in [
-                "sales",
-                "selling",
-                "salesperson"]):
-            enhanced_terms.extend([
-                "sales effectiveness", "sales performance", "sales psychology",
-                "buyer behavior", "customer relationship", "persuasion"
-            ])
+        if any(term in base_lower for term in ["sales", "selling", "salesperson"]):
+            enhanced_terms.extend(
+                [
+                    "sales effectiveness",
+                    "sales performance",
+                    "sales psychology",
+                    "buyer behavior",
+                    "customer relationship",
+                    "persuasion",
+                ]
+            )
 
         # 心理学関連の場合
         if any(
-            term in base_lower for term in [
-                "psychology",
-                "psychological",
-                "behavior"]):
-            enhanced_terms.extend([
-                "consumer psychology", "social psychology", "decision making",
-                "motivation", "attitude", "influence"
-            ])
+            term in base_lower for term in ["psychology", "psychological", "behavior"]
+        ):
+            enhanced_terms.extend(
+                [
+                    "consumer psychology",
+                    "social psychology",
+                    "decision making",
+                    "motivation",
+                    "attitude",
+                    "influence",
+                ]
+            )
 
         # ビジネス関連の場合
         if any(
-            term in base_lower for term in [
-                "business",
-                "organization",
-                "management"]):
-            enhanced_terms.extend([
-                "organizational behavior", "business psychology", "leadership",
-                "communication", "negotiation"
-            ])
+            term in base_lower for term in ["business", "organization", "management"]
+        ):
+            enhanced_terms.extend(
+                [
+                    "organizational behavior",
+                    "business psychology",
+                    "leadership",
+                    "communication",
+                    "negotiation",
+                ]
+            )
 
         # 拡張クエリ生成
         if enhanced_terms:
@@ -176,15 +192,29 @@ class QueryTranslator:
                 "management",
                 "economics",
                 "decision making",
-                "consumer behavior"
+                "consumer behavior",
             ],
             "keywords": [
-                "sales", "selling", "psychology", "behavior", "motivation",
-                "persuasion", "influence", "decision", "consumer", "buyer",
-                "customer", "relationship", "communication", "negotiation",
-                "leadership", "organizational", "business"
-            ]
+                "sales",
+                "selling",
+                "psychology",
+                "behavior",
+                "motivation",
+                "persuasion",
+                "influence",
+                "decision",
+                "consumer",
+                "buyer",
+                "customer",
+                "relationship",
+                "communication",
+                "negotiation",
+                "leadership",
+                "organizational",
+                "business",
+            ],
         }
+
 
 # サービスインスタンス作成用関数
 

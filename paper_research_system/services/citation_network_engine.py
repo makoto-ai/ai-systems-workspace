@@ -3,7 +3,9 @@ Citation Network Engine for Academic Paper Analysis
 学術論文引用ネットワーク分析エンジン
 """
 
-from services.safe_rate_limited_search_service import get_safe_rate_limited_search_service
+from services.safe_rate_limited_search_service import (
+    get_safe_rate_limited_search_service,
+)
 from core.paper_model import Paper
 import asyncio
 import logging
@@ -13,6 +15,7 @@ from dataclasses import dataclass, asdict
 from collections import defaultdict, deque
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -22,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CitationNode:
     """引用ネットワークのノード（論文）"""
+
     paper_id: str
     title: str
     authors: List[str]
@@ -39,14 +43,16 @@ class CitationNode:
 @dataclass
 class CitationEdge:
     """引用ネットワークのエッジ（引用関係）"""
+
     from_paper_id: str  # 引用している論文
-    to_paper_id: str    # 引用されている論文
+    to_paper_id: str  # 引用されている論文
     citation_context: Optional[str] = None  # 引用の文脈
 
 
 @dataclass
 class CitationNetwork:
     """引用ネットワーク全体"""
+
     nodes: Dict[str, CitationNode]
     edges: List[CitationEdge]
     root_papers: List[str]  # 検索の起点となった論文
@@ -70,9 +76,7 @@ class CitationNetworkEngine:
         self.search_service = get_safe_rate_limited_search_service()
 
     async def build_citation_network(
-        self,
-        root_papers: List[Paper],
-        direction: str = "both"
+        self, root_papers: List[Paper], direction: str = "both"
     ) -> CitationNetwork:
         """
         論文リストから引用ネットワークを構築
@@ -87,7 +91,8 @@ class CitationNetworkEngine:
         logger.info(
             f"引用ネットワーク構築開始: 起点論文数={
                 len(root_papers)}, 最大深度={
-                self.max_depth}")
+                self.max_depth}"
+        )
 
         nodes: Dict[str, CitationNode] = {}
         edges: List[CitationEdge] = []
@@ -103,28 +108,30 @@ class CitationNetworkEngine:
                 paper_id=paper_id,
                 title=paper.title or "Unknown Title",
                 authors=[
-                    author.name for author in (
-                        paper.authors or []) if author.name],
+                    author.name for author in (paper.authors or []) if author.name
+                ],
                 year=paper.publication_year,
                 citation_count=paper.citation_count or 0,
                 doi=paper.doi,
                 source_api=paper.source_api or "unknown",
                 cited_by=set(),
                 references=set(),
-                depth=0)
+                depth=0,
+            )
             nodes[paper_id] = node
 
         # 各深度で引用関係を収集
         for depth in range(self.max_depth):
             current_level_papers = [
-                node for node in nodes.values()
-                if node.depth == depth
+                node for node in nodes.values() if node.depth == depth
             ]
 
             if not current_level_papers:
                 break
 
-            logger.info(f"深度{depth}の引用収集: {len(current_level_papers)}件の論文を処理")
+            logger.info(
+                f"深度{depth}の引用収集: {len(current_level_papers)}件の論文を処理"
+            )
 
             for node in current_level_papers:
                 try:
@@ -146,18 +153,21 @@ class CitationNetworkEngine:
                     continue
 
         # 統計計算
-        total_citations = sum(len(node.cited_by) +
-                              len(node.references) for node in nodes.values())
+        total_citations = sum(
+            len(node.cited_by) + len(node.references) for node in nodes.values()
+        )
 
         network = CitationNetwork(
             nodes=nodes,
             edges=edges,
             root_papers=root_paper_ids,
             total_citations=total_citations,
-            max_depth=max(
-                node.depth for node in nodes.values()) if nodes else 0)
+            max_depth=max(node.depth for node in nodes.values()) if nodes else 0,
+        )
 
-        logger.info(f"引用ネットワーク構築完了: ノード数={len(nodes)}, エッジ数={len(edges)}")
+        logger.info(
+            f"引用ネットワーク構築完了: ノード数={len(nodes)}, エッジ数={len(edges)}"
+        )
         return network
 
     async def _get_citing_papers(self, node: CitationNode) -> List[Paper]:
@@ -167,9 +177,13 @@ class CitationNetworkEngine:
 
         try:
             # DOIまたはタイトルで被引用論文を検索
-            search_query = f'cites:"{
-                node.doi}"' if node.doi else f'cites:"{
+            search_query = (
+                f'cites:"{
+                node.doi}"'
+                if node.doi
+                else f'cites:"{
                 node.title}"'
+            )
             citing_papers = await self.search_service.search_papers(
                 search_query, max_results=self.max_papers_per_level
             )
@@ -188,9 +202,13 @@ class CitationNetworkEngine:
 
         try:
             # 参考文献情報を検索（APIの制限により簡易実装）
-            search_query = f'references:"{
-                node.doi}"' if node.doi else f'references:"{
+            search_query = (
+                f'references:"{
+                node.doi}"'
+                if node.doi
+                else f'references:"{
                 node.title}"'
+            )
             referenced_papers = await self.search_service.search_papers(
                 search_query, max_results=self.max_papers_per_level
             )
@@ -198,7 +216,8 @@ class CitationNetworkEngine:
             logger.debug(
                 f"論文 {
                     node.paper_id} の参考文献: {
-                    len(referenced_papers)}件")
+                    len(referenced_papers)}件"
+            )
             return referenced_papers
 
         except Exception as e:
@@ -212,7 +231,7 @@ class CitationNetworkEngine:
         nodes: Dict[str, CitationNode],
         edges: List[CitationEdge],
         direction: str,
-        next_depth: int
+        next_depth: int,
     ):
         """引用関係をネットワークに追加"""
         for paper in related_papers:
@@ -224,15 +243,16 @@ class CitationNetworkEngine:
                     paper_id=paper_id,
                     title=paper.title or "Unknown Title",
                     authors=[
-                        author.name for author in (
-                            paper.authors or []) if author.name],
+                        author.name for author in (paper.authors or []) if author.name
+                    ],
                     year=paper.publication_year,
                     citation_count=paper.citation_count or 0,
                     doi=paper.doi,
                     source_api=paper.source_api or "unknown",
                     cited_by=set(),
                     references=set(),
-                    depth=next_depth)
+                    depth=next_depth,
+                )
                 nodes[paper_id] = new_node
 
             # 引用関係を記録
@@ -242,8 +262,7 @@ class CitationNetworkEngine:
                 nodes[paper_id].cited_by.add(source_node.paper_id)
 
                 edge = CitationEdge(
-                    from_paper_id=source_node.paper_id,
-                    to_paper_id=paper_id
+                    from_paper_id=source_node.paper_id, to_paper_id=paper_id
                 )
                 edges.append(edge)
 
@@ -253,8 +272,7 @@ class CitationNetworkEngine:
                 nodes[paper_id].references.add(source_node.paper_id)
 
                 edge = CitationEdge(
-                    from_paper_id=paper_id,
-                    to_paper_id=source_node.paper_id
+                    from_paper_id=paper_id, to_paper_id=source_node.paper_id
                 )
                 edges.append(edge)
 
@@ -268,17 +286,16 @@ class CitationNetworkEngine:
             return f"title:{abs(title_hash)}"
         else:
             # 最後の手段として著者と年から
-            authors_str = ",".join([
-                author.name for author in (paper.authors or [])[:3]
-                if author.name
-            ])
-            year_str = str(
-                paper.publication_year) if paper.publication_year else "unknown"
+            authors_str = ",".join(
+                [author.name for author in (paper.authors or [])[:3] if author.name]
+            )
+            year_str = (
+                str(paper.publication_year) if paper.publication_year else "unknown"
+            )
             combined_hash = hash(f"{authors_str}:{year_str}")
             return f"hash:{abs(combined_hash)}"
 
-    def analyze_network_metrics(
-            self, network: CitationNetwork) -> Dict[str, Any]:
+    def analyze_network_metrics(self, network: CitationNetwork) -> Dict[str, Any]:
         """ネットワークの指標を分析"""
         if not network.nodes:
             return {}
@@ -297,16 +314,12 @@ class CitationNetworkEngine:
 
         # 最も引用されている論文
         most_cited = max(
-            network.nodes.values(),
-            key=lambda n: len(n.cited_by),
-            default=None
+            network.nodes.values(), key=lambda n: len(n.cited_by), default=None
         )
 
         # 最も多く引用している論文
         most_citing = max(
-            network.nodes.values(),
-            key=lambda n: len(n.references),
-            default=None
+            network.nodes.values(), key=lambda n: len(n.references), default=None
         )
 
         # 年代分布
@@ -316,24 +329,33 @@ class CitationNetworkEngine:
         metrics = {
             "total_nodes": total_nodes,
             "total_edges": total_edges,
-            "network_density": total_edges / (total_nodes * (total_nodes - 1)) if total_nodes > 1 else 0,
-            "average_citations_per_paper": total_edges / total_nodes if total_nodes > 0 else 0,
-            "most_cited_paper": {
-                "title": most_cited.title,
-                "citations": len(most_cited.cited_by)
-            } if most_cited else None,
-            "most_citing_paper": {
-                "title": most_citing.title,
-                "references": len(most_citing.references)
-            } if most_citing else None,
+            "network_density": (
+                total_edges / (total_nodes * (total_nodes - 1))
+                if total_nodes > 1
+                else 0
+            ),
+            "average_citations_per_paper": (
+                total_edges / total_nodes if total_nodes > 0 else 0
+            ),
+            "most_cited_paper": (
+                {"title": most_cited.title, "citations": len(most_cited.cited_by)}
+                if most_cited
+                else None
+            ),
+            "most_citing_paper": (
+                {"title": most_citing.title, "references": len(most_citing.references)}
+                if most_citing
+                else None
+            ),
             "year_range": year_range,
-            "max_depth": network.max_depth
+            "max_depth": network.max_depth,
         }
 
         return metrics
 
-    def export_network(self, network: CitationNetwork,
-                       format_type: str = "json") -> str:
+    def export_network(
+        self, network: CitationNetwork, format_type: str = "json"
+    ) -> str:
         """ネットワークをエクスポート"""
         if format_type == "json":
             # JSON形式でエクスポート
@@ -343,8 +365,8 @@ class CitationNetworkEngine:
                 "metadata": {
                     "root_papers": network.root_papers,
                     "total_citations": network.total_citations,
-                    "max_depth": network.max_depth
-                }
+                    "max_depth": network.max_depth,
+                },
             }
 
             # セットを配列に変換
@@ -362,17 +384,16 @@ class CitationNetworkEngine:
 
             # ノード定義
             for node in network.nodes.values():
-                label = node.title[:50] + \
-                    "..." if len(node.title) > 50 else node.title
+                label = node.title[:50] + "..." if len(node.title) > 50 else node.title
                 lines.append(
                     f'  "{
                         node.paper_id}" [label="{label}\\n({
-                        node.year})"];')
+                        node.year})"];'
+                )
 
             # エッジ定義
             for edge in network.edges:
-                lines.append(
-                    f'  "{edge.from_paper_id}" -> "{edge.to_paper_id}";')
+                lines.append(f'  "{edge.from_paper_id}" -> "{edge.to_paper_id}";')
 
             lines.append("}")
             return "\n".join(lines)
@@ -386,11 +407,10 @@ _citation_engine = None
 
 
 def get_citation_network_engine(
-        max_depth: int = 2,
-        max_papers_per_level: int = 10) -> CitationNetworkEngine:
+    max_depth: int = 2, max_papers_per_level: int = 10
+) -> CitationNetworkEngine:
     """CitationNetworkEngineのシングルトンインスタンスを取得"""
     global _citation_engine
     if _citation_engine is None:
-        _citation_engine = CitationNetworkEngine(
-            max_depth, max_papers_per_level)
+        _citation_engine = CitationNetworkEngine(max_depth, max_papers_per_level)
     return _citation_engine

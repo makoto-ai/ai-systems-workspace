@@ -12,6 +12,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 
@@ -41,8 +42,7 @@ class UltraSafeSemanticScholarClient:
 
         self.last_request_time = time.time()
 
-    async def search_papers(self, query: str,
-                            max_results: int = None) -> List[Paper]:
+    async def search_papers(self, query: str, max_results: int = None) -> List[Paper]:
         """
         論文検索（絶対安全版）
 
@@ -65,11 +65,14 @@ class UltraSafeSemanticScholarClient:
                     if attempt < self.max_retries:
                         wait_time = (attempt + 1) * 5.0  # 5秒、10秒と増加
                         logger.warning(
-                            f"レート制限検出 - {wait_time}秒待機後リトライ ({attempt + 1}/{self.max_retries})")
+                            f"レート制限検出 - {wait_time}秒待機後リトライ ({attempt + 1}/{self.max_retries})"
+                        )
                         await asyncio.sleep(wait_time)
                         continue
                     else:
-                        logger.error("レート制限: 全リトライ失敗 - Semantic Scholar スキップ")
+                        logger.error(
+                            "レート制限: 全リトライ失敗 - Semantic Scholar スキップ"
+                        )
                         return []
                 else:
                     logger.error(f"Semantic Scholar HTTPエラー: {e}")
@@ -81,7 +84,8 @@ class UltraSafeSemanticScholarClient:
         return []
 
     async def _single_search_attempt(
-            self, query: str, max_results: int, attempt: int) -> List[Paper]:
+        self, query: str, max_results: int, attempt: int
+    ) -> List[Paper]:
         """単一検索試行"""
         # 絶対安全な待機
         await self._ultra_safe_wait()
@@ -100,11 +104,12 @@ class UltraSafeSemanticScholarClient:
                 "query": query,
                 "limit": max_results,
                 "sort": "citationCount:desc",  # 引用数順
-                "fields": "paperId,title,abstract,authors,venue,year,citationCount,openAccessPdf,externalIds"
+                "fields": "paperId,title,abstract,authors,venue,year,citationCount,openAccessPdf,externalIds",
             }
 
             logger.info(
-                f"Semantic Scholar検索実行 (絶対安全モード - 試行{attempt + 1}): {query}")
+                f"Semantic Scholar検索実行 (絶対安全モード - 試行{attempt + 1}): {query}"
+            )
             response = await client.get(url, params=params)
             response.raise_for_status()
 
@@ -120,7 +125,8 @@ class UltraSafeSemanticScholarClient:
             return papers
 
     def _parse_work_ultra_safe(
-            self, paper_data: Dict[str, Any], query: str) -> Optional[Paper]:
+        self, paper_data: Dict[str, Any], query: str
+    ) -> Optional[Paper]:
         """Semantic Scholarのpaper情報をPaperオブジェクトに変換（絶対安全版）"""
         try:
             # 基本情報（厳重なNone チェック）
@@ -128,8 +134,7 @@ class UltraSafeSemanticScholarClient:
                 return None
 
             title = paper_data.get("title")
-            if not title or not isinstance(
-                    title, str) or len(title.strip()) == 0:
+            if not title or not isinstance(title, str) or len(title.strip()) == 0:
                 return None  # タイトルなしは除外
 
             publication_year = paper_data.get("year")
@@ -165,11 +170,9 @@ class UltraSafeSemanticScholarClient:
                         continue
                     author_name = author_info.get("name")
                     if author_name and isinstance(author_name, str):
-                        authors.append(Author(
-                            name=author_name,
-                            institution=None,
-                            orcid=None
-                        ))
+                        authors.append(
+                            Author(name=author_name, institution=None, orcid=None)
+                        )
 
             # 所属機関リスト（基本検索では取得困難）
             institutions = []
@@ -186,7 +189,8 @@ class UltraSafeSemanticScholarClient:
 
             # 関連性スコア計算
             relevance_score = self._calculate_relevance_score_ultra_safe(
-                paper_data, query)
+                paper_data, query
+            )
 
             return Paper(
                 title=title,
@@ -200,7 +204,7 @@ class UltraSafeSemanticScholarClient:
                 journal=journal,
                 source_api="semantic_scholar",
                 confidence_score=0.85,
-                relevance_score=relevance_score
+                relevance_score=relevance_score,
             )
 
         except Exception as e:
@@ -208,7 +212,8 @@ class UltraSafeSemanticScholarClient:
             return None
 
     def _calculate_relevance_score_ultra_safe(
-            self, paper_data: Dict[str, Any], query: str) -> float:
+        self, paper_data: Dict[str, Any], query: str
+    ) -> float:
         """論文の関連性スコアを計算（絶対安全版）"""
         try:
             score = 0.0
@@ -229,7 +234,8 @@ class UltraSafeSemanticScholarClient:
                 abstract_lower = abstract.lower()
                 query_words = query.lower().split()
                 abstract_matches = sum(
-                    1 for word in query_words if word in abstract_lower)
+                    1 for word in query_words if word in abstract_lower
+                )
                 score += min(abstract_matches * 0.5, 2.0)  # 最大2点
 
             # 引用数による重み付け
@@ -255,6 +261,7 @@ class UltraSafeSemanticScholarClient:
         except Exception:
             # エラーが起きても最低限のスコアを返す
             return 1.0
+
 
 # 同期版の関数も提供
 

@@ -6,14 +6,15 @@
 
 from auto_memory_loader import auto_load_memory, should_auto_load, get_memory_context
 
+
 def integrate_memory_with_response(user_query: str) -> tuple[str, str]:
     """
     ユーザーの質問と記憶システムを統合
-    
+
     Returns:
         tuple: (memory_context, integrated_response_prefix)
     """
-    
+
     # 新セッションの場合は完全な記憶復元
     if should_auto_load():
         memory_context = auto_load_memory()
@@ -26,7 +27,7 @@ def integrate_memory_with_response(user_query: str) -> tuple[str, str]:
 
 """
         return memory_context, integrated_prefix
-    
+
     # 既存セッションの場合は軽量な文脈表示
     else:
         memory_summary = get_memory_context()
@@ -41,9 +42,10 @@ def integrate_memory_with_response(user_query: str) -> tuple[str, str]:
         else:
             return "", ""
 
+
 def generate_usage_instructions():
     """使用方法の指示を生成"""
-    
+
     return """
 # 🧠 自動記憶復元システム使用方法
 
@@ -88,6 +90,7 @@ def respond_to_user(user_query: str):
 - 関係のない質問でも前回の作業文脈が継続
 - 完全に透明で自然な動作
 """
+
 
 if __name__ == "__main__":
     print(generate_usage_instructions())
