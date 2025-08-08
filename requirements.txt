@@ -1,84 +1,68 @@
-# AI Systems Requirements
-# 作成日: 2025-08-04
-
-# 基本Webフレームワーク
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-
-# AI/ML ライブラリ
-anthropic>=0.7.0
-groq>=0.4.0
+# Voice Roleplay System - Groq + VOICEVOX構成
+fastapi==0.116.1
+uvicorn[standard]==0.35.0
+groq==0.13.0
+anthropic==0.37.1
 google-generativeai==0.8.3
+python-multipart==0.0.17
+python-dotenv==1.0.1
+pydantic==2.9.2
+requests==2.32.3
 
-# 音声処理
+# Email and templating for reminder system
+Jinja2==3.1.4
+email-validator==2.1.2
+
+# Multi-channel notifications
+aiohttp==3.9.5
+
+# Audio processing (VOICEVOX対応)
+numpy==1.26.4
+scipy==1.13.1
 soundfile==0.12.1
-librosa>=0.10.1
-faster-whisper>=0.10.0
-whisperx>=3.1.1
 
-# データ処理
-numpy>=1.24.0
-pandas>=2.0.0
-scipy>=1.10.0
-
-# 機械学習
+# AI & Machine Learning
 torch>=2.0.0
 torchaudio>=2.0.0
-transformers>=4.30.0
+transformers>=4.53.0
 
-# データベース
-asyncpg>=0.28.0
-psycopg2-binary>=2.9.0
-sqlalchemy>=2.0.0
-alembic>=1.11.0
+# Speech Processing
+whisperx>=3.1.1
+faster-whisper>=0.10.0
 
-# キャッシュ
-redis>=4.5.0
+# Audio Processing
+librosa>=0.10.1
 
-# 監視・ログ
-prometheus-client>=0.17.0
-psutil>=5.9.0
+# HTTP Clients
+httpx>=0.25.0
 
-# 非同期処理
-asyncio-pool>=0.1.0
-aiofiles>=23.0.0
+# Data Processing
+pandas>=2.0.0
 
-# 画像処理
-pillow>=9.5.0
+# Development
+pytest==8.3.4
+pytest-asyncio==0.24.0
 
-# ドキュメント処理
+# Database & Cache (v2.0.0 追加)
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+alembic==1.13.1
+redis==5.0.1
+timescaledb-python==1.0.2
+
+# Monitoring & Metrics (v2.0.0 追加)
+prometheus-client==0.19.0
+psutil==5.9.6
+
+# Performance & Optimization (v2.0.0 追加)
+asyncio-pool==0.6.0
+aiofiles==23.2.1
+
+# File Upload & Processing (Cursor ↔ Obsidian Integration)
+pillow>=10.0.0
 PyPDF2>=3.0.0
-python-docx>=0.8.11
+python-docx>=1.1.0
 python-magic>=0.4.27
-
-# ファイル監視
 watchdog>=3.0.0
-
-# Web UI
-streamlit>=1.28.0
-
-# 自然言語処理
-nltk>=3.8.1
-rouge-score>=0.1.2
-
-# 可視化
-matplotlib>=3.7.0
-scikit-learn>=1.3.0
-sentence-transformers>=2.2.0
-
-# テスト
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-httpx>=0.24.0
-
-# 開発ツール
-python-dotenv>=1.0.0
-requests>=2.31.0
-Jinja2>=3.1.0
-email-validator>=2.0.0
-aiohttp>=3.8.0
-
-# オプショナル（手動インストール推奨）
-# timescaledb-python==1.0.2
-# pycocoevalcap>=2.0.4
 

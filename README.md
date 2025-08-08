@@ -1,193 +1,359 @@
-# 📚 論文→YouTube原稿生成システム v2.3.0
+# Voice Roleplay System 🎤
 
-## 🎯 システム概要
+**次世代音声対話システム** - 完全な音声から音声への会話パイプライン、高度な営業ロールプレイ機能、声のクローニング、音声バイオメトリクス認証を備えた包括的なAIシステム
 
-学術論文のメタデータと要約から、YouTube用の魅力的な原稿を自動生成し、品質をBLEU/ROUGEスコアで評価するシステムです。
+## 🚀 **最新機能 (v2.0.0)**
 
-## ✨ 主要機能
+### 🎯 **Phase 1: 声のクローニング機能**
+- **RVC技術**: 最先端のRetrieval-based Voice Conversionによるリアルタイム声質変換
+- **音声学習**: 5-10分の音声サンプルから個人の声をモデル化
+- **高品質合成**: So-vits-svcによる自然な音声生成
+- **感情制御**: 音声の感情パラメータ調整（happy, sad, angry, excited）
 
-| 機能 | 説明 |
-|------|------|
-| 📄 **論文メタデータ処理** | DOI/タイトル/引用数/著者/機関などからプロンプト生成 |
-| 🎬 **YouTube原稿生成** | 4つのスタイル（一般向け/学術的/ビジネス向け/教育的）に対応 |
-| 📊 **品質評価** | BLEU/ROUGEスコアによる自動品質評価 |
-| 📈 **可視化** | Streamlit上でのマットプロット表示 |
-| 🔄 **一貫処理** | アップロード→原稿生成→評価→スコア出力まで一貫で処理 |
+### 🔍 **Phase 2: 高度な声紋分析**
+- **話者認証**: 99.5%以上の精度を目標とした音声による本人確認
+- **バイオメトリクス**: 基本周波数、フォルマント、スペクトル特性の詳細分析
+- **感情分析**: リアルタイム感情状態検出（興奮、悲しみ、幸せ、怒り、中立）
+- **人口統計**: 音声からの年齢・性別推定
+- **セキュリティ**: アンチスプーフィング技術による音声真正性検証
 
-## 🏗️ システム構成
+### 🌐 **Phase 3: Cloudflare統合（計画中）**
+- **エッジコンピューティング**: Cloudflare Workersによる低遅延処理
+- **CDN配信**: 音声データの最適化配信
+- **リアルタイムストリーミング**: WebRTCによるP2P音声通信
+
+## 📋 **システム概要**
+
+### **コア機能**
+- ✅ **音声認識**: WhisperXによる高精度音声→テキスト変換 + 話者分離
+- ✅ **AI統合**: マルチプロバイダー対応（Groq, OpenAI, Claude, Gemini）
+- ✅ **音声合成**: VOICEVOXによる自然な音声生成
+- ✅ **声のクローニング**: ユーザーの声で応答生成
+- ✅ **ドキュメント処理**: 30以上のファイル形式対応
+- ✅ **営業分析**: 高度な会話分析とロールプレイ機能
+
+### **新機能ハイライト**
+- 🎤 **個人化された音声応答**: あなたの声でAIが応答
+- 🔐 **音声認証**: 声による本人確認システム
+- 😊 **感情理解**: 音声から感情状態をリアルタイム分析
+- 👤 **話者プロファイリング**: 年齢・性別・特徴の自動推定
+- 🛡️ **セキュリティ強化**: 音声なりすまし検出機能
+
+## 🏗️ **アーキテクチャ**
 
 ```
-ai-systems-workspace/
-├── .cursor/
-│   └── mcp.json               ← MCP目標と目的記述
-├── .github/
-│   └── workflows/
-│       └── pre-commit.yml     ← CI定義
-├── .streamlit/
-│   └── config.toml            ← Streamlitテーマ
-├── data/
-│   └── sample_papers/
-│       └── metadata.json      ← メタデータ例
-├── modules/
-│   ├── prompt_generator.py    ← 論文→原稿プロンプト生成
-│   └── composer.py            ← メタ情報統合処理
-├── scripts/
-│   └── quality_score_plot.py  ← BLEU/ROUGEのグラフ化
-├── tests/
-│   └── test_quality_metrics.py← 評価関数のユニットテスト
-├── streamlit_app.py           ← StreamlitメインUI
-├── quality_metrics.py         ← スコア計算関数群
-├── requirements.txt           ← 依存ライブラリ
-└── README.md                  ← 機能・構成記述
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend       │    │   AI Services   │
+│                 │    │                 │    │                 │
+│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
+│ │ Voice UI    │ │    │ │ Voice Clone │ │    │ │ Groq/OpenAI │ │
+│ │ Recording   │ │◄──►│ │ Service     │ │◄──►│ │ Claude/Gem. │ │
+│ │ Playback    │ │    │ │ RVC Models  │ │    │ │ Multi-AI    │ │
+│ └─────────────┘ │    │ └─────────────┘ │    │ └─────────────┘ │
+│                 │    │                 │    │                 │
+│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
+│ │ Real-time   │ │    │ │ Advanced    │ │    │ │ WhisperX    │ │
+│ │ Analysis    │ │    │ │ Voice       │ │    │ │ VOICEVOX    │ │
+│ │ Dashboard   │ │    │ │ Analytics   │ │    │ │ Speech Proc │ │
+│ └─────────────┘ │    │ └─────────────┘ │    │ └─────────────┘ │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 クイックスタート
+## 🛠️ **技術スタック**
 
-### 1. 環境セットアップ
+### **Backend**
+- **FastAPI**: 高性能Web API フレームワーク
+- **WhisperX**: 話者分離機能付き音声認識
+- **VOICEVOX**: 自然な日本語音声合成
+- **RVC-Python**: リアルタイム声質変換
+- **SpeechBrain**: 話者認識・分析
+- **Resemblyzer**: 話者埋め込み抽出
 
+### **Frontend**
+- **Next.js 14**: モダンReactフレームワーク
+- **TypeScript**: 型安全な開発環境
+- **Tailwind CSS**: ユーティリティファーストCSS
+
+### **AI/ML**
+- **多様なAIプロバイダー**: Groq, OpenAI, Claude, Gemini
+- **音声処理**: Librosa, PyWorld, Praat
+- **機械学習**: PyTorch, Scikit-learn, NumPy
+
+## 🚀 **クイックスタート**
+
+### **1. 環境セットアップ**
 ```bash
-# 依存関係をインストール
+# リポジトリクローン
+git clone https://github.com/your-repo/voice-roleplay-dify.git
+cd voice-roleplay-dify
+
+# Python仮想環境作成
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 依存関係インストール
 pip install -r requirements.txt
 
-# Streamlitアプリを起動
-streamlit run streamlit_app.py
+# フロントエンド依存関係
+cd frontend/voice-roleplay-frontend
+npm install
+cd ../..
 ```
 
-### 2. 基本的な使用方法
-
-1. **原稿生成**: 論文情報を入力してYouTube原稿を生成
-2. **品質評価**: 生成された原稿の品質をBLEU/ROUGEスコアで評価
-3. **可視化**: 品質スコアをグラフで可視化
-4. **サンプル実行**: システムの動作確認
-
-## 📋 機能詳細
-
-### 📄 論文メタデータ処理 (`modules/prompt_generator.py`)
-
-- **入力**: 論文のメタデータ（タイトル、著者、要約、DOI、引用数など）
-- **出力**: YouTube用原稿生成のためのプロンプト
-- **特徴**: 4つのスタイル（一般向け/学術的/ビジネス向け/教育的）に対応
-
-### 🎬 YouTube原稿生成 (`modules/composer.py`)
-
-- **入力**: 論文メタデータ + 要約
-- **出力**: スタイル別のYouTube原稿
-- **機能**: JSONファイルからの読み込み、メタデータ検証
-
-### 📊 品質評価 (`quality_metrics.py`)
-
-- **BLEUスコア**: 機械翻訳の評価指標を応用
-- **ROUGEスコア**: 要約品質の評価指標
-- **総合評価**: 重み付け平均による総合スコア
-- **詳細分析**: 改善提案の自動生成
-
-### 📈 可視化 (`scripts/quality_score_plot.py`)
-
-- **単一比較**: 棒グラフ + レーダーチャート
-- **複数比較**: 複数候補の並列比較
-- **トレンド分析**: ヒートマップによる詳細分析
-
-## 🔧 技術スタック
-
-| 技術 | 用途 |
-|------|------|
-| **Streamlit** | Web UIフレームワーク |
-| **NLTK** | 自然言語処理 |
-| **rouge-score** | ROUGEスコア計算 |
-| **matplotlib** | グラフ可視化 |
-| **scikit-learn** | 機械学習ライブラリ |
-| **transformers** | トランスフォーマーモデル |
-| **sentence-transformers** | 文埋め込み |
-
-## 📊 品質メトリクス
-
-### BLEUスコア
-- **用途**: 生成テキストの流暢さと正確性の評価
-- **範囲**: 0-1（高いほど良い）
-- **特徴**: n-gramの重複度を測定
-
-### ROUGEスコア
-- **ROUGE-1**: 単語レベルの重複
-- **ROUGE-2**: 2-gramレベルの重複
-- **ROUGE-L**: 最長共通部分列
-- **範囲**: 0-1（高いほど良い）
-
-### 総合評価
-- **計算方法**: 重み付け平均（BLEU: 30%, ROUGE-1: 25%, ROUGE-2: 25%, ROUGE-L: 20%）
-- **評価基準**: 
-  - 0.8以上: 優秀
-  - 0.6-0.8: 良好
-  - 0.4-0.6: 普通
-  - 0.4未満: 要改善
-
-## 🎨 原稿スタイル
-
-| スタイル | 特徴 | 動画時間 | 対象視聴者 |
-|----------|------|----------|------------|
-| **一般向け** | 親しみやすく、興味を引く | 10-15分 | 一般ユーザー |
-| **学術的** | 専門的だが親しみやすい | 15-20分 | 研究者・学生 |
-| **ビジネス向け** | 実践的で戦略的 | 12-18分 | ビジネスパーソン |
-| **教育的** | 体系的で学習効果重視 | 20-30分 | 学習者 |
-
-## 📁 データ形式
-
-### メタデータJSON例
-```json
-{
-  "title": "機械学習を用いた営業効率化の研究",
-  "authors": ["田中太郎", "佐藤花子"],
-  "abstract": "本研究では...",
-  "doi": "10.1000/example.2023.001",
-  "publication_year": 2023,
-  "journal": "営業科学ジャーナル",
-  "citation_count": 45,
-  "institutions": ["東京大学"],
-  "keywords": ["機械学習", "営業効率化"]
-}
-```
-
-## 🧪 テスト
-
+### **2. 環境変数設定**
 ```bash
-# 品質メトリクスのテスト
-python -m pytest tests/test_quality_metrics.py
+# .envファイル作成
+cp .env.example .env
 
-# サンプル実行
-python streamlit_app.py
+# API キー設定
+GROQ_API_KEY=your_groq_api_key
+OPENAI_API_KEY=your_openai_api_key
+HF_TOKEN=your_huggingface_token  # 話者分離用
 ```
 
-## 🔄 CI/CD
+### **3. システム起動**
 
-- **GitHub Actions**: 自動テスト・品質チェック
-- **pre-commit**: コード品質・セキュリティチェック
-- **自動デプロイ**: Streamlit Cloud対応
+#### **統合起動（推奨）**
+```bash
+# バックエンドとフロントエンドを同時起動
+npm run dev:full
+```
 
-## 📈 パフォーマンス
+#### **個別起動**
+```bash
+# バックエンド起動
+python -m app.main
 
-- **処理速度**: 平均2-3秒で原稿生成
-- **品質スコア**: 平均0.7以上の総合評価
-- **対応言語**: 日本語（英語対応予定）
+# フロントエンド起動（別ターミナル）
+npm run frontend
+```
 
-## 🤝 貢献
+### **4. アクセス**
+- **API ドキュメント**: http://localhost:8000/docs
+- **フロントエンド**: http://localhost:3000
+- **システム情報**: http://localhost:8000
 
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+## 🎤 **使用方法**
+
+### **基本的な音声会話**
+1. フロントエンドにアクセス
+2. 「音声録音開始」をクリック
+3. 話しかける
+4. AIが音声で応答
+
+### **声のクローニング**
+```bash
+# 1. 音声サンプルをアップロード
+curl -X POST "http://localhost:8000/api/voice-clone/profiles" \
+  -F "user_id=your_user_id" \
+  -F "files=@sample1.wav" \
+  -F "files=@sample2.wav" \
+  -F "files=@sample3.wav"
+
+# 2. クローン音声生成
+curl -X POST "http://localhost:8000/api/voice-clone/synthesize" \
+  -F "profile_id=your_profile_id" \
+  -F "text=こんにちは、私の声でお話しします"
+```
+
+### **話者認証**
+```bash
+# 1. 話者登録
+curl -X POST "http://localhost:8000/api/voice-analysis/register-speaker" \
+  -F "speaker_id=john_doe" \
+  -F "files=@voice1.wav" \
+  -F "files=@voice2.wav" \
+  -F "files=@voice3.wav"
+
+# 2. 認証テスト
+curl -X POST "http://localhost:8000/api/voice-analysis/authenticate" \
+  -F "file=@test_voice.wav" \
+  -F "expected_speaker_id=john_doe"
+```
+
+## 📊 **API エンドポイント**
+
+### **音声会話**
+- `POST /api/voice/conversation` - 完全な音声対話
+- `POST /api/speech/transcribe` - 音声認識
+- `POST /api/speech/synthesize` - 音声合成
+
+### **声のクローニング**
+- `POST /api/voice-clone/profiles` - 音声プロファイル作成
+- `POST /api/voice-clone/synthesize` - クローン音声生成
+- `GET /api/voice-clone/profiles` - プロファイル一覧
+- `GET /api/voice-clone/service-info` - サービス情報
+
+### **高度な音声分析**
+- `POST /api/voice-analysis/analyze` - 包括的音声分析
+- `POST /api/voice-analysis/register-speaker` - 話者登録
+- `POST /api/voice-analysis/authenticate` - 話者認証
+- `POST /api/voice-analysis/emotion` - 感情分析
+- `POST /api/voice-analysis/demographics` - 年齢・性別分析
+
+### **ドキュメント処理**
+- `POST /api/text/process` - ファイル処理とナレッジ抽出
+
+## 🧪 **テスト**
+
+### **機能テスト**
+```bash
+# 基本機能テスト
+python test_knowledge_files.py
+
+# 声のクローニングテスト
+python test_voice_cloning.py
+
+# 高度な音声機能統合テスト
+python test_advanced_voice_features.py
+
+# ヘルスチェック
+curl http://localhost:8000/api/health
+```
+
+## 📁 **プロジェクト構造**
+
+```
+voice-roleplay-dify/
+├── app/                           # バックエンドアプリケーション
+│   ├── api/                       # API エンドポイント
+│   │   ├── voice_cloning.py       # 声のクローニング API
+│   │   ├── advanced_voice_analysis.py # 高度な音声分析 API
+│   │   ├── conversation.py        # 音声会話 API
+│   │   ├── speech.py              # 音声処理 API
+│   │   └── ...
+│   ├── services/                  # ビジネスロジック
+│   │   ├── voice_cloning_service.py
+│   │   ├── advanced_voice_analysis_service.py
+│   │   ├── conversation_service.py
+│   │   ├── speech_service.py
+│   │   └── ...
+│   └── main.py                    # アプリケーションエントリーポイント
+├── frontend/voice-roleplay-frontend/ # Next.js フロントエンド
+│   ├── src/
+│   │   ├── app/                   # App Router
+│   │   ├── components/            # React コンポーネント
+│   │   ├── hooks/                 # カスタムフック
+│   │   └── types/                 # TypeScript 型定義
+│   └── package.json
+├── docs/                          # ドキュメント
+│   ├── next-gen-voice-features.md
+│   ├── sales-roleplay-roadmap.md
+│   └── ...
+├── data/                          # データファイル
+│   ├── voice_models/              # 声のクローニングモデル
+│   ├── speaker_models/            # 話者認識モデル
+│   └── voicevox/                  # VOICEVOX データ
+├── tests/                         # テストファイル
+├── requirements.txt               # Python 依存関係
+├── package.json                   # 統合 npm スクリプト
+└── README.md                      # このファイル
+```
+
+## ⚙️ **システム要件**
+
+### **最小要件**
+- **OS**: Windows 10+, macOS 10.15+, Ubuntu 20.04+
+- **Python**: 3.8+
+- **Node.js**: 18+
+- **RAM**: 8GB（基本機能）
+- **ストレージ**: 10GB
+
+### **推奨要件（全機能）**
+- **GPU**: NVIDIA RTX 3060+ （声のクローニング用）
+- **RAM**: 16GB+
+- **ストレージ**: 50GB+ （モデルファイル用）
+- **CPU**: マルチコア（リアルタイム処理用）
+
+## 🔧 **開発**
+
+### **開発用スクリプト**
+```bash
+# 開発環境セットアップ
+npm run setup
+
+# バックエンド開発
+npm run backend
+
+# フロントエンド開発
+npm run frontend
+
+# 全体開発
+npm run dev:full
+
+# ビルド
+npm run build
+
+# テスト
+npm run test
+```
+
+### **コントリビューション**
+1. フォーク作成
+2. フィーチャーブランチ作成 (`git checkout -b feature/amazing-feature`)
 3. 変更をコミット (`git commit -m 'Add amazing feature'`)
 4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
+5. プルリクエスト作成
 
-## 📄 ライセンス
+## 🛡️ **セキュリティとプライバシー**
 
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照
+### **データ保護**
+- 音声データの暗号化保存
+- 学習モデルのローカル保存
+- GDPR準拠のデータ処理
 
-## 📞 サポート
+### **認証・認可**
+- 話者認証による本人確認
+- 音声データアクセス制御
+- 学習データの匿名化
 
-- **Issues**: GitHub Issuesでバグ報告・機能要望
-- **Discussions**: GitHub Discussionsで質問・議論
-- **Wiki**: 詳細な使用方法・トラブルシューティング
+## 📈 **パフォーマンス**
+
+### **処理時間目標**
+- **音声認識**: <2秒
+- **AI応答生成**: <3秒
+- **音声合成**: <2秒
+- **声のクローニング**: <5秒
+- **話者認証**: <1秒
+
+### **品質指標**
+- **音声認識精度**: >95%
+- **話者認証精度**: >99.5%
+- **感情分析精度**: >85%
+- **音声合成品質**: 高品質（MOS > 4.0）
+
+## 🗺️ **ロードマップ**
+
+### **Phase 3: Cloudflare統合** （進行中）
+- [ ] Cloudflare Workers実装
+- [ ] CDN音声配信最適化
+- [ ] エッジコンピューティング
+- [ ] WebRTCリアルタイム通信
+
+### **将来の拡張**
+- [ ] 多言語音声クローニング
+- [ ] 高度な感情制御
+- [ ] ビデオ通話対応
+- [ ] モバイルアプリ
+- [ ] 企業向けエンタープライズ機能
+
+## 📝 **ライセンス**
+
+このプロジェクトはMITライセンスの下で公開されています。詳細は [LICENSE](LICENSE) ファイルを参照してください。
+
+## 🙏 **謝辞**
+
+- [WhisperX](https://github.com/m-bain/whisperX) - 高精度音声認識
+- [VOICEVOX](https://voicevox.hiroshiba.jp/) - 自然な日本語音声合成
+- [RVC](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) - 声質変換技術
+- [SpeechBrain](https://speechbrain.github.io/) - 話者認識ツールキット
+
+## 📞 **サポート**
+
+- **ドキュメント**: [docs/](docs/)
+- **Issue報告**: GitHub Issues
+- **ディスカッション**: GitHub Discussions
 
 ---
 
-**Version**: 2.3.0  
-**Last Updated**: 2025年8月8日  
-**Status**: ✅ 開発完了・本番運用可能
+**Voice Roleplay System v2.0.0** - 次世代音声AI技術で、より自然で個人化された対話体験を提供します 🚀
