@@ -1,0 +1,28 @@
+# Git attributes for voice-roleplay-system
+
+# Database files should be treated as binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Paper research system database files are important and should be tracked
+paper_research_system/database/*.db binary
+paper_research_system/database/*.sqlite binary
+
+# Schema files are text
+*.sql text
+
+# Python files
+*.py text
+
+# Configuration files
+*.json text
+*.yaml text
+*.yml text
+*.toml text
+
+# Documentation
+*.md text
+
+# Shell scripts
+*.sh text

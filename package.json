@@ -1,0 +1,34 @@
+{
+  "name": "voice-roleplay-system",
+  "version": "1.0.0",
+  "description": "AI-powered voice roleplay training system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "./auto-start-on-open-complete.sh",
+    "build": "cd frontend/voice-roleplay-frontend && npm run build",
+    "start": "cd frontend/voice-roleplay-frontend && npm start",
+    "vercel-build": "cd frontend/voice-roleplay-frontend && npm install && npm run build",
+    "deploy": "vercel --prod",
+    "status": "./quick-status.sh",
+    "monitor": "./monitor-services.sh",
+    "check-automation": "./check-automation-systems.sh",
+    "restore-automation": "./auto-restore-automation.sh",
+    "dev:frontend": "cd frontend/voice-roleplay-frontend && npm run dev",
+    "dev:backend": "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "frontend:install": "cd frontend/voice-roleplay-frontend && npm install",
+    "backend:install": "pip install -r requirements.txt",
+    "install": "npm run backend:install && npm run frontend:install",
+    "test": "pytest",
+    "auto-save": "./auto-save.sh",
+    "integrity-check": "python scripts/data-integrity-check.py --check",
+    "obsidian-backup": "./scripts/obsidian-backup.sh",
+    "test-file-upload": "python scripts/test_file_upload.py"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": ["voice", "ai", "roleplay", "training", "sales", "mobile"],
+  "author": "Voice Roleplay System",
+  "license": "MIT"
+}

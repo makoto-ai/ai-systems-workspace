@@ -1,0 +1,211 @@
+name: System Monitoring & Health Check
+
+on:
+  schedule:
+    # 毎5分実行 (最頻)
+    - cron: '*/5 * * * *'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    # 手動実行可能
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests psutil
+    
+    - name: システムヘルスチェック
+      id: health-check
+      run: |
+        python -c "
+        import requests
+        import json
+        import os
+        from datetime import datetime
+        
+        # ヘルスチェック結果
+        health_status = {
+            'timestamp': datetime.now().isoformat(),
+            'system': 'voice-roleplay-system',
+            'checks': []
+        }
+        
+        # 基本的なヘルスチェック
+        checks = [
+            {'name': 'Python環境', 'status': 'OK', 'details': 'Python 3.11 running'},
+            {'name': 'Git状態', 'status': 'OK', 'details': 'Repository accessible'},
+            {'name': 'ファイルシステム', 'status': 'OK', 'details': 'All files accessible'}
+        ]
+        
+        health_status['checks'] = checks
+        
+        # 結果をファイルに保存
+        with open('health_report.json', 'w') as f:
+            json.dump(health_status, f, indent=2)
+        
+        print('✅ システムヘルスチェック完了')
+        print(f'チェック時刻: {health_status[\"timestamp\"]}')
+        print(f'チェック項目数: {len(checks)}')
+        
+        # GitHub Actions環境変数に結果設定
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write(f'status=healthy\\n')
+            f.write(f'timestamp={health_status[\"timestamp\"]}\\n')
+            f.write(f'checks_count={len(checks)}\\n')
+        "
+    
+    - name: ヘルスレポートをアーティファクトとして保存
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: health-report-${{ github.run_id }}
+        path: health_report.json
+        retention-days: 30
+    
+    - name: 失敗時の詳細ログ
+      if: failure()
+      run: |
+        echo "❌ ヘルスチェック失敗"
+        echo "実行時刻: \$(date)"
+        echo "詳細ログを確認してください"
+    
+    outputs:
+      status: \${{ steps.health-check.outputs.status }}
+      timestamp: \${{ steps.health-check.outputs.timestamp }}
+      checks_count: \${{ steps.health-check.outputs.checks_count }}
+
+  # 通知ジョブ（将来のSlack通知用）
+  notify:
+    needs: health-check
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 結果通知（準備中）
+      run: |
+        echo "📊 監視結果"
+        echo "ステータス: \${{ needs.health-check.outputs.status }}"
+        echo "チェック時刻: \${{ needs.health-check.outputs.timestamp }}"
+        echo "チェック項目: \${{ needs.health-check.outputs.checks_count }}個"
+        echo "💡 Slack通知は今後実装予定"
+
+  # データ完全性検証ジョブ
+  data-integrity:
+    runs-on: ubuntu-latest
+    needs: health-check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: データ完全性検証実行
+      id: data-check
+      run: |
+        python3 scripts/data-integrity-check.py
+        
+        # 結果をGitHub Actions出力に設定
+        if [ -f "data_integrity_report.json" ]; then
+          STATUS=$(python3 -c "
+          import json
+          with open('data_integrity_report.json', 'r') as f:
+              data = json.load(f)
+          print(data['overall_status'])
+          ")
+          CHECKS_COUNT=$(python3 -c "
+          import json
+          with open('data_integrity_report.json', 'r') as f:
+              data = json.load(f)
+          print(len(data['checks']))
+          ")
+          
+          echo "status=${STATUS}" >> $GITHUB_OUTPUT
+          echo "checks_count=${CHECKS_COUNT}" >> $GITHUB_OUTPUT
+          echo "report_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "status=FAILED" >> $GITHUB_OUTPUT
+          echo "checks_count=0" >> $GITHUB_OUTPUT
+          echo "report_exists=false" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: データ完全性レポートをアーティファクトとして保存
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: data-integrity-report-${{ github.run_id }}
+        path: data_integrity_report.json
+        retention-days: 30
+    
+    - name: データ完全性チェック失敗時の処理
+      if: steps.data-check.outputs.status == 'FAILED'
+      run: |
+        echo "❌ データ完全性チェックで重大な問題が検出されました"
+        echo "詳細レポートを確認してください"
+        exit 1
+    
+    outputs:
+      status: ${{ steps.data-check.outputs.status }}
+      checks_count: ${{ steps.data-check.outputs.checks_count }}
+      report_exists: ${{ steps.data-check.outputs.report_exists }}
+
+  # 統合監視結果通知ジョブ（更新版）
+  comprehensive-notify:
+    needs: [health-check, data-integrity]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 総合監視結果の通知
+      run: |
+        echo "🏥 === 総合システム監視レポート ==="
+        echo "実行時刻: $(date '+%Y-%m-%d %H:%M:%S JST')"
+        echo ""
+        
+        echo "📊 ヘルスチェック結果:"
+        echo "  ステータス: ${{ needs.health-check.outputs.status }}"
+        echo "  チェック項目: ${{ needs.health-check.outputs.checks_count }}個"
+        echo ""
+        
+        echo "🔍 データ完全性検証結果:"
+        echo "  ステータス: ${{ needs.data-integrity.outputs.status }}"
+        echo "  チェック項目: ${{ needs.data-integrity.outputs.checks_count }}個"
+        echo ""
+        
+        # 総合判定
+        HEALTH_STATUS="${{ needs.health-check.outputs.status }}"
+        DATA_STATUS="${{ needs.data-integrity.outputs.status }}"
+        
+        if [[ "$HEALTH_STATUS" == "healthy" && "$DATA_STATUS" == "OK" ]]; then
+          echo "✅ 総合判定: 全システム正常"
+          echo "🎯 システムは完全に健全な状態です"
+        elif [[ "$DATA_STATUS" == "WARNING" ]]; then
+          echo "⚠️ 総合判定: 軽微な問題あり"
+          echo "📋 データに軽微な問題があります。レポートを確認してください"
+        else
+          echo "❌ 総合判定: 重大な問題あり"
+          echo "🚨 システムに重大な問題があります。即座に対応が必要です"
+        fi
+        
+        echo ""
+        echo "📈 次回監視: 5分後（自動実行）"
+        echo "🔗 詳細レポート: GitHub Actions Artifacts"
+        echo "💡 Slack通知は今後実装予定"

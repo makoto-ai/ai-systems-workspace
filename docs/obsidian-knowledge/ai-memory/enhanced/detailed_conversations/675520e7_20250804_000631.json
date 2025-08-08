@@ -1,0 +1,42 @@
+{
+  "conversation_id": "675520e7",
+  "timestamp": "2025-08-04T00:06:31.804582",
+  "importance_level": "medium",
+  "context_analysis": {
+    "continuation_detected": false,
+    "question_type": "general_question",
+    "project_reference": [],
+    "technical_content": {
+      "code_mentioned": false,
+      "file_operations": false,
+      "system_operations": false,
+      "data_operations": false
+    },
+    "time_references": [],
+    "context_quality": {
+      "before_available": true,
+      "after_available": true,
+      "context_richness": 2
+    }
+  },
+  "emotional_context": {
+    "user_tone": "questioning",
+    "ai_tone": "excited",
+    "uncertainty_detected": true,
+    "satisfaction_indicators": false,
+    "frustration_indicators": false,
+    "confidence_level": "high"
+  },
+  "conversation": {
+    "user_message": "この記憶システムの精度をもっと上げられるの？",
+    "ai_response": "はい！確実に精度を上げられます。現状は基本版で、まだまだ改善の余地があります。",
+    "context_before": "バックアップシステム100%復旧能力確認後",
+    "context_after": "具体的な改善策の提案へ"
+  },
+  "extracted_entities": {},
+  "action_items": [],
+  "questions_raised": [
+    "この記憶システムの精度をもっと上げられるの？"
+  ],
+  "decisions_made": []
+}

@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-08-04T15:46:24.589988",
+  "checks": [
+    {
+      "name": "Critical File: data/usage_limits.json",
+      "type": "file_integrity",
+      "status": "OK",
+      "details": {
+        "exists": true,
+        "size_bytes": 682,
+        "hash": "d9174969180036150f69cc3f69165371f8957860334bda8d353f74d64719cf70",
+        "last_modified": "2025-08-04T15:15:06.056813"
+      }
+    },
+    {
+      "name": "Critical File: requirements.txt",
+      "type": "file_integrity",
+      "status": "OK",
+      "details": {
+        "exists": true,
+        "size_bytes": 1186,
+        "hash": "c38c5e48bff97adacb3de5b0601fda66b7aafa6c8c8fc37748458ebd786df3ab",
+        "last_modified": "2025-08-04T13:36:48.901114"
+      }
+    },
+    {
+      "name": "Critical File: app/main.py",
+      "type": "file_integrity",
+      "status": "OK",
+      "details": {
+        "exists": true,
+        "size_bytes": 5360,
+        "hash": "5096cdc5e30291a3867af6d407cf4b08c89808de70c1c0a3d2af5d5cd98f97f7",
+        "last_modified": "2025-08-02T13:13:32.730185"
+      }
+    },
+    {
+      "name": "Critical File: .env.local",
+      "type": "file_integrity",
+      "status": "OK",
+      "details": {
+        "exists": true,
+        "size_bytes": 527,
+        "hash": "87a310adf74be71ecb09a4ab59f0d75d8666a5c2e807bb1eae663882be211912",
+        "last_modified": "2025-08-04T13:40:41.548565"
+      }
+    },
+    {
+      "name": "Backup Files Integrity",
+      "type": "backup_integrity",
+      "status": "OK",
+      "details": {
+        "backup_count": 16,
+        "backup_files": [
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/backup_verification_enhancement.py",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/config_backup_20250804_134423.bak",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/env_local_backup_20250804_134423.bak",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/requirements_backup_20250804_134423.bak",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/env_backup_20250804_134423.bak"
+        ],
+        "status_message": "Found 16 backup files"
+      }
+    },
+    {
+      "name": "Data Directory Structure",
+      "type": "data_structure",
+      "status": "OK",
+      "details": {
+        "usage_limits_json": {
+          "exists": true,
+          "user_count": 1,
+          "total_entries": 12,
+          "file_size_kb": 0.67
+        }
+      }
+    }
+  ],
+  "overall_status": "OK"
+}

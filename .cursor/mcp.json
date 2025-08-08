@@ -1,0 +1,12 @@
+{
+  "name": "ai-systems-workspace",
+  "goals": [
+    "Set up CI/CD using GitHub Actions",
+    "Implement pre-commit hooks for quality and security",
+    "Deploy with GitHub Pages or FastAPI"
+  ],
+  "tools": ["git", "gh", "pre-commit", "black", "flake8", "bandit", "pip-audit"],
+  "language": "Python",
+  "pythonVersion": "3.12",
+  "framework": "FastAPI"
+} 

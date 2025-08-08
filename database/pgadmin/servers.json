@@ -1,0 +1,24 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Voice Roleplay DB",
+      "Group": "Servers",
+      "Host": "roleplay-db",
+      "Port": 5432,
+      "MaintenanceDB": "voice_roleplay_db",
+      "Username": "voice_user",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "Voice Analytics DB (TimescaleDB)",
+      "Group": "Servers", 
+      "Host": "analytics-db",
+      "Port": 5432,
+      "MaintenanceDB": "voice_analytics_db",
+      "Username": "analytics_user",
+      "PassFile": "/tmp/pgpassfile",
+      "SSLMode": "prefer"
+    }
+  }
+}

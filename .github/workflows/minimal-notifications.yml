@@ -1,0 +1,18 @@
+name: Minimal Notifications
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  notify-completion:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Manual Workflow Notification
+      run: |
+        echo "🎯 手動実行されたワークフローが完了しました"
+        echo "実行者: ${{ github.actor }}"
+        echo "実行時刻: $(date)"

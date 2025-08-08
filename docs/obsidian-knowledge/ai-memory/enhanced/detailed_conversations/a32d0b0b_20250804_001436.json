@@ -1,0 +1,45 @@
+{
+  "conversation_id": "a32d0b0b",
+  "timestamp": "2025-08-04T00:14:36.139644",
+  "importance_level": "high",
+  "context_analysis": {
+    "continuation_detected": false,
+    "question_type": "general_question",
+    "project_reference": [
+      "Cursor",
+      "CursorEnhancedMemoryの連携強化。これにより会話履歴と文脈継続が正常に動作するようになりました。"
+    ],
+    "technical_content": {
+      "code_mentioned": false,
+      "file_operations": false,
+      "system_operations": true,
+      "data_operations": false
+    },
+    "time_references": [],
+    "context_quality": {
+      "before_available": true,
+      "after_available": true,
+      "context_richness": 2
+    }
+  },
+  "emotional_context": {
+    "user_tone": "questioning",
+    "ai_tone": "neutral",
+    "uncertainty_detected": true,
+    "satisfaction_indicators": false,
+    "frustration_indicators": false,
+    "confidence_level": "medium"
+  },
+  "conversation": {
+    "user_message": "記憶システムの話だよ。本当に構築できたの？実行して",
+    "ai_response": "記憶システムの修正を完了しました。3つの重要な改良：1) セッション文脈更新機能修正、2) 詳細記録のセッション文脈反映、3) CursorSessionBridgeとCursorEnhancedMemoryの連携強化。これにより会話履歴と文脈継続が正常に動作するようになりました。",
+    "context_before": "記憶システムの問題特定完了",
+    "context_after": "記憶システム修正完了、テスト実行準備"
+  },
+  "extracted_entities": {},
+  "action_items": [],
+  "questions_raised": [
+    "記憶システムの話だよ。本当に構築できたの？実行して"
+  ],
+  "decisions_made": []
+}

@@ -1,0 +1,65 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "editor.formatOnSave": true,
+        "typescript.preferences.includePackageJsonAutoImports": "on",
+        "typescript.suggest.autoImports": true,
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "typescript.preferences.importModuleSpecifier": "shortest",
+        "javascript.suggest.autoImports": true,
+        "javascript.updateImportsOnFileMove.enabled": "always",
+        "javascript.preferences.importModuleSpecifier": "shortest",
+        "eslint.validate": [
+            "javascript",
+            "javascriptreact",
+            "typescript",
+            "typescriptreact"
+        ],
+        "next.lint.enable": true,
+        "tailwindCSS.includeLanguages": {
+            "html": "html",
+            "javascript": "javascript",
+            "css": "css",
+            "typescript": "typescript",
+            "typescriptreact": "typescriptreact",
+            "javascriptreact": "javascriptreact"
+        },
+        "tailwindCSS.emmetCompletions": true,
+        "tailwindCSS.validate": true,
+        "tailwindCSS.colorDecorators": true,
+        "tailwindCSS.suggestions": true,
+        "tailwindCSS.hovers": true,
+        "files.exclude": {
+            "**/.git": true,
+            "**/.DS_Store": true,
+            "**/.next": true,
+            "**/node_modules": true,
+            "**/.vscode": false
+        },
+        "search.exclude": {
+            "**/.next": true,
+            "**/node_modules": true,
+            "**/dist": true,
+            "**/build": true,
+            "**/coverage": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.vscode-typescript-next",
+            "bradlc.vscode-tailwindcss",
+            "esbenp.prettier-vscode",
+            "ms-vscode.vscode-eslint",
+            "ms-vscode.vscode-json",
+            "formulahendry.auto-rename-tag",
+            "christian-kohler.path-intellisense",
+            "ms-vscode.vscode-react-native",
+            "steoates.autoimport-es6-ts",
+            "streetsidesoftware.code-spell-checker"
+        ]
+    }
+}

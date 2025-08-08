@@ -1,0 +1,82 @@
+{
+  "session_id": "session_20250804_001442",
+  "start_time": "2025-08-04T00:14:42.058554",
+  "user_intent": "セッション継続（自動検出）",
+  "project_context": {
+    "created": "2025-08-02T13:32:36.585032",
+    "completed_tasks": [
+      "論文検索システム完成",
+      "バックアップシステム100%復旧能力確認",
+      "Cursor記憶システム構築"
+    ],
+    "ongoing_tasks": [
+      "Cursor記憶システムの実運用テスト",
+      "セッション継続性の検証"
+    ],
+    "important_decisions": [
+      "AIの勝手な削除・構築を防ぐ安全確認システム必須",
+      "セッション間での文脈保持システム導入"
+    ],
+    "current_focus": "Cursor記憶システムの動作検証",
+    "last_updated": "2025-08-02T13:32:36.585036"
+  },
+  "recent_conversations": [
+    {
+      "conversation_id": "1327eda3",
+      "timestamp": "2025-08-02T13:32:36.583752",
+      "summary": "会話 1327eda3"
+    },
+    {
+      "conversation_id": "898463a3",
+      "timestamp": "2025-08-02T13:46:00.428937",
+      "summary": "会話 898463a3"
+    },
+    {
+      "conversation_id": "9d5ec2e9",
+      "timestamp": "2025-08-04T00:06:31.806104",
+      "summary": "会話 9d5ec2e9"
+    },
+    {
+      "conversation_id": "81ce6933",
+      "timestamp": "2025-08-04T00:06:46.195455",
+      "summary": "会話 81ce6933"
+    },
+    {
+      "conversation_id": "1ad16fc0",
+      "timestamp": "2025-08-04T00:14:36.142123",
+      "summary": "会話 1ad16fc0"
+    },
+    {
+      "conversation_id": "c4a8a712",
+      "timestamp": "2025-08-02T13:46:00.427386",
+      "summary": "1",
+      "importance": "medium"
+    },
+    {
+      "conversation_id": "675520e7",
+      "timestamp": "2025-08-04T00:06:31.804582",
+      "summary": "この記憶システムの精度をもっと上げられるの？",
+      "importance": "medium"
+    },
+    {
+      "conversation_id": "d851d959",
+      "timestamp": "2025-08-04T00:06:46.192885",
+      "summary": "AI_SESSION_BRIEFING.mdを読んで理解してください。前回の文脈を把握して、勝手な削除や構築をせず、必ず確認を取ってから作業してください。",
+      "importance": "critical"
+    },
+    {
+      "conversation_id": "a32d0b0b",
+      "timestamp": "2025-08-04T00:14:36.139644",
+      "summary": "記憶システムの話だよ。本当に構築できたの？実行して",
+      "importance": "high"
+    }
+  ],
+  "ongoing_tasks": [
+    "Cursor記憶システムの実運用テスト",
+    "セッション継続性の検証"
+  ],
+  "conversation_count": 14,
+  "session_conversation_count": 0,
+  "safety_confirmations": [],
+  "end_time": "2025-08-04T00:22:48.921281"
+}

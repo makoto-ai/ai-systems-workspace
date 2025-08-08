@@ -1,0 +1,24 @@
+{
+  "youtube_script_creation_mandatory_workflow": {
+    "trigger": "YouTube原稿作成要求",
+    "mandatory_system": "youtube_script_auto_system.py",
+    "function": "create_youtube_script_fully_automated",
+    "user_verification": "not_required",
+    "manual_check": "prohibited",
+    "automation_level": "complete",
+    "trust_level": "guaranteed",
+    "hallucination_prevention": "automatic",
+    "steps": [
+      "1. 論文検索システム自動実行",
+      "2. 確認済み情報のみ抽出・検証",
+      "3. 具体的数値・研究者名・年度確認",
+      "4. 研究内容・結果詳細説明",
+      "5. 高品質原稿自動生成",
+      "6. 自動品質検証",
+      "7. ファイル保存・表示案内"
+    ],
+    "bypass_allowed": false,
+    "exceptions": "none",
+    "permanent": true
+  }
+}

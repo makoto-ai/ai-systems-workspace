@@ -1,0 +1,39 @@
+{
+  "id": "youtube_auto_system_permanent",
+  "type": "permanent_automation_integration",
+  "importance": "critical",
+  "context": "complete_automation_trust_recovery",
+  "emotional_context": "absolute_trust_requirement_user_exhaustion_prevention",
+  "entities": [
+    "YouTube原稿",
+    "完全自動化",
+    "信頼保証",
+    "手動チェック排除"
+  ],
+  "action_items": [
+    "YouTube原稿作成要求時は必ずyoutube_script_auto_system.pyを実行",
+    "ユーザーの手動チェックを一切要求しない",
+    "完全信頼保証レベルで原稿を提供",
+    "論文検索→確認→詳細原稿作成を自動実行"
+  ],
+  "decisions": [
+    "完全自動化システムの恒久統合決定",
+    "ユーザー手動確認作業の完全排除決定",
+    "信頼回復のための絶対保証システム採用決定"
+  ],
+  "workflow_context": {
+    "type": "youtube_script_creation_automation",
+    "status": "permanent_integration_completed",
+    "automation_level": "complete",
+    "warning": "手動チェック要求は信頼失墜のため絶対禁止"
+  },
+  "auto_summary": {
+    "summary": "YouTube原稿作成の完全自動化システムを記憶に恒久統合。今後ユーザーがYouTube原稿作成を要求した場合、必ずyoutube_script_auto_system.pyが自動実行され、ユーザーの手動チェック一切不要で信頼できる原稿が提供される。",
+    "importance_level": "critical",
+    "action_required": "YouTube原稿作成要求時は必ず自動化システム実行"
+  },
+  "timestamp": "2025-08-04T11:17:42.992847",
+  "permanent": true,
+  "system_level": true,
+  "trust_recovery": true
+}

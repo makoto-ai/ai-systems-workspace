@@ -1,0 +1,35 @@
+{
+  "workflow_id": "092e7821",
+  "step_name": "YouTube原稿作成一気通貫システム完全構築",
+  "timestamp": "2025-08-04T01:06:12.738584",
+  "details": {
+    "integrated_workflow": {
+      "step1": "論文検索システム実行 - クリティカルシンキング適用",
+      "step2": "タイトル決定フロー - 既存タイトル優先/論文導出タイトル作成",
+      "step3": "テーゼ・アンチテーゼ・ジンテーゼ構造統合",
+      "step4": "8つの絶対条件適用",
+      "step5": "話し方・口調・語尾の5原稿スタイル継承",
+      "step6": "事実確認済み原稿作成"
+    },
+    "critical_thinking_integration": {
+      "these": "論文による現実・問題の提示",
+      "antithese": "反対論拠・課題・制約の分析",
+      "synthese": "統合解決策・戦略的アプローチの提示"
+    },
+    "title_creation_flow": {
+      "condition1": "タイトル既存 → そのタイトル絶対使用",
+      "condition2": "タイトル未定 → 論文検索結果からタイトル自動生成",
+      "title_criteria": "CTR向上・権威性・具体性・ベネフィット明示"
+    },
+    "missing_elements_check": [
+      "5つのYouTube原稿話し方パターン学習システム",
+      "クリティカルシンキング自動統合",
+      "タイトル自動生成アルゴリズム",
+      "論文→原稿一気通貫フロー自動化"
+    ],
+    "speaking_style_inheritance": "5つの原稿から語尾・口調・言い回し完全学習",
+    "system_status": "一気通貫システム記憶統合完了"
+  },
+  "workflow_type": "content_creation_workflow",
+  "importance": "critical"
+}

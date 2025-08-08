@@ -1,0 +1,171 @@
+---
+excalidraw-plugin: parsed
+tags:
+  - excalidraw
+---
+
+
+**part of** :: [[IIB - Simple Marketing for Smart People]]
+**Previous** :: [[11 - Spot the Pattern]]
+**Next** :: [[13 - A Final Word of Advice for Smart Marketers]]
+
+
+
+## Summary
+
+Five actionable Belief Building steps:
+
+Action Step #1: Revisit your current audience.
+- ask yourself: 
+	- What does my customer already know? 
+	- How long is their chain of beliefs? 
+	- Is this who I want to target going forward?
+- prevent such cases
+	- try to sell a too-advanced product to beginners
+	- try to sell an introductory product to advanced consumer
+
+Action Step #2: Complete your core messaging document.
+- use core message template
+	- Link:: [SMSP - Cheat Sheet of Key Concepts.pdf - Google ドライブ](https://drive.google.com/file/d/1HSTA41H_kVGPxK7SCYEHU6hqKumh9rFf/view)
+	- Link:: [SMSP - Core Messaging Worksheet.pdf - Google ドライブ](https://drive.google.com/file/d/1cyhhD-AzRf9Hr98hd7NwJRv_WhQ_n9Ui/view)
+	- examples:: [Notion – The all-in-one workspace for your notes, tasks, wikis, and databases.](https://fivelightbulbs.notion.site/Real-Life-Examples-of-Marketing-Material-that-Follows-the-SMSP-Approach-9e0287a9cb6a4dcd9630680fb956ddc3)
+
+Action Step #3: Create new marketing material.
+- incorporate Belief Building
+
+Action Step #4: Find more opportunities to incorporate Belief Building.
+- create a free introductory online course for our high-end services
+- launch a new product to existing customers
+- use Belief Building while delivering our product
+
+Action Step #5: Make the most of other trainings you’ve taken.
+- use core message to what we have learned from invested marketing training contents
+
+
+## Highlights
+
+---
+>We wanted to write a book that went bottom-up, not top-down. This Belief Building process isn’t easy. We don’t tell you exactly what to do, because we can’t. You still have to do the work of learning about your customers, their beliefs, what beliefs are missing, and how you’ll deploy all this through your marketing efforts. ^ref-30842
+>>[!note]
+>ありがと！Billy! ボトムアップで描きたかったその気持ち、とても理解できるよ
+---
+>You’re no doubt eager to put this approach into practice, so to help you move ahead, we’ve given you five actionable steps. ^ref-59731
+
+---
+>Action Step #1: Revisit your current audience. ^ref-35292
+
+---
+>Revisit who you have been speaking to and ask yourself: • What does my customer already know? • How long is their chain of beliefs? • Is this who I want to target going forward? ^ref-59407
+
+---
+>targeting. In some cases, they realize they’ve been trying to sell a too-advanced product to beginners. In other cases, they realize they’ve been selling an introductory product to advanced consumers. ^ref-37289
+
+---
+>Action Step #3: Create new marketing material. ^ref-54167
+
+---
+>Action Step #4: Find more opportunities to incorporate Belief Building. ^ref-58218
+
+---
+>1. If you’re a service provider, create a free online course that prepares prospects for your high-end services. If you find yourself always repeating the same basic information, this could take a lot of that work off your plate. 2. Launch a new product to existing customers. Educate your customers, using Belief Building, on what they need to know in order to buy this product. Then launch it, and watch them eagerly buy. 3. Use Belief Building while delivering your product. What if a teacher used Belief Building in their classroom? What if a physical therapist used it to increase compliance with their treatment plan?  ^ref-61533
+
+---
+>Action Step #5: Make the most of other trainings you’ve taken. ^ref-4351
+
+---
+>Remember, your core message is upstream—a higher-leverage activity than all that advice about marketing channels and tactics—and using it will create more cohesion and success downstream. ^ref-8586
+
+# Excalidraw Data
+## Text Elements
+12 - Smart Next Steps ^NCZDstlS
+
+Five actionable Belief Building steps ^1TqQQPCO
+
+- What does my customer already know? 
+- How long is their chain of beliefs? 
+- Is this who I want to target going forward? ^oT6FOdyP
+
+- create a free introductory online course 
+- launch a new product to existing customers
+- use Belief Building while delivering our product ^vn3umJ65
+
+- use core message to what we have learned 
+  from invested marketing training contents ^VNhZUvDj
+
+## Embedded Files
+36c254899ed1c0efa0dfac3978ae0cbb1e9800f2: [[Illustration - five actionable Belief Building steps|100%]]
+
+%%
+## Drawing
+```compressed-json
+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=
+```
+%%

@@ -1,0 +1,15 @@
+{
+  "youtube_script_triggers": [
+    "YouTube原稿",
+    "YouTube台本",
+    "YouTubeスクリプト",
+    "営業原稿",
+    "動画原稿"
+  ],
+  "auto_response": {
+    "system": "youtube_script_auto_system.py",
+    "function": "create_youtube_script_fully_automated",
+    "message": "完全自動化システムで原稿を作成します（ユーザー確認不要）"
+  },
+  "integration_complete": true
+}

@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-08-04T13:40:43.217720",
+  "checks": [
+    {
+      "name": "Critical File: data/usage_limits.json",
+      "type": "file_integrity",
+      "status": "FAILED",
+      "details": {
+        "exists": false,
+        "error": "File not found"
+      }
+    },
+    {
+      "name": "Critical File: requirements.txt",
+      "type": "file_integrity",
+      "status": "FAILED",
+      "details": {
+        "exists": false,
+        "error": "File not found"
+      }
+    },
+    {
+      "name": "Critical File: app/main.py",
+      "type": "file_integrity",
+      "status": "FAILED",
+      "details": {
+        "exists": false,
+        "error": "File not found"
+      }
+    },
+    {
+      "name": "Critical File: .env.local",
+      "type": "file_integrity",
+      "status": "FAILED",
+      "details": {
+        "exists": false,
+        "error": "File not found"
+      }
+    },
+    {
+      "name": "Backup Files Integrity",
+      "type": "backup_integrity",
+      "status": "WARNING",
+      "details": {
+        "backup_files": [],
+        "warning": "No backup files found"
+      }
+    },
+    {
+      "name": "Data Directory Structure",
+      "type": "data_structure",
+      "status": "FAILED",
+      "details": {
+        "error": "Data directory does not exist"
+      }
+    }
+  ],
+  "overall_status": "FAILED"
+}

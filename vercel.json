@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "voice-roleplay-system",
+  "builds": [
+    {
+      "src": "frontend/voice-roleplay-frontend/next.config.js",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/voice-roleplay-frontend/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "frontend/voice-roleplay-frontend/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "regions": ["hnd1"],
+  "outputDirectory": "frontend/voice-roleplay-frontend/.next"
+}

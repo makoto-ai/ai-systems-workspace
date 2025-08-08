@@ -1,0 +1,114 @@
+{
+  "slack": {
+    "channel": "slack",
+    "enabled": false,
+    "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+    "api_token": null,
+    "bot_token": null,
+    "channel_id": null,
+    "phone_number": null,
+    "user_id": null,
+    "additional_config": {
+      "username": "営業ロールプレイBot",
+      "emoji": ":speech_balloon:",
+      "mention_channel": false,
+      "_setup_guide": "1. Slackワークスペースで 'Incoming Webhooks' アプリを追加 2. チャンネルを選択してWebhook URLを取得 3. URLを上記に設定"
+    }
+  },
+  "discord": {
+    "channel": "discord",
+    "enabled": false,
+    "webhook_url": "https://discord.com/api/webhooks/YOUR/DISCORD/WEBHOOK",
+    "api_token": null,
+    "bot_token": null,
+    "channel_id": null,
+    "phone_number": null,
+    "user_id": null,
+    "additional_config": {
+      "username": "営業ロールプレイBot",
+      "avatar_url": "",
+      "mention_everyone": false,
+      "_setup_guide": "1. Discordサーバーのテキストチャンネル設定を開く 2. 連携タブ → Webhooks → '新しいWebhook' 3. Webhook URLをコピーして上記に設定"
+    }
+  },
+  "telegram": {
+    "channel": "telegram",
+    "enabled": false,
+    "webhook_url": null,
+    "api_token": null,
+    "bot_token": "YOUR_BOT_TOKEN",
+    "channel_id": "YOUR_CHANNEL_ID",
+    "phone_number": null,
+    "user_id": null,
+    "additional_config": {
+      "parse_mode": "HTML",
+      "disable_web_page_preview": true,
+      "_setup_guide": "1. @BotFatherとチャットしてボットを作成 2. /newbot コマンドでボットトークンを取得 3. ボットをチャンネルに追加 4. チャンネルIDを取得（@userinfobot等を利用）"
+    }
+  },
+  "teams": {
+    "channel": "teams",
+    "enabled": false,
+    "webhook_url": "https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK",
+    "api_token": null,
+    "bot_token": null,
+    "channel_id": null,
+    "phone_number": null,
+    "user_id": null,
+    "additional_config": {
+      "theme_color": "0076D7",
+      "summary": "営業ロールプレイリマインダー",
+      "_setup_guide": "1. Teams チャンネルで右クリック → コネクタ 2. 'Incoming Webhook' を検索して追加 3. 名前とアイコンを設定してWebhook URLを取得"
+    }
+  },
+  "line": {
+    "channel": "line",
+    "enabled": false,
+    "webhook_url": null,
+    "api_token": "YOUR_CHANNEL_ACCESS_TOKEN",
+    "bot_token": null,
+    "channel_id": null,
+    "phone_number": null,
+    "user_id": null,
+    "additional_config": {
+      "channel_access_token": "",
+      "cost_warning": "LINE API は従量課金です。月1000通まで無料、以降は課金されます。",
+      "_setup_guide": "1. LINE Developers コンソールでプロバイダーとチャンネルを作成 2. Messaging API を有効化 3. チャンネルアクセストークンを取得 4. Webhook設定でシステムのURLを設定",
+      "_cost_info": "月1000通まで無料、以降：1通あたり0.4円〜"
+    }
+  },
+  "sms": {
+    "channel": "sms",
+    "enabled": false,
+    "webhook_url": null,
+    "api_token": "YOUR_SMS_API_TOKEN",
+    "bot_token": null,
+    "channel_id": null,
+    "phone_number": "YOUR_FROM_PHONE_NUMBER",
+    "user_id": null,
+    "additional_config": {
+      "provider": "twilio",
+      "from_number": "",
+      "cost_per_message": "約5-10円/通",
+      "_setup_guide": "1. Twilio アカウントを作成 2. 電話番号を取得 3. Account SID と Auth Token を取得 4. 上記情報を設定",
+      "_providers": ["twilio", "aws_sns", "sendgrid"],
+      "_cost_warning": "SMS は送信ごとにコストがかかります。緊急時のみの使用を推奨"
+    }
+  },
+  "_global_settings": {
+    "_usage_notes": {
+      "無料で始める": "slack + discord + telegram の組み合わせがおすすめ",
+      "企業利用": "teams + slack の組み合わせがおすすめ",
+      "日本市場特化": "line（月1000通まで無料）+ slack",
+      "コスト管理": "LINEとSMSは従量課金なので使用量を監視"
+    },
+    "_setup_priority": [
+      "1. slack（最も利用しやすい）",
+      "2. discord（個人・コミュニティ向け）", 
+      "3. telegram（海外展開時に有用）",
+      "4. teams（企業環境で既に利用している場合）",
+      "5. line（日本特化、コスト注意）",
+      "6. sms（緊急時のみ、コスト高）"
+    ]
+  }
+} 

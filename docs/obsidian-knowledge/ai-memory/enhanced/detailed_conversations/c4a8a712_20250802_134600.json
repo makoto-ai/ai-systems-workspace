@@ -1,0 +1,42 @@
+{
+  "conversation_id": "c4a8a712",
+  "timestamp": "2025-08-02T13:46:00.427386",
+  "importance_level": "medium",
+  "context_analysis": {
+    "continuation_detected": false,
+    "question_type": "statement",
+    "project_reference": [],
+    "technical_content": {
+      "code_mentioned": false,
+      "file_operations": false,
+      "system_operations": true,
+      "data_operations": false
+    },
+    "time_references": [],
+    "context_quality": {
+      "before_available": true,
+      "after_available": true,
+      "context_richness": 3
+    }
+  },
+  "emotional_context": {
+    "user_tone": "neutral",
+    "ai_tone": "neutral",
+    "uncertainty_detected": false,
+    "satisfaction_indicators": false,
+    "frustration_indicators": false,
+    "confidence_level": "medium"
+  },
+  "conversation": {
+    "user_message": "1",
+    "ai_response": "Level 2アップグレードを実行します。記憶精度が30%から60%に向上し、詳細文脈記録、重要度自動判定、エンティティ抽出、感情分析機能が有効になります。",
+    "context_before": "精度向上の可能性について質問",
+    "context_after": "Level 2機能の有効化とテスト"
+  },
+  "extracted_entities": {},
+  "action_items": [
+    "1 Level 2アップグレード"
+  ],
+  "questions_raised": [],
+  "decisions_made": []
+}

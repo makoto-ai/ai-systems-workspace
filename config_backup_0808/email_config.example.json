@@ -1,0 +1,16 @@
+{
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "username": "your-email@example.com",
+  "password": "your-app-password",
+  "from_email": "your-email@example.com",
+  "from_name": "営業ロールプレイシステム",
+  "use_tls": true,
+  "_comments": {
+    "gmail": "Gmail使用時は、2段階認証を有効にして「アプリパスワード」を生成してください",
+    "yahoo": "Yahoo Mail: smtp.mail.yahoo.com:587",
+    "outlook": "Outlook/Hotmail: smtp-mail.outlook.com:587",
+    "gmail_setup": "Gmailの設定手順: 1) Googleアカウントで2段階認証を有効化 2) アプリパスワードを生成 3) passwordフィールドにアプリパスワードを入力",
+    "security": "本番環境では環境変数や秘密管理システムを使用することを推奨します"
+  }
+} 

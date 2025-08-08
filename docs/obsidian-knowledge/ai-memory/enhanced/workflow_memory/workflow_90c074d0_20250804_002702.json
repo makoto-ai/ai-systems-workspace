@@ -1,0 +1,15 @@
+{
+  "workflow_id": "90c074d0",
+  "step_name": "論文検索システム必須確認 - YouTube原稿作成前チェック",
+  "timestamp": "2025-08-04T00:27:02.253302",
+  "details": {
+    "action": "YouTube原稿作成依頼受信",
+    "warning_status": "論文検索システム未実行",
+    "next_step": "論文検索→事実確認→原稿作成フロー実行予定",
+    "previous_issue": "ハルシネーション原稿作成の問題発生済み",
+    "safety_measure": "必須フロー厳守"
+  },
+  "workflow_type": "research_workflow",
+  "importance": "critical",
+  "warning": "論文検索システム未実行 - ハルシネーションリスク"
+}

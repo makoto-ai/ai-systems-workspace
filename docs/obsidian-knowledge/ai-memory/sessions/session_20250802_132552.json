@@ -1,0 +1,19 @@
+{
+  "session_id": "session_20250802_132552",
+  "start_time": "2025-08-02T13:25:52.636113",
+  "user_intent": "セッション継続（自動検出）",
+  "project_context": {},
+  "recent_conversations": [],
+  "ongoing_tasks": [],
+  "conversation_count": 1,
+  "safety_confirmations": [],
+  "last_conversation": {
+    "conversation_id": "1327eda3",
+    "timestamp": "2025-08-02T13:32:36.583752",
+    "type": "system_development",
+    "user_message": "Cursor記憶システムについて質問しました",
+    "ai_response": "Cursor完全記憶&安全確認システムを構築しました",
+    "context_hash": "684de627"
+  },
+  "end_time": "2025-08-02T13:32:43.733820"
+}

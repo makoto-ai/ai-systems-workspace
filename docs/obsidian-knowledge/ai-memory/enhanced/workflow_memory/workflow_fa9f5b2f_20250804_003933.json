@@ -1,0 +1,28 @@
+{
+  "workflow_id": "fa9f5b2f",
+  "step_name": "ハルシネーション排除YouTube原稿作成完了",
+  "timestamp": "2025-08-04T00:39:33.450671",
+  "details": {
+    "process_followed": "論文検索→事実確認→原稿作成フロー厳守",
+    "verified_research": [
+      "Barrick & Mount 1991: THE BIG FIVE PERSONALITY DIMENSIONS AND JOB PERFORMANCE",
+      "Hurtz & Donovan 2000: Personality and job performance: the Big Five revisited",
+      "Sitser 2014: Predicting sales performance"
+    ],
+    "removed_hallucinations": [
+      "Vinchur 1998 (存在しない研究)",
+      "Spencer 2010 (未確認)",
+      "具体的数値の誇張"
+    ],
+    "maintained_elements": [
+      "原稿構成・タイムスタンプ",
+      "ユーザー話し方・口調",
+      "YouTubeアルゴリズム対応"
+    ],
+    "output_file": "revised_youtube_script_factchecked.txt",
+    "safety_status": "ハルシネーション完全排除済み",
+    "result": "事実に基づく正確なYouTube原稿作成完了"
+  },
+  "workflow_type": "content_creation_workflow",
+  "importance": "critical"
+}

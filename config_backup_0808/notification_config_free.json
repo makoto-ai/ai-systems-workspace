@@ -1,0 +1,65 @@
+{
+  "_note": "完全無料版 - コストを気にせず使えるチャンネルのみ",
+  
+  "slack": {
+    "channel": "slack",
+    "enabled": false,
+    "webhook_url": "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK",
+    "additional_config": {
+      "username": "営業ロールプレイBot",
+      "emoji": ":speech_balloon:",
+      "mention_channel": false,
+      "_setup": "1. Slackで Incoming Webhooks アプリ追加 2. チャンネル選択 3. Webhook URL取得"
+    }
+  },
+  
+  "discord": {
+    "channel": "discord",
+    "enabled": false,
+    "webhook_url": "https://discord.com/api/webhooks/YOUR/DISCORD/WEBHOOK",
+    "additional_config": {
+      "username": "営業ロールプレイBot",
+      "avatar_url": "",
+      "mention_everyone": false,
+      "_setup": "1. Discordチャンネル設定 2. 連携 → Webhooks 3. 新しいWebhook作成"
+    }
+  },
+  
+  "telegram": {
+    "channel": "telegram",
+    "enabled": false,
+    "bot_token": "YOUR_BOT_TOKEN",
+    "channel_id": "YOUR_CHANNEL_ID",
+    "additional_config": {
+      "parse_mode": "HTML",
+      "disable_web_page_preview": true,
+      "_setup": "1. @BotFatherでボット作成 2. チャンネル作成 3. ボット追加 4. チャンネルID取得"
+    }
+  },
+  
+  "teams": {
+    "channel": "teams",
+    "enabled": false,
+    "webhook_url": "https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK",
+    "additional_config": {
+      "theme_color": "0076D7",
+      "summary": "営業ロールプレイリマインダー",
+      "_setup": "1. Teamsチャンネルでコネクタ 2. Incoming Webhook追加 3. URL取得"
+    }
+  },
+  
+  "_recommendations": {
+    "個人利用": ["discord", "telegram"],
+    "企業利用": ["slack", "teams"],
+    "バックアップ重視": ["slack", "discord", "telegram"],
+    "設定の簡単さ順": ["slack", "discord", "teams", "telegram"]
+  },
+  
+  "_cost_info": {
+    "slack": "完全無料（Webhook）",
+    "discord": "完全無料（Webhook）",
+    "telegram": "完全無料（Bot API）",
+    "teams": "完全無料（Webhook）",
+    "total_cost": "0円 🎉"
+  }
+} 

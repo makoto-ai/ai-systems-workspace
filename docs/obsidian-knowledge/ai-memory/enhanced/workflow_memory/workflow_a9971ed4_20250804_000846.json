@@ -1,0 +1,12 @@
+{
+  "workflow_id": "a9971ed4",
+  "step_name": "YouTube原稿作成テスト",
+  "timestamp": "2025-08-04T00:08:46.592201",
+  "details": {
+    "content": "アルゴリズム解説動画",
+    "verification": false
+  },
+  "workflow_type": "content_creation_workflow",
+  "importance": "critical",
+  "warning": "論文検索システム未実行 - ハルシネーションリスク"
+}

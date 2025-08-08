@@ -1,0 +1,20 @@
+{
+  "workflow_id": "9a939397",
+  "step_name": "論文検索システムによる事実確認完了",
+  "timestamp": "2025-08-04T00:35:27.945950",
+  "details": {
+    "verified_research": {
+      "Barrick_Mount_1991": "実在確認済み - THE BIG FIVE PERSONALITY DIMENSIONS AND JOB PERFORMANCE: A META-ANALYSIS",
+      "Hurtz_Donovan_2000": "実在確認済み - Personality and job performance: the Big Five revisited",
+      "Vinchur_1998": "該当研究見つからず - 代替研究必要"
+    },
+    "found_alternatives": {
+      "Sitser_2014": "Predicting sales performance: Strengthening the personality – job performance linkage",
+      "sales_personality_2018": "The Impact of Salesperson's Personality Type on Sales Performance"
+    },
+    "next_step": "YouTube原稿ガイド確認→正しい原稿作成",
+    "status": "ハルシネーション防止フロー実行中"
+  },
+  "workflow_type": "research_workflow",
+  "importance": "critical"
+}

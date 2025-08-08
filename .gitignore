@@ -1,0 +1,328 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Data files
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Exception: Keep paper research system databases
+!paper_research_system/database/*.db
+
+# Audio/Video files (too large for Git)
+*.wav
+*.mp3
+*.mp4
+*.avi
+*.mov
+*.mkv
+uploads/
+
+# AI Models (too large for Git)
+models/
+*.model
+*.pt
+*.pth
+*.onnx
+*.pkl
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Node.js (for frontend)
+frontend/voice-roleplay-frontend/node_modules/
+frontend/voice-roleplay-frontend/.next/
+frontend/voice-roleplay-frontend/out/
+frontend/voice-roleplay-frontend/build/
+frontend/voice-roleplay-frontend/.env
+frontend/voice-roleplay-frontend/.env.local
+
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
+
+# Voice Roleplay specific
+config/email_config.json
+config/notification_config.json
+backups/
+voice_samples/
+user_data/
+session_recordings/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# VOICEVOX
+voicevox_core/
+voicevox_engine/
+
+# HuggingFace cache
+.cache/
+transformers_cache/
+
+# Weights & Biases
+wandb/
+
+# Time Machine backups (if any symlinks)
+*.backup
+backup_*/
+# 現在の仮想環境
+.venv/
+venv_speech/
+
+# Python関連
+*.pyc
+*.backup
+
+# エディタ・OS固有
+*.swp
+.DS_Store
+Thumbs.db
+
+# 一時ファイル
+.auto-save.log
+app.log
+
+# === セキュリティ強化項目 ===
+# API Keys and Secrets
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+auth/
+private/
+confidential/
+
+# Backup files with sensitive data
+*.backup
+*_backup
+backup_*
+*.old
+*.orig
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files (may contain sensitive info)
+*.log
+logs/
+*.log.*
+
+# Configuration files with secrets
+config.json
+settings.json
+*_config.json
+*_settings.json
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Security scans and reports
+security_report.*
+vulnerability_report.*
+penetration_test.*
+
+# Auto-added by security repair
+roots.pem
+
+# Auto-added by security repair
+cacert.pem
+
+# バックアップファイル
+*.bak
+*.backup
+*.tmp
+*.temp
+
+# テストファイル
+*test*.py
+*test*.txt
+*test*.env
+*test*.json
+
+# 一時ファイル
+victory_log.txt
+current_detailed_results.txt
+debug_security*.py
+efficiency_test.py
+honest_*.py
+loop_fix_test.py
+final_*.py
+new_security_test.py
+clean_test_*.py
+
+# YouTube関連一時ファイル
+youtube_script_*.txt
+youtube_complete_*.txt
+
+# セキュリティ監視関連
+security_monitor.pid
+security_monitor.py
+security_monitor_final.py
+security_scan_test.py
+
+# MCP最適化ファイル
+.cursor/mcp.optimized.json
+.cursor/autostart.json.bak
+
+
+# 原稿・テキストファイル
+*manuscript*.txt
+youtube_*.txt
+original_*.txt
+perfected_*.txt
+revised_*.txt
+ultimate_*.txt
+corrected_*.txt
+final_*.txt
+
+# 以前のファイル・バックアップ
+*.previous
+*.before_*
+*.old
+
+# 最適化ログ
+*optimization*.json
+*optimization*.log
+
+# 一時監視ファイル
+enhanced_monitoring.yml
+

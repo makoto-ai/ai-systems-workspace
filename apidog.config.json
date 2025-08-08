@@ -1,0 +1,154 @@
+{
+  "name": "Voice Roleplay API Tests",
+  "version": "1.0.0",
+  "baseUrl": "http://localhost:8000",
+  "environments": {
+    "local": {
+      "baseUrl": "http://localhost:8000",
+      "variables": {
+        "GROQ_API_KEY": "{{GROQ_API_KEY}}",
+        "TEST_AUDIO_BASE64": "UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"
+      }
+    },
+    "ci": {
+      "baseUrl": "http://localhost:8000",
+      "variables": {
+        "GROQ_API_KEY": "test_key_placeholder"
+      }
+    }
+  },
+  "testSuites": [
+    {
+      "name": "Critical API Health",
+      "tests": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "/api/health"
+          },
+          "assertions": [
+            {
+              "type": "status_code",
+              "value": 200
+            },
+            {
+              "type": "json_path",
+              "path": "$.success",
+              "value": true
+            },
+            {
+              "type": "response_time",
+              "operator": "<",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Voice API Tests",
+      "tests": [
+        {
+          "name": "Text to Speech",
+          "request": {
+            "method": "POST",
+            "url": "/api/voice/tts",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "text": "テスト音声です",
+              "speaker_id": 1
+            }
+          },
+          "assertions": [
+            {
+              "type": "status_code",
+              "value": 200
+            },
+            {
+              "type": "json_path",
+              "path": "$.status",
+              "value": "success"
+            },
+            {
+              "type": "response_time",
+              "operator": "<",
+              "value": 5000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI Chat Tests",
+      "tests": [
+        {
+          "name": "Basic Chat",
+          "request": {
+            "method": "POST",
+            "url": "/api/chat",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "message": "こんにちは",
+              "max_tokens": 100
+            }
+          },
+          "assertions": [
+            {
+              "type": "status_code",
+              "value": 200
+            },
+            {
+              "type": "json_path",
+              "path": "$.response",
+              "operator": "not_empty"
+            },
+            {
+              "type": "response_time",
+              "operator": "<",
+              "value": 10000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Speech Recognition Tests",
+      "tests": [
+        {
+          "name": "Transcribe Audio",
+          "request": {
+            "method": "POST",
+            "url": "/api/transcribe/base64",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "audio_data": "{{TEST_AUDIO_BASE64}}",
+              "language": "ja"
+            }
+          },
+          "assertions": [
+            {
+              "type": "status_code",
+              "value": 200
+            },
+            {
+              "type": "json_path",
+              "path": "$.text",
+              "operator": "not_empty"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "reporting": {
+    "format": ["json", "html"],
+    "output": "./test-results"
+  }
+} 

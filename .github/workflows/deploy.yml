@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        python -m pytest tests/ -q
+    
+    - name: Docker Build
+      run: |
+        echo "FROM python:3.11-slim" > Dockerfile
+        echo "WORKDIR /app" >> Dockerfile
+        echo "COPY requirements.txt ." >> Dockerfile
+        echo "RUN pip install -r requirements.txt" >> Dockerfile
+        echo "COPY . ." >> Dockerfile
+        echo "CMD [\"python\", \"app/main.py\"]" >> Dockerfile
+        docker build -t voice-roleplay:${{ github.ref_name }} .
+    
+    - name: Deploy notification
+      run: |
+        echo "🚀 Deployment ready for version ${{ github.ref_name }}" 

@@ -1,0 +1,17 @@
+{
+  "name": "voice-roleplay-system",
+  "scripts": {
+    "dev": "./start-services.sh",
+    "status": "./quick-status.sh", 
+    "monitor": "./monitor-services.sh",
+    "dev:frontend": "cd frontend/voice-roleplay-frontend && npm run dev",
+    "dev:backend": "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "cd frontend/voice-roleplay-frontend && npm run build",
+    "frontend:install": "cd frontend/voice-roleplay-frontend && npm install",
+    "backend:install": "pip install -r requirements.txt",
+    "install": "npm run backend:install && npm run frontend:install",
+    "start": "./start-services.sh",
+    "test": "pytest",
+    "auto-save": "./auto-save.sh"
+  }
+}

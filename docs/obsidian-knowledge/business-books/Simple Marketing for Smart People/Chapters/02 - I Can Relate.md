@@ -1,0 +1,193 @@
+---
+excalidraw-plugin: parsed
+tags:
+  - excalidraw
+---
+
+**part of** :: [[IIB - Simple Marketing for Smart People]]
+**Previous** :: [[01 - The Achilles’ Heel of Smart People]]
+**Next** :: [[03 - The Upstream Downstream Marketing Metaphor]]
+
+
+## Summary
+
+- marketing is huge so
+	- prioritization is critical
+	- which one?
+		- which give bigger bang for your buck
+	 - any enduring rues?
+		 - which guide us to focus on what truly matters?
+
+
+## Highlights
+>my Upstream vs. Downstream metaphor. ^ref-16589
+
+>[!quote]
+>It’s not a question of whether you are productive enough or have the right computer setup. It’s reaching a biological breaking point. — location: [321](kindle://book?action=open&asin=B0CW1MQZXP&location=321) ^ref-57796
+
+---
+>[!quote]
+>I definitely did not have experience with marketing. — location: [329](kindle://book?action=open&asin=B0CW1MQZXP&location=329) ^ref-45699
+
+---
+>[!quote]
+>It was way too much to learn all at once. — location: [334](kindle://book?action=open&asin=B0CW1MQZXP&location=334) ^ref-56444
+
+---
+>[!quote]
+>They burned out on the runway, overwhelmed by the dizzying number of details to master before making their first test flight. — location: [345](kindle://book?action=open&asin=B0CW1MQZXP&location=345) ^ref-52147
+
+---
+>[!quote]
+>So much of the marketing advice found online is about worshiping complexity for the sake of complexity. — location: [346](kindle://book?action=open&asin=B0CW1MQZXP&location=346) ^ref-35494
+
+---
+>[!quote]
+>For the average business owner who isn’t a marketing whiz, it’s all far too complicated and requires far too much maintenance. — location: [352](kindle://book?action=open&asin=B0CW1MQZXP&location=352) ^ref-48611
+
+---
+>[!quote]
+>At a fundamental level, there is just one thing you need to know to build a financially sustainable business: you must know how to communicate to your prospects in a way that leads them to buy from you. — location: [357](kindle://book?action=open&asin=B0CW1MQZXP&location=357) ^ref-4710
+
+---
+>[!quote]
+>To maximize your potential, you must do marketing. — location: [381](kindle://book?action=open&asin=B0CW1MQZXP&location=381) ^ref-51181
+
+---
+>[!quote]
+>I should have validated my idea. I should have tried teaching the course content to at least one person before investing all that money into a fancy video. — location: [389](kindle://book?action=open&asin=B0CW1MQZXP&location=389) ^ref-53444
+
+---
+>[!quote]
+>fancy video, a new website, or sophisticated graphic design, that does not automatically mean it will pay off. — location: [392](kindle://book?action=open&asin=B0CW1MQZXP&location=392) ^ref-63310
+
+---
+>[!quote]
+>Smart people tend to have some of the strongest negative associations with marketing. — location: [396](kindle://book?action=open&asin=B0CW1MQZXP&location=396) ^ref-64576
+
+---
+>[!quote]
+>smart people are dedicated to finding the truth, and the field of marketing isn’t exactly known for its honesty. — location: [397](kindle://book?action=open&asin=B0CW1MQZXP&location=397) ^ref-47370
+
+---
+>[!quote]
+>have had a bad experience with a salesperson that tainted their association with sales forever. — location: [401](kindle://book?action=open&asin=B0CW1MQZXP&location=401) ^ref-46974
+
+---
+>[!quote]
+>the best marketing we encounter we don’t even think of as marketing. — location: [405](kindle://book?action=open&asin=B0CW1MQZXP&location=405) ^ref-47307
+
+---
+>[!quote]
+>Instead of thinking marketing is deception, I want you to think of marketing as teaching. You are teaching people how to value your product. — location: [411](kindle://book?action=open&asin=B0CW1MQZXP&location=411) ^ref-63671
+
+---
+>[!quote]
+>see marketing for what it’s supposed to be, you’ll feel a new sense of freedom. You’ll see you can market yourself and your offerings in a way that’s aligned with your values by being honest with and — location: [412](kindle://book?action=open&asin=B0CW1MQZXP&location=412) ^ref-37516
+
+---
+>[!quote]
+>teaching your audience about what you do, and skip the ick. — location: [414](kindle://book?action=open&asin=B0CW1MQZXP&location=414) ^ref-50272
+# Excalidraw Data
+## Text Elements
+§2.  I Can Relate ^0N24eOGU
+
+## Embedded Files
+68c5919f27c949638cbabb16c819b25e2580aade: [[Illustration - common marketing mistakes|100%]]
+
+%%
+## Drawing
+```compressed-json
+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
+```
+%%

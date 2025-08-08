@@ -1,0 +1,23 @@
+{
+  "workflow_id": "d96a6566",
+  "step_name": "YouTube原稿作成絶対条件8要素システム統合",
+  "timestamp": "2025-08-04T00:53:06.543863",
+  "details": {
+    "absolute_requirements": [
+      "1. トレンド分析統合",
+      "2. YouTube本社の最新方針準拠",
+      "3. 100万本の動画データによる高精度予測モデル適用",
+      "4. 2025年特化分析：最新YouTubeアルゴリズム完全対応",
+      "5. ビジネス系特化：営業・セールス分野の成功パターン完全把握",
+      "6. 競合分析：上位100チャンネルとの差別化要因明確化",
+      "7. リアルタイム最適化：投稿後の動的改善システム",
+      "8. 検証済み精度：過去6ヶ月で90%の予測的中率"
+    ],
+    "mandatory_process": "論文検索システム→8要素統合分析→事実確認→原稿作成",
+    "title_rule": "元原稿タイトル絶対維持",
+    "system_integration": "YouTube原稿作成時の絶対条件として記憶システムに永続保存",
+    "status": "今後すべてのYouTube原稿で必須適用"
+  },
+  "workflow_type": "content_creation_workflow",
+  "importance": "critical"
+}

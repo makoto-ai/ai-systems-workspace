@@ -1,0 +1,2073 @@
+openapi: 3.0.3
+info:
+  title: Voice Roleplay System API v2.0.0
+  description: |
+    音声ロールプレイシステム - 営業スキル向上プラットフォーム
+    
+    **新要件対応:**
+    - 成約率20-30%向上システム
+    - 同時接続30名対応
+    - レスポンス時間2-4秒達成
+    - フィリップスROIモデル実装
+    - 高度トークスキル分析
+    
+    **アーキテクチャ:**
+    - ロールプレイ機能と分析機能の完全分離
+    - PostgreSQL + TimescaleDB + Redis統合
+    - 水平スケーリング対応
+  version: 2.0.0
+  contact:
+    name: Voice Roleplay System Team
+    email: support@voice-roleplay.local
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: 開発環境
+  - url: https://staging-api.voice-roleplay.local
+    description: ステージング環境
+  - url: https://api.voice-roleplay.local
+    description: 本番環境
+
+tags:
+  # 既存カテゴリ (継承・改良)
+  - name: voice
+    description: 音声処理・合成
+  - name: conversation
+    description: ロールプレイ会話管理
+  - name: analysis
+    description: カスタム分析機能
+  - name: ai
+    description: AI プロバイダー管理
+  - name: context
+    description: プライバシー保護文脈管理
+  - name: reminder
+    description: リマインダー・通知システム
+  - name: health
+    description: システムヘルスチェック
+  
+  # 新要件対応カテゴリ
+  - name: roi-evaluation
+    description: フィリップスROI評価システム
+  - name: skill-analysis
+    description: 高度トークスキル分析
+  - name: performance
+    description: システムパフォーマンス監視
+  - name: scalability
+    description: スケーラビリティ管理
+  - name: database
+    description: データベース統合管理
+
+# ==================================================
+# セキュリティスキーム
+# ==================================================
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API認証キー
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer トークン認証
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+      description: セッションベース認証
+
+  # ==================================================
+  # 共通スキーマ定義
+  # ==================================================
+  schemas:
+    # エラーレスポンス
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "リクエストパラメータが不正です"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+          format: uuid
+
+    # 成功レスポンス
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          default: true
+        data:
+          type: object
+          additionalProperties: true
+        meta:
+          type: object
+          properties:
+            total_count:
+              type: integer
+            page:
+              type: integer
+            per_page:
+              type: integer
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+          format: uuid
+
+    # ユーザー情報
+    User:
+      type: object
+      required:
+        - user_id
+        - email
+        - user_type
+        - experience_level
+      properties:
+        user_id:
+          type: string
+          maxLength: 50
+          example: "user_12345"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        username:
+          type: string
+          maxLength: 100
+          example: "田中太郎"
+        user_type:
+          type: string
+          enum: [sales_person, manager, admin]
+          default: sales_person
+        experience_level:
+          type: string
+          enum: [beginner, intermediate, expert]
+          default: beginner
+        department:
+          type: string
+          maxLength: 100
+          example: "営業部"
+        position:
+          type: string
+          maxLength: 100
+          example: "営業担当"
+        industry:
+          type: string
+          maxLength: 100
+          example: "IT・ソフトウェア"
+        target_skills:
+          type: array
+          items:
+            type: string
+          example: ["クロージング", "質問力", "ヒアリング"]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # セッション情報
+    RoleplaySession:
+      type: object
+      required:
+        - session_id
+        - user_id
+        - status
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          maxLength: 50
+        scenario_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, completed, paused, cancelled]
+          default: active
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        duration_seconds:
+          type: integer
+          minimum: 0
+        speaker_id:
+          type: integer
+          default: 6
+        ai_provider:
+          type: string
+          enum: [groq, openai, anthropic, google]
+          default: groq
+        conversation_mode:
+          type: string
+          enum: [sales_training, objection_handling, closing]
+          default: sales_training
+        conversation_context:
+          type: object
+          additionalProperties: true
+        customer_profile:
+          type: object
+          additionalProperties: true
+        performance_metrics:
+          $ref: '#/components/schemas/PerformanceMetrics'
+
+    # パフォーマンス指標
+    PerformanceMetrics:
+      type: object
+      properties:
+        total_interactions:
+          type: integer
+          minimum: 0
+        avg_response_time_ms:
+          type: integer
+          minimum: 0
+        audio_quality_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        skill_scores:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 100
+
+    # フィリップスROI評価
+    PhillipsROIEvaluation:
+      type: object
+      required:
+        - evaluation_id
+        - user_id
+        - phillips_level
+      properties:
+        evaluation_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          maxLength: 50
+        phillips_level:
+          type: integer
+          enum: [1, 2, 3, 4]
+          description: |
+            フィリップス評価レベル:
+            1 = 反応 (Reaction)
+            2 = 学習 (Learning) 
+            3 = 行動変容 (Behavior)
+            4 = 結果 (Results)
+        
+        # レベル1: 反応
+        satisfaction_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        usability_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        engagement_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        continuation_intent:
+          type: boolean
+        
+        # レベル2: 学習
+        skill_acquisition_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        knowledge_retention_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        competency_improvement:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+        
+        # レベル3: 行動変容
+        behavior_change_indicators:
+          type: object
+          additionalProperties: true
+        performance_improvement:
+          type: number
+          format: float
+        adoption_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        
+        # レベル4: 結果
+        business_impact_metrics:
+          type: object
+          additionalProperties: true
+        roi_percentage:
+          type: number
+          format: float
+        cost_savings:
+          type: number
+          format: float
+        revenue_increase:
+          type: number
+          format: float
+        
+        evaluation_period_start:
+          type: string
+          format: date
+        evaluation_period_end:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+
+    # トークスキル分析
+    TalkSkillAnalysis:
+      type: object
+      required:
+        - session_id
+        - user_id
+        - skill_category
+        - score
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          maxLength: 50
+        skill_category:
+          type: string
+          enum: [
+            question_technique,
+            listening_skills,
+            closing_skills,
+            confidence,
+            pace_control,
+            intonation,
+            volume_control,
+            pause_timing
+          ]
+        skill_subcategory:
+          type: string
+          example: "open_question"
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        benchmark_score:
+          type: number
+          format: float
+          description: "業界平均スコア"
+        improvement_rate:
+          type: number
+          format: float
+          description: "前回からの改善率"
+        evaluation_criteria:
+          type: object
+          additionalProperties: true
+        specific_examples:
+          type: object
+          properties:
+            good_examples:
+              type: array
+              items:
+                type: string
+            improvement_areas:
+              type: array
+              items:
+                type: string
+        improvement_suggestions:
+          type: array
+          items:
+            type: string
+        analysis_timestamp:
+          type: string
+          format: date-time
+
+    # 音声品質分析
+    AudioQualityAnalysis:
+      type: object
+      required:
+        - session_id
+        - overall_quality_score
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        audio_file_id:
+          type: string
+          format: uuid
+        overall_quality_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        clarity_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        naturalness_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        emotional_expression_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        
+        # 技術的品質指標
+        snr_db:
+          type: number
+          format: float
+          description: "S/N比 (dB)"
+        thd_percentage:
+          type: number
+          format: float
+          description: "歪み率 (%)"
+        frequency_response_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+        
+        # 発話特徴
+        speech_rate_wpm:
+          type: number
+          format: float
+          description: "発話速度 (語/分)"
+        pause_frequency:
+          type: number
+          format: float
+          description: "ポーズ頻度"
+        volume_consistency:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        pitch_variation:
+          type: number
+          format: float
+        
+        analysis_engine:
+          type: string
+          maxLength: 30
+        analysis_model_version:
+          type: string
+          maxLength: 20
+        processing_time_ms:
+          type: integer
+          minimum: 0
+        analysis_timestamp:
+          type: string
+          format: date-time
+
+    # システムメトリクス
+    SystemMetrics:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        active_sessions:
+          type: integer
+          minimum: 0
+        total_sessions_today:
+          type: integer
+          minimum: 0
+        avg_response_time_ms:
+          type: integer
+          minimum: 0
+        system_load:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        error_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        memory_usage_mb:
+          type: integer
+          minimum: 0
+        cpu_usage_percentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        disk_usage_percentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        database_connections:
+          type: integer
+          minimum: 0
+        redis_memory_usage_mb:
+          type: integer
+          minimum: 0
+        cache_hit_rate:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+# ==================================================
+# セキュリティ設定
+# ==================================================
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+  - SessionAuth: []
+
+# ==================================================
+# パス定義開始
+# ==================================================
+paths:
+
+  # ==================================================
+  # フィリップスROI評価API
+  # ==================================================
+  /api/v2/roi-evaluation/users/{user_id}/evaluate:
+    post:
+      tags:
+        - roi-evaluation
+      summary: フィリップスROI評価実行
+      description: |
+        指定ユーザーの指定期間におけるフィリップスROIモデル評価を実行
+        4レベル評価 (反応→学習→行動変容→結果) を段階的に計算
+      operationId: evaluatePhillipsROI
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "user_12345"
+        - name: evaluation_level
+          in: query
+          description: "評価レベル (1-4, 省略時は全レベル)"
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4]
+        - name: period_start
+          in: query
+          description: "評価期間開始日"
+          schema:
+            type: string
+            format: date
+          example: "2025-01-01"
+        - name: period_end
+          in: query
+          description: "評価期間終了日"
+          schema:
+            type: string
+            format: date
+          example: "2025-01-31"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                baseline_data:
+                  type: object
+                  description: "ベースライン比較データ"
+                business_metrics:
+                  type: object
+                  description: "ビジネス指標データ"
+      responses:
+        '200':
+          description: ROI評価完了
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PhillipsROIEvaluation'
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: ユーザーが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /api/v2/roi-evaluation/users/{user_id}/history:
+    get:
+      tags:
+        - roi-evaluation
+      summary: ROI評価履歴取得
+      description: ユーザーのROI評価履歴を時系列で取得
+      operationId: getROIEvaluationHistory
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: phillips_level
+          in: query
+          description: "取得する評価レベル"
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4]
+        - name: limit
+          in: query
+          description: "取得件数上限"
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          description: "取得開始位置"
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: ROI評価履歴
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PhillipsROIEvaluation'
+
+  /api/v2/roi-evaluation/dashboard:
+    get:
+      tags:
+        - roi-evaluation
+      summary: ROIダッシュボードデータ取得
+      description: |
+        全ユーザーのROI集計データをダッシュボード表示用に取得
+        管理者・マネージャー向け機能
+      operationId: getROIDashboard
+      parameters:
+        - name: department
+          in: query
+          description: "部署フィルター"
+          schema:
+            type: string
+        - name: period
+          in: query
+          description: "集計期間"
+          schema:
+            type: string
+            enum: [week, month, quarter, year]
+            default: month
+      responses:
+        '200':
+          description: ダッシュボードデータ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          total_users:
+                            type: integer
+                          avg_roi_percentage:
+                            type: number
+                            format: float
+                          total_cost_savings:
+                            type: number
+                            format: float
+                          total_revenue_increase:
+                            type: number
+                            format: float
+                          level_completion_rates:
+                            type: object
+                            additionalProperties:
+                              type: number
+                              format: float
+      security:
+        - BearerAuth: []
+
+  # ==================================================
+  # 高度トークスキル分析API
+  # ==================================================
+  /api/v2/skill-analysis/sessions/{session_id}/analyze:
+    post:
+      tags:
+        - skill-analysis
+      summary: セッション総合スキル分析
+      description: |
+        指定セッションの音声データから総合的なトークスキル分析を実行
+        10項目のスキル評価を並列処理で高速実行
+      operationId: analyzeSessionSkills
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: analysis_depth
+          in: query
+          description: "分析深度"
+          schema:
+            type: string
+            enum: [basic, advanced, comprehensive]
+            default: advanced
+        - name: benchmark_comparison
+          in: query
+          description: "業界ベンチマーク比較実行"
+          schema:
+            type: boolean
+            default: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_skills:
+                  type: array
+                  items:
+                    type: string
+                  description: "分析対象スキル (省略時は全スキル)"
+                industry_context:
+                  type: string
+                  description: "業界コンテキスト"
+      responses:
+        '200':
+          description: スキル分析完了
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          session_id:
+                            type: string
+                            format: uuid
+                          overall_score:
+                            type: number
+                            format: float
+                          skill_breakdown:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/TalkSkillAnalysis'
+                          audio_quality:
+                            $ref: '#/components/schemas/AudioQualityAnalysis'
+                          recommendations:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                skill:
+                                  type: string
+                                priority:
+                                  type: string
+                                  enum: [high, medium, low]
+                                suggestion:
+                                  type: string
+                                expected_improvement:
+                                  type: number
+                                  format: float
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /api/v2/skill-analysis/users/{user_id}/progress:
+    get:
+      tags:
+        - skill-analysis
+      summary: ユーザースキル進捗取得
+      description: |
+        ユーザーのスキル進捗を時系列で取得し、
+        成長トレンドとボトルネックを分析
+      operationId: getUserSkillProgress
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: skill_category
+          in: query
+          description: "取得するスキルカテゴリ"
+          schema:
+            type: string
+        - name: period_days
+          in: query
+          description: "過去何日分のデータを取得"
+          schema:
+            type: integer
+            default: 30
+            maximum: 365
+      responses:
+        '200':
+          description: スキル進捗データ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user_id:
+                            type: string
+                          current_level:
+                            type: string
+                            enum: [beginner, intermediate, expert]
+                          skill_trends:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                skill_category:
+                                  type: string
+                                current_score:
+                                  type: number
+                                  format: float
+                                trend:
+                                  type: string
+                                  enum: [improving, stable, declining]
+                                change_rate:
+                                  type: number
+                                  format: float
+                          bottlenecks:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                skill:
+                                  type: string
+                                severity:
+                                  type: string
+                                  enum: [critical, moderate, minor]
+                                impact_on_overall:
+                                  type: number
+                                  format: float
+
+  /api/v2/skill-analysis/recommendations/{user_id}:
+    get:
+      tags:
+        - skill-analysis
+      summary: パーソナライズド改善提案取得
+      description: |
+        ユーザーの現在のスキルレベルと目標に基づいて
+        パーソナライズされた改善提案を生成
+      operationId: getPersonalizedRecommendations
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: target_improvement
+          in: query
+          description: "目標改善率 (%)"
+          schema:
+            type: number
+            format: float
+            default: 20.0
+        - name: focus_areas
+          in: query
+          description: "重点分野"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: パーソナライズド提案
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user_id:
+                            type: string
+                          recommended_scenarios:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                scenario_id:
+                                  type: string
+                                  format: uuid
+                                title:
+                                  type: string
+                                difficulty:
+                                  type: string
+                                expected_improvement:
+                                  type: number
+                                  format: float
+                                estimated_time_minutes:
+                                  type: integer
+                          practice_schedule:
+                            type: object
+                            properties:
+                              weekly_sessions:
+                                type: integer
+                              session_duration_minutes:
+                                type: integer
+                              focus_rotation:
+                                type: array
+                                items:
+                                  type: string
+                          milestone_targets:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                target_date:
+                                  type: string
+                                  format: date
+                                skill:
+                                  type: string
+                                target_score:
+                                  type: number
+                                  format: float
+
+  # ==================================================
+  # パフォーマンス監視API
+  # ==================================================
+  /api/v2/performance/metrics/realtime:
+    get:
+      tags:
+        - performance
+      summary: リアルタイムシステムメトリクス取得
+      description: |
+        システムの現在のパフォーマンス指標をリアルタイムで取得
+        レスポンス時間、同時接続数、リソース使用量を監視
+      operationId: getRealtimeMetrics
+      parameters:
+        - name: include_detailed
+          in: query
+          description: "詳細メトリクス含む"
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: リアルタイムメトリクス
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SystemMetrics'
+      security:
+        - ApiKeyAuth: []
+
+  /api/v2/performance/metrics/history:
+    get:
+      tags:
+        - performance
+      summary: 履歴メトリクス取得
+      description: |
+        指定期間のシステムパフォーマンス履歴を取得し、
+        トレンド分析とボトルネック特定を実行
+      operationId: getPerformanceHistory
+      parameters:
+        - name: start_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: metric_types
+          in: query
+          description: "取得するメトリクス種別"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [response_time, cpu_usage, memory_usage, error_rate, cache_hit_rate]
+        - name: aggregation
+          in: query
+          description: "集計間隔"
+          schema:
+            type: string
+            enum: [1m, 5m, 15m, 1h, 1d]
+            default: 5m
+      responses:
+        '200':
+          description: 履歴メトリクス
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          period:
+                            type: object
+                            properties:
+                              start:
+                                type: string
+                                format: date-time
+                              end:
+                                type: string
+                                format: date-time
+                          metrics:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                metric_type:
+                                  type: string
+                                value:
+                                  type: number
+                                  format: float
+                                unit:
+                                  type: string
+                          summary:
+                            type: object
+                            properties:
+                              avg_response_time:
+                                type: number
+                                format: float
+                              max_concurrent_users:
+                                type: integer
+                              uptime_percentage:
+                                type: number
+                                format: float
+                              sla_compliance:
+                                type: boolean
+
+  /api/v2/performance/alerts:
+    get:
+      tags:
+        - performance
+      summary: パフォーマンスアラート取得
+      description: |
+        現在アクティブなパフォーマンスアラートと
+        過去のアラート履歴を取得
+      operationId: getPerformanceAlerts
+      parameters:
+        - name: status
+          in: query
+          description: "アラート状態"
+          schema:
+            type: string
+            enum: [active, resolved, acknowledged]
+        - name: severity
+          in: query
+          description: "重要度"
+          schema:
+            type: string
+            enum: [critical, warning, info]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: アラート一覧
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            alert_id:
+                              type: string
+                              format: uuid
+                            metric:
+                              type: string
+                            threshold:
+                              type: number
+                              format: float
+                            current_value:
+                              type: number
+                              format: float
+                            severity:
+                              type: string
+                              enum: [critical, warning, info]
+                            status:
+                              type: string
+                              enum: [active, resolved, acknowledged]
+                            created_at:
+                              type: string
+                              format: date-time
+                            resolved_at:
+                              type: string
+                              format: date-time
+                            description:
+                              type: string
+      security:
+        - BearerAuth: []
+
+
+  # ==================================================
+  # スケーラビリティ管理API
+  # ==================================================
+  /api/v2/scalability/sessions/capacity:
+    get:
+      tags:
+        - scalability
+      summary: 現在の接続容量状況取得
+      description: |
+        現在の同時接続数と容量状況を取得
+        スケーリング判断のためのメトリクス提供
+      operationId: getSessionCapacity
+      responses:
+        '200':
+          description: 容量状況
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          current_sessions:
+                            type: integer
+                          max_capacity:
+                            type: integer
+                          utilization_percentage:
+                            type: number
+                            format: float
+                          phase:
+                            type: string
+                            enum: [phase1_5users, phase2_10users, phase3_30users]
+                          available_slots:
+                            type: integer
+                          estimated_queue_time:
+                            type: integer
+                            description: "待機時間（秒）"
+                          scaling_recommendation:
+                            type: string
+                            enum: [no_action, scale_up, scale_down]
+      security:
+        - ApiKeyAuth: []
+
+  /api/v2/scalability/sessions/queue:
+    post:
+      tags:
+        - scalability
+      summary: セッション待機列追加
+      description: |
+        容量超過時のセッション待機列に追加
+        優先度に基づく待機列管理
+      operationId: enqueueSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+                priority:
+                  type: string
+                  enum: [high, normal, low]
+                  default: normal
+                estimated_duration:
+                  type: integer
+                  description: "予想セッション時間（分）"
+      responses:
+        '200':
+          description: 待機列追加完了
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          queue_id:
+                            type: string
+                            format: uuid
+                          position:
+                            type: integer
+                          estimated_wait_time:
+                            type: integer
+                          notification_webhook:
+                            type: string
+                            format: uri
+      security:
+        - BearerAuth: []
+
+  /api/v2/scalability/load-balancing/status:
+    get:
+      tags:
+        - scalability
+      summary: 負荷分散状況取得
+      description: |
+        複数インスタンス間の負荷分散状況と
+        各インスタンスのヘルス状況を取得
+      operationId: getLoadBalancingStatus
+      responses:
+        '200':
+          description: 負荷分散状況
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          total_instances:
+                            type: integer
+                          healthy_instances:
+                            type: integer
+                          load_distribution:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                instance_id:
+                                  type: string
+                                host:
+                                  type: string
+                                port:
+                                  type: integer
+                                current_load:
+                                  type: number
+                                  format: float
+                                health_status:
+                                  type: string
+                                  enum: [healthy, degraded, unhealthy]
+                                active_sessions:
+                                  type: integer
+                                response_time_ms:
+                                  type: integer
+                          balancing_algorithm:
+                            type: string
+                            enum: [round_robin, least_connections, weighted_round_robin]
+      security:
+        - ApiKeyAuth: []
+
+  # ==================================================
+  # データベース統合管理API
+  # ==================================================
+  /api/v2/database/migration/status:
+    get:
+      tags:
+        - database
+      summary: データ移行状況取得
+      description: |
+        JSONファイルからデータベースへの移行進捗と
+        データ整合性状況を取得
+      operationId: getMigrationStatus
+      responses:
+        '200':
+          description: 移行状況
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          migration_phase:
+                            type: string
+                            enum: [not_started, in_progress, completed, failed]
+                          progress_percentage:
+                            type: number
+                            format: float
+                          migrated_records:
+                            type: integer
+                          total_records:
+                            type: integer
+                          data_sources:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                source_name:
+                                  type: string
+                                source_type:
+                                  type: string
+                                  enum: [json_file, csv_file, legacy_db]
+                                status:
+                                  type: string
+                                  enum: [pending, migrating, completed, failed]
+                                records_migrated:
+                                  type: integer
+                                last_sync:
+                                  type: string
+                                  format: date-time
+                          integrity_checks:
+                            type: object
+                            properties:
+                              last_check:
+                                type: string
+                                format: date-time
+                              passed:
+                                type: boolean
+                              issues_found:
+                                type: integer
+                              details:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    type:
+                                      type: string
+                                    severity:
+                                      type: string
+                                      enum: [critical, warning, info]
+                                    description:
+                                      type: string
+      security:
+        - ApiKeyAuth: []
+
+  /api/v2/database/migration/execute:
+    post:
+      tags:
+        - database
+      summary: データ移行実行
+      description: |
+        指定されたデータソースから本格DBへの移行を実行
+        段階的移行とロールバック対応
+      operationId: executeMigration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - migration_type
+              properties:
+                migration_type:
+                  type: string
+                  enum: [full, incremental, test_run]
+                data_sources:
+                  type: array
+                  items:
+                    type: string
+                  description: "移行対象データソース"
+                validation_mode:
+                  type: string
+                  enum: [strict, standard, permissive]
+                  default: standard
+                backup_before:
+                  type: boolean
+                  default: true
+                parallel_processing:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: 移行開始
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          migration_id:
+                            type: string
+                            format: uuid
+                          estimated_duration:
+                            type: integer
+                            description: "予想所要時間（秒）"
+                          monitoring_url:
+                            type: string
+                            format: uri
+      security:
+        - BearerAuth: []
+
+  /api/v2/database/integrity/verify:
+    post:
+      tags:
+        - database
+      summary: データ整合性検証実行
+      description: |
+        データベース全体の整合性検証を実行
+        SHA256ハッシュによる改ざん検知を含む
+      operationId: verifyDataIntegrity
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                check_types:
+                  type: array
+                  items:
+                    type: string
+                    enum: [hash_verification, referential_integrity, data_consistency, schema_validation]
+                  default: [hash_verification, referential_integrity]
+                tables:
+                  type: array
+                  items:
+                    type: string
+                  description: "検証対象テーブル（省略時は全テーブル）"
+      responses:
+        '200':
+          description: 整合性検証結果
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          verification_id:
+                            type: string
+                            format: uuid
+                          overall_status:
+                            type: string
+                            enum: [passed, failed, warning]
+                          checked_tables:
+                            type: integer
+                          issues_found:
+                            type: integer
+                          verification_details:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                table_name:
+                                  type: string
+                                check_type:
+                                  type: string
+                                status:
+                                  type: string
+                                  enum: [passed, failed, warning]
+                                records_checked:
+                                  type: integer
+                                issues:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      severity:
+                                        type: string
+                                      description:
+                                        type: string
+                                      record_id:
+                                        type: string
+      security:
+        - BearerAuth: []
+
+  # ==================================================
+  # 音声処理API (v2.0改良版)
+  # ==================================================
+  /api/v2/voice/conversation/optimized:
+    post:
+      tags:
+        - voice
+      summary: 最適化音声会話処理
+      description: |
+        高品質音声処理とレスポンス時間最適化を実現した
+        新世代音声会話エンドポイント (目標: 2-4秒)
+      operationId: optimizedVoiceConversation
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - audio_file
+                - user_id
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: "音声ファイル (最大10MB)"
+                user_id:
+                  type: string
+                session_id:
+                  type: string
+                  format: uuid
+                quality_mode:
+                  type: string
+                  enum: [high, standard, fast]
+                  default: high
+                  description: "音声品質モード"
+                enable_skill_analysis:
+                  type: boolean
+                  default: true
+                cache_response:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: 音声会話処理完了
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          session_id:
+                            type: string
+                            format: uuid
+                          processing_metrics:
+                            type: object
+                            properties:
+                              total_time_ms:
+                                type: integer
+                              transcription_time_ms:
+                                type: integer
+                              ai_processing_time_ms:
+                                type: integer
+                              synthesis_time_ms:
+                                type: integer
+                              quality_score:
+                                type: number
+                                format: float
+                          transcription:
+                            type: object
+                            properties:
+                              text:
+                                type: string
+                              confidence:
+                                type: number
+                                format: float
+                              language:
+                                type: string
+                          ai_response:
+                            type: object
+                            properties:
+                              text:
+                                type: string
+                              intent:
+                                type: string
+                              sentiment:
+                                type: string
+                              provider_used:
+                                type: string
+                          audio_response:
+                            type: object
+                            properties:
+                              audio_url:
+                                type: string
+                                format: uri
+                              duration_ms:
+                                type: integer
+                              format:
+                                type: string
+                              quality_metrics:
+                                $ref: '#/components/schemas/AudioQualityAnalysis'
+                          skill_analysis:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/TalkSkillAnalysis'
+        '400':
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: ファイルサイズ超過
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: レート制限超過
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+  /api/v2/voice/quality/settings:
+    get:
+      tags:
+        - voice
+      summary: 音声品質設定取得
+      description: 現在の音声品質設定とパフォーマンス情報を取得
+      operationId: getVoiceQualitySettings
+      responses:
+        '200':
+          description: 音声品質設定
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          current_settings:
+                            type: object
+                            properties:
+                              sample_rate:
+                                type: integer
+                                example: 48000
+                              bit_depth:
+                                type: integer
+                                example: 24
+                              noise_threshold_db:
+                                type: number
+                                format: float
+                                example: -60.0
+                              quality_preset:
+                                type: string
+                                enum: [high, standard, fast]
+                          voicevox_config:
+                            type: object
+                            properties:
+                              speed_scale:
+                                type: number
+                                format: float
+                              pitch_scale:
+                                type: number
+                                format: float
+                              intonation_scale:
+                                type: number
+                                format: float
+                              volume_scale:
+                                type: number
+                                format: float
+                          performance_impact:
+                            type: object
+                            properties:
+                              avg_processing_time_ms:
+                                type: integer
+                              quality_score:
+                                type: number
+                                format: float
+                              resource_usage:
+                                type: string
+                                enum: [low, medium, high]
+
+    put:
+      tags:
+        - voice
+      summary: 音声品質設定更新
+      description: |
+        音声品質設定を更新し、パフォーマンスと品質のバランスを調整
+        管理者権限が必要
+      operationId: updateVoiceQualitySettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quality_preset:
+                  type: string
+                  enum: [high, standard, fast]
+                custom_settings:
+                  type: object
+                  properties:
+                    sample_rate:
+                      type: integer
+                      enum: [16000, 22050, 44100, 48000]
+                    bit_depth:
+                      type: integer
+                      enum: [16, 24]
+                    noise_threshold_db:
+                      type: number
+                      format: float
+                      minimum: -80
+                      maximum: -20
+                voicevox_optimization:
+                  type: object
+                  properties:
+                    enable_gpu_acceleration:
+                      type: boolean
+                    batch_processing:
+                      type: boolean
+                    cache_synthesis:
+                      type: boolean
+      responses:
+        '200':
+          description: 設定更新完了
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          updated_settings:
+                            type: object
+                          estimated_impact:
+                            type: object
+                            properties:
+                              performance_change:
+                                type: string
+                                enum: [faster, slower, no_change]
+                              quality_change:
+                                type: string
+                                enum: [improved, degraded, no_change]
+                              resource_usage_change:
+                                type: string
+                                enum: [increased, decreased, no_change]
+      security:
+        - BearerAuth: []
+
+  # ==================================================
+  # システムヘルスチェックAPI
+  # ==================================================
+  /api/v2/health/comprehensive:
+    get:
+      tags:
+        - health
+      summary: 包括的システムヘルスチェック
+      description: |
+        全コンポーネントの詳細ヘルスチェックを実行
+        データベース、キャッシュ、外部API、音声エンジンを含む
+      operationId: comprehensiveHealthCheck
+      parameters:
+        - name: include_performance
+          in: query
+          description: "パフォーマンステスト含む"
+          schema:
+            type: boolean
+            default: false
+        - name: timeout_seconds
+          in: query
+          description: "タイムアウト時間"
+          schema:
+            type: integer
+            default: 30
+            maximum: 300
+      responses:
+        '200':
+          description: ヘルスチェック結果
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - timestamp
+                  - components
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "2.0.0"
+                  uptime_seconds:
+                    type: integer
+                  components:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          roleplay_db:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                                enum: [healthy, degraded, unhealthy]
+                              response_time_ms:
+                                type: integer
+                              connection_count:
+                                type: integer
+                              last_error:
+                                type: string
+                          analytics_db:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                                enum: [healthy, degraded, unhealthy]
+                              response_time_ms:
+                                type: integer
+                              timescaledb_extension:
+                                type: boolean
+                      cache:
+                        type: object
+                        properties:
+                          redis:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                                enum: [healthy, degraded, unhealthy]
+                              response_time_ms:
+                                type: integer
+                              memory_usage_mb:
+                                type: integer
+                              hit_rate:
+                                type: number
+                                format: float
+                      external_apis:
+                        type: object
+                        properties:
+                          groq:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                                enum: [healthy, degraded, unhealthy]
+                              response_time_ms:
+                                type: integer
+                              rate_limit_remaining:
+                                type: integer
+                          voicevox:
+                            type: object
+                            properties:
+                              status:
+                                type: string
+                                enum: [healthy, degraded, unhealthy]
+                              response_time_ms:
+                                type: integer
+                              available_speakers:
+                                type: integer
+                      system:
+                        type: object
+                        properties:
+                          cpu_usage:
+                            type: number
+                            format: float
+                          memory_usage:
+                            type: number
+                            format: float
+                          disk_usage:
+                            type: number
+                            format: float
+                          active_sessions:
+                            type: integer
+                  performance_tests:
+                    type: object
+                    properties:
+                      voice_processing:
+                        type: object
+                        properties:
+                          avg_response_time_ms:
+                            type: integer
+                          success_rate:
+                            type: number
+                            format: float
+                      database_query:
+                        type: object
+                        properties:
+                          avg_query_time_ms:
+                            type: integer
+                          slow_queries_count:
+                            type: integer
+
+  # ==================================================
+  # システム情報・バージョンAPI
+  # ==================================================
+  /api/v2/system/info:
+    get:
+      tags:
+        - health
+      summary: システム情報取得
+      description: システムバージョン、設定、機能情報を取得
+      operationId: getSystemInfo
+      responses:
+        '200':
+          description: システム情報
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          application:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                example: "Voice Roleplay System"
+                              version:
+                                type: string
+                                example: "2.0.0"
+                              build_date:
+                                type: string
+                                format: date-time
+                              environment:
+                                type: string
+                                enum: [development, staging, production]
+                          features:
+                            type: object
+                            properties:
+                              phillips_roi:
+                                type: boolean
+                              skill_analysis:
+                                type: boolean
+                              scalability_support:
+                                type: boolean
+                              max_concurrent_sessions:
+                                type: integer
+                          capabilities:
+                            type: object
+                            properties:
+                              supported_audio_formats:
+                                type: array
+                                items:
+                                  type: string
+                              ai_providers:
+                                type: array
+                                items:
+                                  type: string
+                              voice_synthesis_engines:
+                                type: array
+                                items:
+                                  type: string
+                              max_audio_file_size_mb:
+                                type: integer
+                          deployment:
+                            type: object
+                            properties:
+                              deployment_id:
+                                type: string
+                              instance_count:
+                                type: integer
+                              load_balancer:
+                                type: boolean
+                              auto_scaling:
+                                type: boolean
+
+# ==================================================
+# セキュリティ定義 (グローバル適用)
+# ==================================================
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

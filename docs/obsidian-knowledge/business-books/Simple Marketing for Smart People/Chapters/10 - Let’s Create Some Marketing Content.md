@@ -1,0 +1,561 @@
+---
+excalidraw-plugin: parsed
+tags:
+  - excalidraw
+---
+
+
+**part of** :: [[IIB - Simple Marketing for Smart People]]
+**Previous** :: [[09 - Build Belief Part 2]]
+**Next** :: [[11 - Spot the Pattern]]
+
+
+![[10 - Let’s Create Some Marketing Content]]
+
+## Summary
+
+Belief Building Approach
+- Step 1: Nail down what we want to say. 
+	- This is our claim. 
+	- The claim should instill a predetermined belief, which is required for purchasing our product. 
+- Step 2: Support our claim with proof.
+	- We can use ethos, pathos, and logos to mix and match our proof elements. 
+- Step 3: 
+	- Create our content. 
+	- Flood our content with claims, proof, sights, sounds, and feelings. 
+	- We’ll make a compelling case for our recommended way of doing things.
+
+
+Use this format:
+- Belief: 
+- Claim:  
+- Proof:
+- Format: {Text + Image, Text, Movie...}
+- Marketing Channel: 
+- Call-to-action: {comment, Enroll in course, Enter Email address for a free PDF}
+
+
+Once we identify our inputs above, the output (i.e. the writing) is much easier. 
+- this approach make it easier to create that content, but it will attract better customers, too.
+
+
+## How do we approach free content?
+
+don't
+- focus on downstream 
+	- burden prospects with implementation details 
+		- they need preliminary information 
+	- billy calls it hard teaching
+		- overwhelming prospects with so much value 
+- generate endless best contents(tutorials, ultimate guide, PDF, workshops) 
+	- stack encyclopedias
+	- stuff more and more information down prospects's throats 
+		- attract freebie-seekers and tire-kickers
+	- without belief building, these lead to delay the sale
+
+do
+- free content should educate prospects to make the best decision for them.
+	- our free content approach helps them become more empowered buyers.
+- It’s intentional content.
+- It has direction instead of being random.
+
+
+## Testing Beliefs with  Marketing Content
+
+- every tweet as a ping on everywhere
+	- What do people think about this? 
+	- What are the existing beliefs around this? 
+	- What is the conversation that’s happening around this belief?
+
+- we can test belief on every channels every day
+
+
+## Marketing with Integrity
+
+it is possible to trust and respect your customers while earning their trust and respect in return. 
+It is possible to have people look forward to your promotions because they provide so much value.
+
+
+what Tiago decided he won’t do in marketing
+• No unethical, high-pressure sales tactics. 
+• No complex funnels with endless sub-branches.
+• No obnoxious countdown timers with fake urgency. 
+• No artificial social proof with “anonymous” testimonials.
+• No “limited time” offers that aren’t actually limited. 
+• No relentless self-promotion on social media.
+• No “live” webinars you can watch any hour of the day.
+
+
+what Tiago do practice in marketing
+• Clear and persuasive copywriting. 
+• Classic, heartfelt storytelling that speaks to people’s everyday problems. 
+• A strong and well-communicated differentiator, so I stand out from the competition. 
+• An email list I control and regularly provide value to. 
+• Informative, insightful content that delivers value upfront while also moving people toward a sale. 
+• Long-term relationships that will continue to bear fruit for years. 
+• Authentic testimonials that help people see themselves in what I’m offering.
+
+
+
+## Highlights
+
+---
+>Step One: Nail down what we want to say. This is our claim. The claim should instill a predetermined belief, which is required for purchasing our product. Step Two: Support our claim with proof. We can use ethos, pathos, and logos to mix and match our proof elements. Step Three: Create our content. Flood our content with claims, proof, sights, sounds, and feelings. We’ll make a compelling case for our recommended way of doing things.* ^ref-16325
+
+---
+>Example 1: LinkedIn Post ^ref-40659
+
+---
+>In this LinkedIn post, we’ll attempt to instill the belief: I am being held back by information overwhelm. Why this belief? Because if someone doesn’t believe information overwhelm is a problem, how likely are they to buy a course that solves it? ^ref-17816
+
+---
+>Now, in my experience, the reader I’m targeting already has some sense that information overwhelm is a problem in their life. But it might not be top of mind. ^ref-53755
+
+---
+>That means we can’t take this belief—“Information overwhelm is holding me back”—for granted. We need to speak to the problem. That way, our reader will be open to a discussion on how to fix it. ^ref-7996
+
+---
+>Belief: Information overwhelm is holding me back. Claim: Information overwhelm is bad and only getting worse. Proof: Data from a Nielsen study. (logos) Format: Text + Image. Marketing Channel: LinkedIn. Call-to-action: Leave a comment. ^ref-54300
+>>[!note]
+>このフォーマットすごい！使います！
+---
+>You don’t need to be a professional copywriter to write this. ^ref-55149
+
+---
+>lifting. Once we identify our inputs, the output (i.e. the writing) is much easier. ^ref-13244
+
+---
+>Example 2: Email ^ref-19109
+
+---
+>The belief we’ll target for this one will be: A Second Brain can benefit my career. ^ref-5205
+
+---
+>Belief: A Second Brain can benefit my career. Claim: When you have a tight deadline, a Second Brain can save you. Proof: Tiago’s personal story. (pathos) Format: Text. Marketing Channel: Email. Call-to-action: Enroll in the online course. ^ref-20463
+
+---
+>We identified that required belief long before we sat down to write the email. Do you see how doing this work upfront can save you time later? It makes a big difference. ^ref-8542
+
+---
+>Example 3: Instagram Post ^ref-54094
+
+---
+>“A notebook is a secret weapon of top creatives.” ^ref-14141
+
+---
+>For the form of proof, we’ll use ethos in order to appeal to someone’s character and credibility. ^ref-55770
+
+---
+>Belief: A notebook is a secret weapon of top creatives. Claim: Top thinkers and creatives relied on notebooks throughout history. Proof: Leonardo da Vinci. (ethos) Format: Text + Image. Marketing Channel: Instagram. Call-to-action: Enter your email address for a free PDF. ^ref-44256
+
+---
+>It Can Be This Simple ^ref-46751
+
+---
+>Do you see how those three posts each create a compelling case for buying my course? I hit on a variety of beliefs, used a variety of mediums, and changed up the call to action. I’ve found that not only does approaching your content from this angle make it easier to create that content, but it will attract better customers, too. ^ref-48035
+
+---
+>How Do You Approach Free Content? ^ref-596
+
+---
+>“Should I make the website in Wix or WordPress?” ^ref-788
+
+---
+>“Those are implementation details,” I respond. ^ref-3222
+
+---
+>“That decision is downstream. Right now, we need to be focused upstream on the more needle-moving decisions.” ^ref-41081
+
+---
+>Similarly, in your marketing, don’t burden your prospects with implementation details. ^ref-20112
+
+---
+>Customers first need the education to even find the classroom. They need the preliminary information to even understand what is being talked about. They need to know if they’re even on the right path. ^ref-25762
+
+---
+>What I call implementation details, Billy calls “hard teaching,” ^ref-3330
+
+---
+>But one of the biggest mistakes I see online business owners make is hard teaching—overwhelming their followers with so much “value” they don’t have time to even consider the product on offer. ^ref-33303
+
+---
+>Online creators generate an endless supply of tutorials, ultimate guides, walk-throughs, PDF reports, and live workshops, stuffing more and more information down their potential customers’ throats. ^ref-64335
+
+---
+>They give away all their best content, hoping and praying that if they just give out enough free stuff, people will somehow magically buy their product. ^ref-55639
+>>[!note]
+>消化しきれない大量の無料コンテンツをプレゼントするのと同じ末路
+---
+>But what people actually need is . . . your product! ^ref-23592
+
+---
+>When you keep giving them implementation details instead of meeting them at their current beliefs and taking them to the next step—which should eventually lead to a product offering—==you actually delay the sale. ^ref-29189
+
+---
+>Worse, you attract freebie-seekers and tire-kickers. Why would they buy the paid product or service if they can’t even keep up with all the free stuff you’re throwing at them? ^ref-40626
+
+---
+>Rather than stacking encyclopedias upon people’s outstretched arms, ==free content should educate prospects to make the best decision for them. ^ref-15099
+
+---
+>In other words, ==our free content approach helps them become more empowered buyers.== ^ref-20395
+>>[!note]
+>これが究極の答えで、真髄かな。なぜ、無料コンテンツを配るか？顧客をより力を持った買い手に育てるため。
+---
+>Testing Beliefs with Your Marketing Content ^ref-28624
+
+---
+>I grew my business in the early days mostly via Twitter (now X) as my main marketing channel. I saw every tweet as a ping, a little test. What do people think about this? What are the existing beliefs around this? What is the conversation that’s happening around this belief? ^ref-28905
+
+---
+>And then a tweet I thought was going to go nowhere, goes viral. You can do the same thing on LinkedIn, in your email newsletter, or whatever channel you choose. ^ref-37108
+
+---
+>Every day, you get to test a new belief. ^ref-18979
+
+---
+>Imagine if every email and piece of content you’re putting out gave you an opportunity to test a belief. How often would you do that? As often as you possibly could, right? ^ref-6855
+
+---
+>You can see how the Belief Building approach to free content is different from most. ==It’s intentional content. It has direction instead of being random. ^ref-45747
+
+---
+
+==Marketing with Integrity
+  このワード、マジでいいな
+
+---
+>“Hi there, I created a new module.” But why should someone care? Why should they click the blue link in the email? ^ref-39709
+
+---
+>I learned I had to sell every click, even if he or she was already a customer. ^ref-44414
+
+---
+>Even with your existing customers, you must sell every click. If you don’t, they won’t click it. And eventually, they’ll forget about you. ^ref-42969
+
+---
+>Here’s what I decided I won’t do in marketing: • No unethical, high-pressure sales tactics. • No complex funnels with endless sub-branches. • No obnoxious countdown timers with fake urgency. • No artificial social proof with “anonymous” testimonials. • No “limited time” offers that aren’t actually limited. • No relentless self-promotion on social media. • No “live” webinars you can watch any hour of the day. ^ref-30512
+
+---
+>they hear “online marketing.” Here’s what I do practice in marketing: • Clear and persuasive copywriting. • Classic, heartfelt storytelling that speaks to people’s everyday problems. • A strong and well-communicated differentiator, so I stand out from the competition. • An email list I control and regularly provide value to. • Informative, insightful content that delivers value upfront while also moving people toward a sale. • Long-term relationships that will continue to bear fruit for years. • Authentic testimonials that help people see themselves in what I’m offering. ^ref-59439
+
+---
+>In other words, it is possible to trust and respect your customers while earning their trust and respect in return. It is possible to have people look forward to your promotions because they provide so much value. ^ref-56233
+>>[!note]
+>これが理想だよね、販売を不要にし、顧客と信頼関係を構築できるように。これを多くの人に伝えたい。
+
+
+
+# Excalidraw Data
+## Text Elements
+easy to create content ^5KSU3qwo
+
+attract better customers ^YKocL3Q8
+
+seller ^YZSSMIVT
+
+When to create
+marketing content...
+
+Any Tips?
+Any strategies?
+
+ ^5hPDQHnn
+
+Tool ^r3vQDbxR
+
+Free Content Approach ^qRnTg0Xu
+
+Test Beliefs ^NHHdjbTj
+
+Tiago's policy ^H3TAya7c
+
+- unethical, high-pressure sales tactics. 
+- complex funnels with endless sub-branches.
+- obnoxious countdown timers with fake urgency. 
+- artificial social proof with “anonymous” testimonials.
+- “limited time” offers that aren’t actually limited. 
+- relentless self-promotion on social media.
+- “live” webinars you can watch any hour of the day. ^zswkzYJ1
+
+don't ^aOCE9yF5
+
+do ^XilJJBhm
+
+- Clear and persuasive copywriting. 
+- Classic, heartfelt storytelling that speaks to people’s everyday problems. 
+- A strong and well-communicated differentiator, so I stand out from the competition. 
+- An email list I control and regularly provide value to. 
+- Informative, insightful content that delivers value upfront while also moving people toward a sale. 
+- Long-term relationships that will continue to bear fruit for years. 
+- Authentic testimonials that help people see themselves in what I’m offering. ^xorb8Ea3
+
+10 - Let’s Create Some Marketing Content ^zZ1WtoBm
+
+## Embedded Files
+8ceee6f7cb3449c571de84c390fafa5d03cacccc: [[Icon - think-man.png]]
+
+976b3aff658decd3e10b31310182d8b6426583d4: [[Illustration - Belief Building template|100%]]
+
+c2685c4124dcb3dc7f32fa4158dd40bb50f6ae61: [[Illustration - free content approach|100%]]
+
+ea5c37707cdbbfe98fa843004de59616fb0d5a2c: [[Ilustration - marketing with integrity|100%]]
+
+17ebe72763b3c779fdeb9be78017f64b598aaaa5: [[Illustration - test beliefs|100%]]
+
+%%
+## Drawing
+```compressed-json
+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=
+```
+%%
