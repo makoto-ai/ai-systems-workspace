@@ -3,7 +3,7 @@
 # 基本ライブラリ
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
+pydantic==2.11.7
 python-multipart==0.0.6
 
 # AI/MLライブラリ
