@@ -1,12 +1,12 @@
 {
   "name": "ai-systems-workspace",
   "goals": [
-    "Set up CI/CD using GitHub Actions",
-    "Implement pre-commit hooks for quality and security",
-    "Deploy with GitHub Pages or FastAPI"
+    "Enable PDF/metadata input for academic paper analysis",
+    "Generate YouTube scripts from research",
+    "Evaluate output quality using BLEU/ROUGE",
+    "Display metrics visually in Streamlit"
   ],
-  "tools": ["git", "gh", "pre-commit", "black", "flake8", "bandit", "pip-audit"],
+  "tools": ["Streamlit", "scikit-learn", "nltk", "transformers", "pycocoevalcap", "sentence-transformers"],
   "language": "Python",
-  "pythonVersion": "3.12",
-  "framework": "FastAPI"
+  "framework": "Streamlit + modular backend"
 } 
