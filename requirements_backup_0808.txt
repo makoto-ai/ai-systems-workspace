@@ -10,7 +10,7 @@ pydantic==2.9.2
 requests==2.32.3
 
 # Email and templating for reminder system
-Jinja2==3.1.4
+Jinja2==3.1.6
 email-validator==2.1.2
 
 # Multi-channel notifications
