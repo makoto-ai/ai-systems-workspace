@@ -375,7 +375,8 @@ if __name__ == "__main__":
             safe_rm(*sys.argv[2:])
         else:
             print(
-                "使用法: python CRITICAL_FILE_PROTECTION.py [status|restore|safe-rm] [args...]"
+                "使用法: python CRITICAL_FILE_PROTECTION.py "
+                "[status|restore|safe-rm] [args...]"
             )
     else:
         protection_status()
