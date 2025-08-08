@@ -29,7 +29,7 @@ bert-score==0.3.13
 
 # ログ・監視
 structlog==23.2.0
-prometheus-client==0.19.0
+prometheus-client==0.22.1
 
 # テスト
 pytest==7.4.3
