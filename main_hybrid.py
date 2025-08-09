@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 AI Systems Hybrid メインアプリケーション
 MCPとComposerの統合システム
@@ -71,7 +72,7 @@ class AppState:
     def __init__(self):
         self.composer: Optional[ScriptComposer] = None
         self.mcp_generator: Optional[YouTubeScriptGenerator] = None
-        self.system_monitor: Optional[SystemMonitor] = None
+        self.system_monitor: Optional["SystemMonitor"] = None
         self.is_healthy = False
 
 app_state = AppState()
@@ -200,7 +201,7 @@ def get_mcp_generator() -> Optional[YouTubeScriptGenerator]:
         raise HTTPException(status_code=503, detail="MCP Generator not initialized")
     return app_state.mcp_generator
 
-def get_system_monitor() -> Optional[SystemMonitor]:
+def get_system_monitor() -> Optional["SystemMonitor"]:
     """システムモニター取得"""
     if not MONITOR_AVAILABLE:
         return None
@@ -236,13 +237,13 @@ async def health_check():
     
     return health_status
 
-# メトリクスエンドポイント
+# メトリクスエンドポイント（Prometheus互換）
 @app.get("/metrics")
 async def metrics_endpoint():
     """Prometheusメトリクスエンドポイント"""
     if app_state.system_monitor:
-        return app_state.system_monitor.get_system_metrics()
-    return {"error": "System monitor not available"}
+        return app_state.system_monitor.get_prometheus_metrics()
+    return JSONResponse(status_code=503, content={"error": "System monitor not available"})
 
 # Composer API
 @app.post("/composer/generate")
@@ -355,7 +356,7 @@ async def generate_hybrid_script(
 # システム状態
 @app.get("/system/status")
 async def system_status(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """システム状態取得"""
     try:
@@ -388,7 +389,7 @@ async def system_status(
 # 健全性サマリー
 @app.get("/system/health")
 async def system_health(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """システム健全性サマリー取得"""
     try:
@@ -404,7 +405,7 @@ async def system_health(
 # パフォーマンス分析
 @app.get("/system/performance")
 async def system_performance(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """パフォーマンス分析取得"""
     try:
@@ -420,7 +421,7 @@ async def system_performance(
 # 健全性トレンド
 @app.get("/system/health/trends")
 async def system_health_trends(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """健全性トレンド取得"""
     try:
@@ -436,7 +437,7 @@ async def system_health_trends(
 # システム推奨事項
 @app.get("/system/recommendations")
 async def system_recommendations(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """システム推奨事項取得"""
     try:
@@ -455,7 +456,7 @@ async def system_recommendations(
 # アラート履歴
 @app.get("/system/alerts")
 async def system_alerts(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """アラート履歴取得"""
     try:
@@ -475,7 +476,7 @@ async def system_alerts(
 # 監視設定
 @app.get("/system/monitoring/config")
 async def get_monitoring_config(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """監視設定取得"""
     try:
@@ -494,7 +495,7 @@ async def get_monitoring_config(
 # 包括的システムレポート
 @app.get("/system/report")
 async def system_report(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """包括的システムレポート取得"""
     try:
@@ -540,7 +541,7 @@ async def system_report(
 # 監視ダッシュボード
 @app.get("/dashboard", response_class=HTMLResponse)
 async def monitoring_dashboard(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """監視ダッシュボード表示"""
     try:
@@ -607,7 +608,7 @@ async def websocket_monitor(websocket: WebSocket):
 # 監視イベント取得
 @app.get("/system/events")
 async def system_events(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """監視イベント取得"""
     try:
@@ -623,7 +624,7 @@ async def system_events(
 # リアルタイム監視制御
 @app.post("/system/monitoring/start")
 async def start_real_time_monitoring(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """リアルタイム監視開始"""
     try:
@@ -638,7 +639,7 @@ async def start_real_time_monitoring(
 
 @app.post("/system/monitoring/stop")
 async def stop_real_time_monitoring(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """リアルタイム監視停止"""
     try:
@@ -654,7 +655,7 @@ async def stop_real_time_monitoring(
 # 予測分析
 @app.get("/system/predictive")
 async def predictive_analysis(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """予測分析取得"""
     try:
@@ -670,7 +671,7 @@ async def predictive_analysis(
 # セキュリティ監査
 @app.get("/system/security/audit")
 async def security_audit(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """セキュリティ監査実行"""
     try:
@@ -686,7 +687,7 @@ async def security_audit(
 # 自動修復提案
 @app.get("/system/recovery/suggestions")
 async def auto_recovery_suggestions(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """自動修復提案取得"""
     try:
@@ -708,7 +709,7 @@ async def auto_recovery_suggestions(
 # 包括的システム分析
 @app.get("/system/analysis/comprehensive")
 async def comprehensive_analysis(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """包括的システム分析"""
     try:
@@ -792,7 +793,7 @@ async def comprehensive_analysis(
 # システム最適化提案
 @app.get("/system/optimization/proposals")
 async def system_optimization_proposals(
-    system_monitor: SystemMonitor = Depends(get_system_monitor)
+    system_monitor: "SystemMonitor" = Depends(get_system_monitor)
 ):
     """システム最適化提案取得"""
     try:
