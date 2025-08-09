@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-09T09:02:14.357186",
-  "session_purpose": "記憶システム修正と再テスト",
+  "timestamp": "2025-08-09T09:43:58.632819",
+  "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "8d98fccc5ec76f47b77061ed5f4d538a84cda6b1",
+    "commit_hash": "4d147f6aa0f415fb8380e71401cc7788d6657490",
     "branch": "master",
-    "uncommitted_changes": 2,
-    "status_details": "?? memory/\n?? scripts/project_memory_system.py"
+    "uncommitted_changes": 4,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/\n?? scripts/hooks/"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1625,8 +1625,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 53,
-      "total_files": 84
+      "python_files": 54,
+      "total_files": 89
     },
     "modules": {
       "exists": true,
@@ -1668,8 +1668,8 @@
   ],
   "system_status": {
     "main_hybrid_running": true,
-    "python_files_count": 44478,
+    "python_files_count": 188152,
     "cursor_configs_count": 14
   },
-  "state_hash": "8f588497dfafe3551c169e7e023183d3"
+  "state_hash": "4d451f0ec04d32400bfba5d6fda5078d"
 }

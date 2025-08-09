@@ -1,0 +1,12 @@
+#!/bin/bash
+# Create backup after commit and export event
+set -euo pipefail
+
+if command -v python >/dev/null 2>&1; then
+  python scripts/auto_backup_system.py --create >/dev/null 2>&1 || true
+  python scripts/project_memory_system.py --capture --session "post-commit" >/dev/null 2>&1 || true
+else
+  echo "python not found; skipping backup"
+fi
+
+exit 0
