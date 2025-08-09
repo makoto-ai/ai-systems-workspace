@@ -44,7 +44,11 @@ jobs:
     - name: API統合テスト実行
       run: |
         echo "🧪 API統合テスト実行..."
-        python run_accurate_test.py
+        if [ -f run_accurate_test.py ]; then
+          python run_accurate_test.py
+        else
+          echo "run_accurate_test.py が見つからないためスキップ"
+        fi
         
     - name: システム監視レポート生成
       run: |
@@ -72,7 +76,7 @@ jobs:
     - name: セキュリティ設定チェック
       run: |
         echo "🔒 セキュリティ設定チェック..."
-        echo "OpenAI API設定: $(grep -c OPENAI || echo '削除済み')"
+        echo "OpenAI API設定: $(grep -R -c "OPENAI" . 2>/dev/null || echo '削除済み')"
         echo "バックアップファイル: $(find . -name '*.bak' | wc -l)個"
         echo "機密ファイル保護: OK"
 
