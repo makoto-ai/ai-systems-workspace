@@ -44,6 +44,9 @@ done
 echo "Root: $ROOT_DIR"
 if [[ $DRY_RUN -eq 1 ]]; then echo "Mode: DRY-RUN (no changes)"; else echo "Mode: APPLY (modifies files)"; fi
 
+# Ensure logs directory exists (harmless if already present)
+mkdir -p logs || true
+
 # Build prune expression for excluded directories
 PRUNE=(
   -path "./.git" -o
