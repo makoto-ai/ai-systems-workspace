@@ -1,0 +1,77 @@
+[
+  {
+    "title": "Advancing AI voice synthesis: Integrating emotional expression in multi-speaker voice generation",
+    "authors": [
+      "SS Kolekar",
+      "DJ Richter",
+      "MI Bappi"
+    ],
+    "year": "2024",
+    "url": "https://ieeexplore.ieee.org/abstract/document/10463204/",
+    "abstract": "user-specific voice style integration, enabling users to train their personal voice datasets with   We focus on providing fast processing speed for voice synthesis by implementing istftnet",
+    "citations": 4,
+    "venue": "… on Artificial Intelligence …",
+    "search_rank": 1
+  },
+  {
+    "title": "Ai-synthesized voice detection using neural vocoder artifacts",
+    "authors": [
+      "C Sun",
+      "S Jia",
+      "S Hou",
+      "S Lyu"
+    ],
+    "year": "2023",
+    "url": "https://openaccess.thecvf.com/content/CVPR2023W/WMF/html/Sun_AI-Synthesized_Voice_Detection_Using_Neural_Vocoder_Artifacts_CVPRW_2023_paper.html",
+    "abstract": "In one instance, a scammer used an AI-synthesized voice to  Moreover, trolls on the internet  have used free AI voice cloning  Human voice synthesis can be classified into two general",
+    "citations": 71,
+    "venue": "Proceedings of the IEEE/CVF …",
+    "search_rank": 2
+  },
+  {
+    "title": "Advances in AI-based Voice Synthesis",
+    "authors": [
+      "E Caldwell"
+    ],
+    "year": "2008",
+    "url": "https://itaimle.com/index.php/ijaiml/article/download/267/6",
+    "abstract": "due to the rise of artificial intelligence (AI) technologies. AI-based voice synthesis systems,  particularly  This paper explores the evolution of AI-based voice synthesis, focusing on the key",
+    "citations": 0,
+    "venue": "International Journal of Artificial Intelligence and …",
+    "search_rank": 3
+  },
+  {
+    "title": "Deepsonar: Towards effective and robust detection of ai-synthesized fake voices",
+    "authors": [
+      "R Wang",
+      "F Juefei-Xu",
+      "Y Huang",
+      "Q Guo",
+      "X Xie"
+    ],
+    "year": "2020",
+    "url": "https://dl.acm.org/doi/abs/10.1145/3394171.3413716",
+    "abstract": "With the recent advances in voice synthesis, AI-synthesized fake voices are indistinguishable  to human ears and widely are applied to produce realistic and natural DeepFakes,",
+    "citations": 147,
+    "venue": "Proceedings of the 28th …",
+    "search_rank": 4
+  },
+  {
+    "title": "What's the Real: A Novel Design Philosophy for Robust AI-Synthesized Voice Detection",
+    "authors": [
+      "X Hai",
+      "X Liu",
+      "Y Tan",
+      "G Liu",
+      "S Li",
+      "W Niu",
+      "R Zhou"
+    ],
+    "year": "2024",
+    "url": "https://dl.acm.org/doi/abs/10.1145/3664647.3681100",
+    "abstract": "related technologies, including voice synthesis and AI-synthesized voice detection. Section  3 explains the details of SiFSafer, the AI-synthesized voice detection framework proposed in",
+    "citations": 1,
+    "venue": "Proceedings of the …",
+    "search_rank": 5
+  }
+]
