@@ -58,24 +58,14 @@ jobs:
       run: |
         python -m pytest tests/ -v --cov=modules --cov=main_hybrid
     
-    - name: Run integration tests (skip if modules missing)
+    - name: Composer smoke test (skip if missing)
       run: |
-        set -e
-        echo "Running integration smoke tests..."
-        python - <<'PY'
-        try:
-          from modules.composer import ScriptComposer
-          ScriptComposer()
-          print('Composer test: OK')
-        except Exception as e:
-          print('Composer test skipped or failed:', e)
-        try:
-          from youtube_script_generation_system import YouTubeScriptGenerator
-          YouTubeScriptGenerator()
-          print('MCP test: OK')
-        except Exception as e:
-          print('MCP test skipped or failed:', e)
-PY
+        python -c "from modules.composer import ScriptComposer; ScriptComposer(); print('Composer test: OK')" \
+          || echo "Composer test skipped or failed"
+    - name: MCP smoke test (skip if missing)
+      run: |
+        python -c "from youtube_script_generation_system import YouTubeScriptGenerator; YouTubeScriptGenerator(); print('MCP test: OK')" \
+          || echo "MCP test skipped or failed"
 
   # Dockerビルド
   build:
