@@ -1,0 +1,1675 @@
+{
+  "timestamp": "2025-08-09T09:02:14.357186",
+  "session_purpose": "記憶システム修正と再テスト",
+  "git_status": {
+    "commit_hash": "8d98fccc5ec76f47b77061ed5f4d538a84cda6b1",
+    "branch": "master",
+    "uncommitted_changes": 2,
+    "status_details": "?? memory/\n?? scripts/project_memory_system.py"
+  },
+  "cursor_configs": {
+    "mcp_groq_constitution.json": {
+      "constitutionalAI": {
+        "description": "Groq Constitutional AI for YouTube Script Generation",
+        "version": "1.0",
+        "rules": {
+          "factualAccuracy": {
+            "description": "事実の正確性を確保するルール",
+            "rules": [
+              "研究論文の内容を正確に反映する",
+              "数値や統計は元の論文と一致させる",
+              "推測や憶測を避け、事実のみを述べる",
+              "不確実な情報には「可能性がある」「推測される」などの表現を使用する"
+            ]
+          },
+          "citationEnforcement": {
+            "description": "引用の適切な実施",
+            "rules": [
+              "全ての主張には適切な引用を付ける",
+              "著者名を明記する",
+              "DOIや論文タイトルを参照する",
+              "引用記号「」を使用する"
+            ]
+          },
+          "toneGuidelines": {
+            "description": "適切なトーンの維持",
+            "rules": [
+              "一般視聴者に分かりやすい表現を使用する",
+              "専門用語は必ず説明を付ける",
+              "親しみやすく、魅力的なトーンを保つ",
+              "否定的な表現を避け、建設的な表現を使用する"
+            ]
+          },
+          "safetyProtocols": {
+            "description": "安全性の確保",
+            "rules": [
+              "医療・健康に関する内容には適切な免責事項を付ける",
+              "投資・金融に関する内容にはリスク警告を付ける",
+              "心理学的な内容には専門家の助言を求めるよう促す",
+              "有害な情報や誤解を招く内容を避ける"
+            ]
+          }
+        },
+        "qualityThresholds": {
+          "readability_score": 0.3,
+          "engagement_score": 0.1,
+          "structure_score": 0.3,
+          "confidence_score": 0.3
+        },
+        "fallbackStrategies": {
+          "api_unavailable": "モック応答を使用",
+          "quality_low": "再生成を試行",
+          "citation_missing": "自動引用追加",
+          "safety_violation": "内容の修正"
+        }
+      }
+    },
+    "mcp_prompt.json": {
+      "version": "2.0.0",
+      "description": "出力の安定化用テンプレート",
+      "default": {
+        "system": "あなたは研究アシスタントです。以下の研究目的に従って、信頼できる論文ベースで一貫性ある構成を出力してください。",
+        "user": "研究データを分析し、学術的に正確で理解しやすい要約を作成してください。",
+        "constraints": [
+          "事実に基づいた内容のみ",
+          "引用を適切に含める",
+          "論理的な構成を保つ",
+          "専門用語は平易に説明"
+        ]
+      },
+      "youtube_script": {
+        "system": "あなたはYouTube原稿作成の専門家です。研究論文を魅力的な動画原稿に変換してください。",
+        "user": "出力は2〜3分のトーク構成にしてください。要点→補足→結論の順。研究論拠を会話調に整理してください。",
+        "structure": {
+          "hook": "視聴者の興味を引く導入（15秒）",
+          "introduction": "研究背景と目的（30秒）",
+          "main_content": "研究結果と分析（2-2.5分）",
+          "conclusion": "まとめと今後の展望（15秒）",
+          "call_to_action": "視聴者へのアクション呼びかけ（15秒）"
+        },
+        "style": {
+          "tone": "親しみやすく、専門的",
+          "pace": "適度なテンポで理解しやすい",
+          "engagement": "質問や具体例を含む",
+          "clarity": "複雑な概念を平易に説明"
+        }
+      },
+      "academic_summary": {
+        "system": "あなたは学術論文の要約専門家です。研究の核心を正確に抽出してください。",
+        "user": "研究の目的、方法、結果、結論を簡潔にまとめてください。",
+        "format": {
+          "structure": [
+            "背景",
+            "目的",
+            "方法",
+            "結果",
+            "結論",
+            "意義"
+          ],
+          "length": "500-800文字",
+          "style": "学術的で正確"
+        }
+      },
+      "business_presentation": {
+        "system": "あなたはビジネスプレゼンテーションの専門家です。研究結果をビジネス価値に変換してください。",
+        "user": "研究の実用的な応用とビジネスインパクトを強調してください。",
+        "focus": {
+          "practical_applications": true,
+          "business_impact": true,
+          "cost_benefit_analysis": true,
+          "implementation_strategy": true
+        }
+      },
+      "educational_content": {
+        "system": "あなたは教育コンテンツの専門家です。学習者にとって理解しやすい内容に変換してください。",
+        "user": "段階的に概念を説明し、学習目標を明確にしてください。",
+        "pedagogy": {
+          "scaffolding": true,
+          "examples": true,
+          "interactive_elements": true,
+          "assessment_questions": true
+        }
+      },
+      "fact_checking": {
+        "system": "あなたは事実確認の専門家です。情報の正確性を検証してください。",
+        "user": "提供された情報の信頼性と事実性を評価してください。",
+        "criteria": [
+          "ソースの信頼性",
+          "情報の最新性",
+          "引用の適切性",
+          "論理的一貫性"
+        ]
+      },
+      "quality_assurance": {
+        "system": "あなたは品質保証の専門家です。コンテンツの品質を評価してください。",
+        "user": "可読性、エンゲージメント、構造の観点から品質を評価してください。",
+        "metrics": {
+          "readability": "文章の理解しやすさ",
+          "engagement": "視聴者の興味を引く要素",
+          "structure": "論理的な構成",
+          "accuracy": "情報の正確性"
+        }
+      }
+    },
+    "mcp_claude_constitution.json": {
+      "constitutionalAI": {
+        "version": "1.0",
+        "model": "claude-3-opus-20240229",
+        "rules": {
+          "factualAccuracy": {
+            "priority": "critical",
+            "rules": [
+              "Never fabricate information or create fictional data",
+              "Always cite original sources with DOI when making scientific claims",
+              "If a claim cannot be verified, explicitly state this limitation",
+              "Use phrases like 'research suggests' instead of definitive statements",
+              "Distinguish between correlation and causation clearly"
+            ]
+          },
+          "citationEnforcement": {
+            "priority": "high",
+            "rules": [
+              "Every scientific claim must include a DOI or PMID reference",
+              "For academic papers, include author names and publication year",
+              "For web sources, provide full URL and access date",
+              "If source is unavailable, mark as 'unverified claim'",
+              "Use Google Scholar URLs for academic references"
+            ]
+          },
+          "toneControl": {
+            "priority": "medium",
+            "rules": [
+              "Avoid emotionally manipulative language",
+              "No exaggerations or superlatives without evidence",
+              "Use measured, academic tone for research content",
+              "Avoid clickbait-style headlines",
+              "Maintain professional skepticism"
+            ]
+          },
+          "safetyChecks": {
+            "priority": "high",
+            "rules": [
+              "No medical advice without proper disclaimers",
+              "No financial advice without risk warnings",
+              "No psychological advice without professional context",
+              "Flag any content that could be harmful if misinterpreted"
+            ]
+          }
+        },
+        "enforcement": {
+          "autoReject": [
+            "Claims without citations",
+            "Definitive statements without evidence",
+            "Medical/financial advice without disclaimers"
+          ],
+          "warningFlags": [
+            "Unverified claims",
+            "Correlation vs causation confusion",
+            "Emotional manipulation attempts"
+          ]
+        }
+      }
+    },
+    "mcp_audit.json": {
+      "audit_config": {
+        "version": "2.0.1",
+        "description": "監査証跡・運用履歴ログ設定 - 強化版",
+        "last_updated": "2025-01-27",
+        "enforcement_level": "strict",
+        "compliance_standards": [
+          "GDPR",
+          "SOX",
+          "ISO27001",
+          "NIST"
+        ],
+        "auto_enable": true
+      },
+      "audit_logging": {
+        "log_file_path": "logs/audit_trail.json",
+        "log_format": "json",
+        "log_level": "INFO",
+        "retention_days": 365,
+        "compression_enabled": true,
+        "encryption_enabled": true,
+        "real_time_logging": true,
+        "backup_logs": true,
+        "log_rotation": {
+          "enabled": true,
+          "max_size_mb": 10,
+          "backup_count": 5
+        }
+      },
+      "audit_fields": {
+        "required_fields": [
+          "timestamp",
+          "user_id",
+          "session_id",
+          "ai_model",
+          "mcp_configuration",
+          "template_used",
+          "operation_type",
+          "input_files",
+          "output_files",
+          "purpose",
+          "duration_ms",
+          "status",
+          "error_message",
+          "security_level",
+          "compliance_status"
+        ],
+        "optional_fields": [
+          "ip_address",
+          "user_agent",
+          "api_version",
+          "model_parameters",
+          "token_usage",
+          "cost_estimate",
+          "performance_metrics",
+          "security_checks"
+        ],
+        "sensitive_fields": [
+          "api_keys",
+          "passwords",
+          "tokens",
+          "credentials"
+        ],
+        "validation_rules": {
+          "timestamp_format": "ISO 8601",
+          "required_timestamp": true,
+          "validate_json": true,
+          "check_required_fields": true
+        }
+      },
+      "ai_model_tracking": {
+        "supported_models": {
+          "claude": {
+            "claude-3-5-sonnet": "Anthropic Claude 3.5 Sonnet",
+            "claude-3-opus": "Anthropic Claude 3 Opus",
+            "claude-3-haiku": "Anthropic Claude 3 Haiku",
+            "claude-2.1": "Anthropic Claude 2.1",
+            "claude-3-5-sonnet-20241022": "Anthropic Claude 3.5 Sonnet (Latest)"
+          },
+          "openai": {
+            "gpt-4": "OpenAI GPT-4",
+            "gpt-4-turbo": "OpenAI GPT-4 Turbo",
+            "gpt-3.5-turbo": "OpenAI GPT-3.5 Turbo",
+            "gpt-4o": "OpenAI GPT-4o",
+            "gpt-4o-mini": "OpenAI GPT-4o Mini"
+          },
+          "groq": {
+            "llama3-70b-8192": "Groq Llama3 70B",
+            "llama3-8b-8192": "Groq Llama3 8B",
+            "mixtral-8x7b-32768": "Groq Mixtral 8x7B",
+            "gemma2-9b-it": "Groq Gemma2 9B"
+          },
+          "google": {
+            "gemini-pro": "Google Gemini Pro",
+            "gemini-flash": "Google Gemini Flash",
+            "gemini-1.5-pro": "Google Gemini 1.5 Pro"
+          },
+          "huggingface": {
+            "whisper-1": "OpenAI Whisper",
+            "whisper-large-v3": "Whisper Large V3"
+          }
+        },
+        "model_metadata": {
+          "track_parameters": true,
+          "track_performance": true,
+          "track_usage": true,
+          "track_costs": true,
+          "track_compliance": true
+        },
+        "model_validation": {
+          "validate_model_name": true,
+          "check_model_availability": true,
+          "log_model_switches": true
+        }
+      },
+      "mcp_configuration_tracking": {
+        "tracked_configs": [
+          "mcp_security.json",
+          "mcp_audit.json",
+          "mcp_guardrails.json",
+          "mcp_sparrow.json",
+          "mcp_groq_constitution.json",
+          "project-rules.json",
+          "mcp_prompt.json",
+          "mcp_query.json",
+          "composer.json",
+          "memory_composer.json"
+        ],
+        "config_validation": {
+          "validate_on_load": true,
+          "log_config_changes": true,
+          "backup_configs": true,
+          "version_control": true,
+          "integrity_checks": true,
+          "config_encryption": true
+        }
+      },
+      "template_tracking": {
+        "template_categories": {
+          "youtube_script": "YouTube原稿生成",
+          "academic_summary": "学術論文要約",
+          "business_report": "ビジネスレポート",
+          "code_generation": "コード生成",
+          "data_analysis": "データ分析",
+          "content_creation": "コンテンツ作成",
+          "security_audit": "セキュリティ監査",
+          "performance_optimization": "パフォーマンス最適化"
+        },
+        "template_metadata": {
+          "version": "string",
+          "author": "string",
+          "last_modified": "datetime",
+          "usage_count": "integer",
+          "success_rate": "float",
+          "compliance_status": "string"
+        },
+        "template_validation": {
+          "validate_template": true,
+          "check_template_permissions": true,
+          "log_template_usage": true
+        }
+      },
+      "operation_types": {
+        "file_operations": [
+          "file_create",
+          "file_read",
+          "file_update",
+          "file_delete",
+          "file_copy",
+          "file_move",
+          "file_backup",
+          "file_restore"
+        ],
+        "ai_operations": [
+          "content_generation",
+          "code_generation",
+          "data_analysis",
+          "text_summarization",
+          "translation",
+          "sentiment_analysis",
+          "voice_processing",
+          "image_processing"
+        ],
+        "system_operations": [
+          "config_load",
+          "config_update",
+          "security_check",
+          "audit_log",
+          "backup_create",
+          "restore_operation",
+          "performance_monitor",
+          "compliance_check"
+        ],
+        "security_operations": [
+          "access_control",
+          "authentication",
+          "authorization",
+          "encryption",
+          "decryption",
+          "key_management",
+          "threat_detection"
+        ]
+      },
+      "github_mcp_integration": {
+        "enabled": true,
+        "track_repository": true,
+        "track_branch": true,
+        "track_commit": true,
+        "track_pull_request": true,
+        "track_issue": true,
+        "log_github_operations": true,
+        "security_scanning": {
+          "enabled": true,
+          "scan_secrets": true,
+          "scan_vulnerabilities": true,
+          "scan_dependencies": true
+        },
+        "compliance_tracking": {
+          "license_compliance": true,
+          "security_compliance": true,
+          "code_quality": true,
+          "documentation": true
+        }
+      },
+      "compliance_reporting": {
+        "generate_reports": true,
+        "report_frequency": "weekly",
+        "report_formats": [
+          "json",
+          "csv",
+          "pdf",
+          "html"
+        ],
+        "report_retention": "1_year",
+        "gdpr_compliance": {
+          "data_subject_rights": true,
+          "data_portability": true,
+          "data_erasure": true,
+          "consent_tracking": true,
+          "privacy_by_design": true
+        },
+        "sox_compliance": {
+          "financial_controls": true,
+          "access_logging": true,
+          "change_management": true,
+          "risk_assessment": true
+        }
+      },
+      "alert_configuration": {
+        "security_alerts": {
+          "sensitive_data_access": true,
+          "unauthorized_operations": true,
+          "config_changes": true,
+          "model_switches": true,
+          "compliance_violations": true,
+          "performance_degradation": true
+        },
+        "performance_alerts": {
+          "high_latency": true,
+          "high_cost": true,
+          "error_rate": true,
+          "resource_usage": true,
+          "api_rate_limits": true
+        },
+        "notification_channels": {
+          "email": false,
+          "slack": false,
+          "webhook": false,
+          "log_file": true,
+          "console": true,
+          "dashboard": true
+        }
+      },
+      "data_retention": {
+        "audit_logs": "365_days",
+        "performance_metrics": "90_days",
+        "error_logs": "180_days",
+        "security_logs": "365_days",
+        "backup_files": "30_days",
+        "compliance_reports": "7_years"
+      },
+      "mode_specific_audit": {
+        "auto_mode": {
+          "enabled": true,
+          "enhanced_logging": true,
+          "real_time_monitoring": true,
+          "predictive_analysis": true
+        },
+        "claude_mode": {
+          "enabled": true,
+          "anthropic_compliance": true,
+          "constitutional_ai_tracking": true,
+          "ethical_ai_monitoring": true
+        },
+        "gpt_mode": {
+          "enabled": true,
+          "openai_compliance": true,
+          "content_filtering": true,
+          "usage_tracking": true
+        },
+        "max_mode": {
+          "enabled": true,
+          "advanced_security": true,
+          "real_time_protection": true,
+          "threat_intelligence": true
+        }
+      },
+      "privacy_protection": {
+        "data_minimization": true,
+        "pseudonymization": true,
+        "encryption_at_rest": true,
+        "encryption_in_transit": true,
+        "access_controls": true,
+        "audit_trail": true
+      },
+      "error_handling": {
+        "log_errors": true,
+        "error_retention": "180_days",
+        "error_notification": true,
+        "error_recovery": true,
+        "graceful_degradation": true
+      }
+    },
+    "memory_composer.json": {
+      "title": "メモリ対応論文検証＆原稿生成Composer",
+      "version": "2.1.0",
+      "description": "セッション記憶対応のプロンプト連携システム",
+      "memoryEnabled": true,
+      "sessionTracking": true,
+      "chains": [
+        {
+          "name": "DeepResearchWithMemory",
+          "model": "GPT-4o",
+          "prompt": "厳格なファクトチェックと原文構造の保持（記憶対応）",
+          "temperature": 0.3,
+          "maxTokens": 4000,
+          "memoryContext": {
+            "previousResearch": true,
+            "userPreferences": true,
+            "styleHistory": true
+          },
+          "features": [
+            "factChecking",
+            "structurePreservation",
+            "academicRigor",
+            "memoryIntegration"
+          ]
+        },
+        {
+          "name": "SummarySimplifierWithMemory",
+          "model": "Claude 3 Opus",
+          "prompt": "読者目線の要約＋構成整理（記憶対応）",
+          "temperature": 0.7,
+          "maxTokens": 3000,
+          "memoryContext": {
+            "previousSummaries": true,
+            "audiencePreferences": true,
+            "toneHistory": true
+          },
+          "features": [
+            "readerPerspective",
+            "simplification",
+            "structureOrganization",
+            "memoryIntegration"
+          ]
+        },
+        {
+          "name": "TranslationCheckWithMemory",
+          "model": "GPT-4o",
+          "prompt": "翻訳精度検証と文化的適応（記憶対応）",
+          "temperature": 0.4,
+          "maxTokens": 2000,
+          "memoryContext": {
+            "translationHistory": true,
+            "culturalPreferences": true,
+            "languagePatterns": true
+          },
+          "features": [
+            "translationAccuracy",
+            "culturalAdaptation",
+            "idiomHandling",
+            "memoryIntegration"
+          ]
+        },
+        {
+          "name": "SalesRoleplayAnalysisWithMemory",
+          "model": "Claude 3 Opus",
+          "prompt": "営業会話の感情・構造分析（記憶対応）",
+          "temperature": 0.6,
+          "maxTokens": 2500,
+          "memoryContext": {
+            "conversationHistory": true,
+            "performanceMetrics": true,
+            "improvementPatterns": true
+          },
+          "features": [
+            "emotionAnalysis",
+            "conversationStructure",
+            "salesTechniqueIdentification",
+            "memoryIntegration"
+          ]
+        }
+      ],
+      "workflows": [
+        {
+          "name": "AcademicToYouTubeWithMemory",
+          "description": "学術論文からYouTube原稿生成（記憶対応）",
+          "steps": [
+            {
+              "chain": "DeepResearchWithMemory",
+              "input": "paperMetadata",
+              "output": "verifiedContent",
+              "memoryKey": "research_verification"
+            },
+            {
+              "chain": "SummarySimplifierWithMemory",
+              "input": "verifiedContent",
+              "output": "simplifiedContent",
+              "memoryKey": "content_simplification"
+            },
+            {
+              "chain": "TranslationCheckWithMemory",
+              "input": "simplifiedContent",
+              "output": "finalScript",
+              "memoryKey": "translation_verification"
+            }
+          ]
+        },
+        {
+          "name": "SalesPerformanceAnalysisWithMemory",
+          "description": "営業会話のパフォーマンス分析（記憶対応）",
+          "steps": [
+            {
+              "chain": "SalesRoleplayAnalysisWithMemory",
+              "input": "conversationData",
+              "output": "analysisReport",
+              "memoryKey": "sales_analysis"
+            }
+          ]
+        }
+      ],
+      "memorySettings": {
+        "sessionRetention": "7days",
+        "contextWindow": 10,
+        "memoryCompression": true,
+        "autoCleanup": true,
+        "memoryTypes": [
+          "conversationHistory",
+          "userPreferences",
+          "performanceMetrics",
+          "stylePatterns",
+          "errorPatterns"
+        ]
+      },
+      "settings": {
+        "defaultTemperature": 0.5,
+        "defaultMaxTokens": 3000,
+        "retryAttempts": 3,
+        "timeoutSeconds": 60,
+        "qualityThreshold": 0.8,
+        "memoryEnabled": true
+      },
+      "prompts": {
+        "deepResearch": {
+          "file": ".cursor/prompts/deep-research.md",
+          "description": "深い研究分析とファクトチェック（記憶対応）"
+        },
+        "translationCheck": {
+          "file": ".cursor/prompts/translation-check.md",
+          "description": "翻訳精度検証（記憶対応）"
+        },
+        "salesRoleplayAnalysis": {
+          "file": ".cursor/prompts/sales-roleplay-analysis.md",
+          "description": "営業会話分析（記憶対応）"
+        }
+      }
+    },
+    "mcp_query.json": {
+      "version": "2.0.0",
+      "description": "検索補正・ハルシネ対策・初期補正",
+      "crossref_only": true,
+      "real_time_validation": true,
+      "query_constraints": [
+        "DOI必須",
+        "Google Scholar API / Crossref API経由のみ許可",
+        "査読済み論文を優先",
+        "最新5年以内の論文を優先",
+        "高被引用論文を優先"
+      ],
+      "search_strategies": {
+        "primary": {
+          "method": "crossref_api",
+          "priority": "high",
+          "filters": {
+            "content_type": "journal-article",
+            "has_doi": true,
+            "has_abstract": true
+          }
+        },
+        "secondary": {
+          "method": "google_scholar_api",
+          "priority": "medium",
+          "filters": {
+            "include_citations": true,
+            "peer_reviewed_only": true
+          }
+        },
+        "fallback": {
+          "method": "semantic_scholar_api",
+          "priority": "low",
+          "filters": {
+            "has_pdf": false,
+            "has_abstract": true
+          }
+        }
+      },
+      "hallucination_prevention": {
+        "source_verification": {
+          "enabled": true,
+          "methods": [
+            "doi_validation",
+            "crossref_lookup",
+            "title_author_match"
+          ]
+        },
+        "content_validation": {
+          "enabled": true,
+          "checks": [
+            "fact_consistency",
+            "citation_accuracy",
+            "logical_coherence"
+          ]
+        },
+        "confidence_scoring": {
+          "enabled": true,
+          "thresholds": {
+            "high_confidence": 0.8,
+            "medium_confidence": 0.6,
+            "low_confidence": 0.4
+          }
+        }
+      },
+      "initial_correction": {
+        "auto_fix": {
+          "enabled": true,
+          "types": [
+            "grammar_correction",
+            "style_improvement",
+            "clarity_enhancement"
+          ]
+        },
+        "quality_checks": {
+          "enabled": true,
+          "checks": [
+            "readability_score",
+            "engagement_score",
+            "structure_score"
+          ]
+        },
+        "content_refinement": {
+          "enabled": true,
+          "methods": [
+            "redundancy_removal",
+            "flow_improvement",
+            "tone_adjustment"
+          ]
+        }
+      },
+      "query_optimization": {
+        "keyword_extraction": {
+          "enabled": true,
+          "methods": [
+            "tf_idf_analysis",
+            "topic_modeling",
+            "semantic_analysis"
+          ]
+        },
+        "query_expansion": {
+          "enabled": true,
+          "methods": [
+            "synonym_expansion",
+            "related_term_inclusion",
+            "hierarchical_expansion"
+          ]
+        },
+        "relevance_scoring": {
+          "enabled": true,
+          "factors": [
+            "title_relevance",
+            "abstract_relevance",
+            "citation_count",
+            "publication_date"
+          ]
+        }
+      },
+      "validation_pipeline": {
+        "pre_search": {
+          "query_validation": true,
+          "keyword_optimization": true,
+          "constraint_checking": true
+        },
+        "during_search": {
+          "real_time_filtering": true,
+          "relevance_scoring": true,
+          "duplicate_detection": true
+        },
+        "post_search": {
+          "result_validation": true,
+          "quality_assessment": true,
+          "hallucination_detection": true
+        }
+      },
+      "error_recovery": {
+        "query_failure": {
+          "fallback_strategies": [
+            "broaden_search_terms",
+            "reduce_constraints",
+            "use_alternative_apis"
+          ]
+        },
+        "validation_failure": {
+          "recovery_actions": [
+            "manual_review",
+            "alternative_sources",
+            "quality_degradation"
+          ]
+        }
+      }
+    },
+    "mcp_sparrow.json": {
+      "sparrowLogic": {
+        "version": "1.0",
+        "description": "Google DeepMind's Sparrow Logic for citation enforcement",
+        "citationRules": {
+          "mandatoryCitations": {
+            "priority": "critical",
+            "rules": [
+              "Every paragraph must reference at least one verifiable source",
+              "Scientific claims require DOI or PMID references",
+              "Academic papers must include author names and publication year",
+              "Web sources must include full URL and access date",
+              "Statistics must cite original data source"
+            ]
+          },
+          "sourceVerification": {
+            "priority": "high",
+            "rules": [
+              "Prefer peer-reviewed academic sources",
+              "Use Google Scholar URLs for academic references",
+              "Verify DOI links before including",
+              "Check publication dates for relevance",
+              "Cross-reference multiple sources when possible"
+            ]
+          },
+          "citationFormat": {
+            "priority": "medium",
+            "rules": [
+              "DOI format: https://doi.org/10.xxxx/xxxxx",
+              "PMID format: PMID: xxxxxxxx",
+              "Google Scholar: https://scholar.google.com/scholar?q=...",
+              "Include page numbers for book citations",
+              "Use consistent citation style throughout"
+            ]
+          }
+        },
+        "enforcement": {
+          "autoReject": [
+            "Paragraphs without citations",
+            "Claims without verifiable sources",
+            "Unattributed statistics or data"
+          ],
+          "warningFlags": [
+            "Single source claims",
+            "Outdated sources (>5 years for fast-moving fields)",
+            "Non-peer-reviewed sources for scientific claims"
+          ],
+          "qualityChecks": {
+            "sourceDiversity": "Require multiple sources for major claims",
+            "recencyCheck": "Prefer recent sources for current topics",
+            "authorityCheck": "Verify author credentials and institution"
+          }
+        },
+        "processingStages": {
+          "rawSummarization": {
+            "applyRules": true,
+            "citationRequired": true
+          },
+          "scriptAssembly": {
+            "applyRules": true,
+            "citationRequired": true
+          },
+          "finalReview": {
+            "applyRules": true,
+            "citationRequired": true
+          }
+        }
+      }
+    },
+    "autostart.json": {
+      "autoStart": {
+        "enabled": true,
+        "onProjectOpen": {
+          "checkServices": true,
+          "startIfNeeded": true,
+          "commands": [
+            "python3 scripts/cursor_startup_automation.py",
+            "./quick-status.sh",
+            "./start-services.sh"
+          ]
+        },
+        "onCursorError": {
+          "autoRecover": true,
+          "commands": [
+            "./start-services.sh",
+            "./quick-status.sh"
+          ]
+        },
+        "healthCheck": {
+          "interval": 60,
+          "endpoints": [
+            "http://localhost:8000/api/health/basic",
+            "http://localhost:3000"
+          ]
+        },
+        "securityAutomation": {
+          "enabled": true,
+          "fullAutomation": true,
+          "autoStart": "python3 scripts/security_full_automation.py"
+        }
+      }
+    },
+    "project-rules.json": {
+      "purpose": "音声AIロープレ＋論文原稿生成",
+      "version": "2.0.0",
+      "description": "研究論文からYouTube原稿を自動生成する高度なAIシステム",
+      "agents": {
+        "groq": {
+          "role": "論文の要約、構成作成、骨組み案出し",
+          "model": "llama3-70b-8192",
+          "strengths": [
+            "高速処理",
+            "大規模コンテキスト",
+            "論理的思考"
+          ],
+          "tasks": [
+            "研究要約",
+            "構造化",
+            "初期原稿生成"
+          ]
+        },
+        "claude": {
+          "role": "ハルシネ検出、文法調整、出力形式の統一と仕上げ",
+          "model": "claude-3-5-sonnet-20241022",
+          "strengths": [
+            "事実確認",
+            "品質保証",
+            "細かい調整"
+          ],
+          "tasks": [
+            "事実検証",
+            "品質チェック",
+            "最終調整"
+          ]
+        },
+        "gpt-4": {
+          "role": "ハルシネ検出、文法調整、出力形式の統一と仕上げ",
+          "model": "gpt-4",
+          "strengths": [
+            "創造性",
+            "多様性",
+            "実用性"
+          ],
+          "tasks": [
+            "表現改善",
+            "エンゲージメント向上",
+            "視聴者向け調整"
+          ]
+        }
+      },
+      "output_rules": {
+        "format": "構成: テーゼ-アンチテーゼ-ジンテーゼ / セクション毎に見出しをつける",
+        "style": "口語・論理・専門性のバランスを保つ",
+        "language": "日本語",
+        "structure": {
+          "hook": "視聴者の興味を引く導入",
+          "introduction": "研究背景と目的の説明",
+          "main_content": "研究結果と分析",
+          "conclusion": "まとめと今後の展望",
+          "call_to_action": "視聴者へのアクション呼びかけ"
+        }
+      },
+      "model_routing": {
+        "primary": "groq",
+        "fallback": "claude",
+        "quality_check": "gpt-4",
+        "routing_rules": {
+          "initial_generation": "groq",
+          "fact_checking": "claude",
+          "style_refinement": "gpt-4",
+          "final_polish": "claude"
+        }
+      },
+      "quality_standards": {
+        "readability_score": 0.7,
+        "engagement_score": 0.6,
+        "structure_score": 0.8,
+        "confidence_score": 0.7,
+        "citation_accuracy": 0.9,
+        "factual_accuracy": 0.95
+      },
+      "mcp_integrations": [
+        "Opik",
+        "GitHub",
+        "Apidog"
+      ],
+      "error_handling": {
+        "max_retries": 3,
+        "timeout_seconds": 30,
+        "fallback_enabled": true,
+        "graceful_degradation": true
+      },
+      "safety_checks": {
+        "medical_content": true,
+        "financial_content": true,
+        "psychological_content": true,
+        "require_disclaimers": true,
+        "content_moderation": true
+      }
+    },
+    "mcp_guardrails.json": {
+      "version": "2.0.0",
+      "description": "誤爆・誤表現の制御",
+      "forbidden_phrases": [
+        "この論文は存在しない可能性があります",
+        "正確な情報ではありません",
+        "推測に基づいています",
+        "未確認の情報です",
+        "個人的な意見です",
+        "確実ではありません",
+        "疑わしい情報です",
+        "根拠が不明です"
+      ],
+      "require_doi": true,
+      "reject_hallucinated_sources": true,
+      "content_safety": {
+        "medical_content": {
+          "detection": true,
+          "required_disclaimer": "※この情報は医療助言ではありません。専門医にご相談ください。",
+          "forbidden_claims": [
+            "治療効果を保証する",
+            "診断を行う",
+            "薬の処方を推奨する"
+          ]
+        },
+        "financial_content": {
+          "detection": true,
+          "required_disclaimer": "※投資にはリスクが伴います。専門家にご相談ください。",
+          "forbidden_claims": [
+            "投資収益を保証する",
+            "株価の予測を行う",
+            "投資助言を行う"
+          ]
+        },
+        "psychological_content": {
+          "detection": true,
+          "required_disclaimer": "※この情報は心理学的な参考情報です。専門家にご相談ください。",
+          "forbidden_claims": [
+            "診断を行う",
+            "治療効果を保証する",
+            "個人の心理状態を断定する"
+          ]
+        }
+      },
+      "factual_accuracy": {
+        "require_citations": true,
+        "min_citation_count": 1,
+        "preferred_sources": [
+          "peer_reviewed_journals",
+          "academic_databases",
+          "reputable_institutions"
+        ],
+        "rejected_sources": [
+          "unverified_websites",
+          "social_media",
+          "anonymous_sources"
+        ]
+      },
+      "language_guidelines": {
+        "avoid_absolute_claims": true,
+        "use_hedging_language": true,
+        "preferred_phrases": [
+          "研究によると",
+          "論文では",
+          "調査結果として",
+          "分析では"
+        ],
+        "avoided_phrases": [
+          "絶対に",
+          "間違いなく",
+          "確実に",
+          "必ず"
+        ]
+      },
+      "output_quality": {
+        "min_readability_score": 0.6,
+        "min_engagement_score": 0.5,
+        "min_structure_score": 0.7,
+        "min_confidence_score": 0.7,
+        "max_hallucination_risk": 0.1
+      },
+      "error_handling": {
+        "auto_correction": true,
+        "fallback_content": true,
+        "warning_system": true,
+        "quality_degradation": {
+          "allow_partial_output": true,
+          "mark_uncertain_parts": true,
+          "provide_confidence_scores": true
+        }
+      },
+      "validation_rules": {
+        "cross_reference_check": true,
+        "source_verification": true,
+        "content_consistency": true,
+        "logical_coherence": true
+      }
+    },
+    "mcp_security.json": {
+      "security_config": {
+        "version": "2.0.1",
+        "description": "出力セキュリティ・環境保護設定 - 強化版",
+        "last_updated": "2025-01-27",
+        "enforcement_level": "strict",
+        "auto_enable": true
+      },
+      "output_restrictions": {
+        "allowed_directories": [
+          "outputs/",
+          "generated/",
+          "results/",
+          "temp/",
+          "logs/",
+          "backups/",
+          "uploads/"
+        ],
+        "blocked_directories": [
+          ".env",
+          ".env.*",
+          "secrets/",
+          "config/private/",
+          "credentials/",
+          "keys/",
+          ".git/",
+          "node_modules/",
+          "venv/",
+          "__pycache__/",
+          ".cursor/",
+          "config_backup_0808/"
+        ],
+        "file_extensions": {
+          "allowed": [
+            ".txt",
+            ".md",
+            ".json",
+            ".csv",
+            ".xml",
+            ".yaml",
+            ".yml",
+            ".py",
+            ".js",
+            ".ts",
+            ".html",
+            ".css",
+            ".log"
+          ],
+          "blocked": [
+            ".env",
+            ".key",
+            ".pem",
+            ".p12",
+            ".pfx",
+            ".crt",
+            ".pem",
+            ".p8",
+            ".secret",
+            ".token"
+          ]
+        },
+        "max_file_size_mb": 10,
+        "max_output_files_per_session": 50,
+        "prevent_env_file_creation": true,
+        "strict_directory_protection": true
+      },
+      "environment_protection": {
+        "protected_files": [
+          ".env",
+          ".env.local",
+          ".env.production",
+          ".env.development",
+          ".env.test",
+          ".env.bak",
+          ".env.docker",
+          "secrets.json",
+          "config.json",
+          "credentials.json",
+          "api_keys.json",
+          "honest_security_test.env"
+        ],
+        "protected_patterns": [
+          "*.key",
+          "*.pem",
+          "*.crt",
+          "*.p12",
+          "secrets/*",
+          "private/*",
+          "credentials/*",
+          ".env*"
+        ],
+        "read_only_files": [
+          ".gitignore",
+          "README.md",
+          "LICENSE",
+          "requirements.txt",
+          "package.json",
+          "env.example"
+        ],
+        "env_file_protection": {
+          "block_env_file_creation": true,
+          "block_env_file_modification": true,
+          "block_env_file_deletion": true,
+          "warn_on_env_access": true,
+          "log_env_operations": true,
+          "protect_existing_env_files": true
+        },
+        "directory_protection": {
+          "protect_secrets_directory": true,
+          "protect_git_directory": true,
+          "protect_cursor_directory": true,
+          "block_directory_creation": [
+            "secrets",
+            "private",
+            "credentials"
+          ]
+        }
+      },
+      "overwrite_protection": {
+        "warn_on_overwrite": true,
+        "backup_before_overwrite": true,
+        "protected_from_overwrite": [
+          ".env",
+          ".env.*",
+          "secrets/",
+          "config/",
+          ".git/",
+          "node_modules/",
+          ".cursor/mcp_security.json",
+          ".cursor/mcp_audit.json"
+        ],
+        "auto_backup_directory": "backups/",
+        "backup_retention_days": 30,
+        "strict_overwrite_protection": true
+      },
+      "external_integration_restrictions": {
+        "blocked_apis": [
+          "file://",
+          "ftp://",
+          "sftp://",
+          "smb://",
+          "gopher://"
+        ],
+        "allowed_apis": [
+          "https://api.openai.com",
+          "https://api.anthropic.com",
+          "https://api.groq.com",
+          "https://api.google.com",
+          "https://console.groq.com",
+          "https://api.github.com",
+          "https://huggingface.co"
+        ],
+        "require_authentication": true,
+        "log_external_calls": true,
+        "rate_limiting": {
+          "enabled": true,
+          "max_requests_per_minute": 60,
+          "max_tokens_per_request": 4000
+        }
+      },
+      "content_security": {
+        "blocked_patterns": [
+          "password\\s*=",
+          "api_key\\s*=",
+          "secret\\s*=",
+          "token\\s*=",
+          "credential\\s*=",
+          "sk-[a-zA-Z0-9]{48}",
+          "gsk_[a-zA-Z0-9]{48}",
+          "[a-zA-Z0-9]{32,}"
+        ],
+        "sensitive_data_patterns": [
+          "sk-[a-zA-Z0-9]{48}",
+          "gsk_[a-zA-Z0-9]{48}",
+          "[a-zA-Z0-9]{32,}",
+          "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b",
+          "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b"
+        ],
+        "mask_sensitive_data": true,
+        "log_sensitive_data_access": true,
+        "prevent_sensitive_data_output": true
+      },
+      "audit_settings": {
+        "log_all_operations": true,
+        "log_file_path": "logs/security_audit.log",
+        "log_level": "INFO",
+        "retention_days": 90,
+        "alert_on_violations": true,
+        "real_time_monitoring": true
+      },
+      "compliance": {
+        "gdpr_compliance": true,
+        "data_retention_policy": "90_days",
+        "encryption_required": true,
+        "access_logging": true,
+        "data_protection": {
+          "encrypt_sensitive_data": true,
+          "mask_credentials": true,
+          "secure_transmission": true
+        }
+      },
+      "auto_protection": {
+        "auto_enable_on_startup": true,
+        "auto_backup_configs": true,
+        "auto_validate_settings": true,
+        "auto_cleanup_logs": true,
+        "auto_update_security": true,
+        "auto_protect_existing_files": true
+      },
+      "mode_specific_settings": {
+        "auto_mode": {
+          "enabled": true,
+          "strict_validation": true,
+          "enhanced_logging": true
+        },
+        "claude_mode": {
+          "enabled": true,
+          "anthropic_compliance": true,
+          "constitutional_ai": true
+        },
+        "gpt_mode": {
+          "enabled": true,
+          "openai_compliance": true,
+          "content_filtering": true
+        },
+        "max_mode": {
+          "enabled": true,
+          "advanced_security": true,
+          "real_time_protection": true
+        }
+      }
+    },
+    "mcp.optimized.json": {
+      "mcpServers": {
+        "openapi": {
+          "command": "npx",
+          "args": [
+            "@modelcontextprotocol/server-openapi"
+          ],
+          "env": {
+            "OPENAPI_SPEC_PATH": "./apidog-openapi-spec.json",
+            "BASE_URL": "http://localhost:8000"
+          }
+        },
+        "filesystem": {
+          "command": "npx",
+          "args": [
+            "@modelcontextprotocol/server-filesystem",
+            "./app"
+          ]
+        },
+        "git": {
+          "command": "npx",
+          "args": [
+            "@modelcontextprotocol/server-git",
+            "--repository",
+            "."
+          ]
+        }
+      },
+      "aiAnalysis": {
+        "enabled": true,
+        "watchFiles": [
+          "app/api/*.py",
+          "app/services/*.py",
+          "app/main.py",
+          "apidog.config.json",
+          "apidog-openapi-spec.json",
+          "scripts/memory_consistency_engine.py",
+          "scripts/memory_system_integration.py",
+          "scripts/security_master_system.py"
+        ],
+        "onError": {
+          "analyzeWithMCP": true,
+          "suggestFixes": true,
+          "updateOpenAPI": true,
+          "autoRetest": true,
+          "logErrors": true,
+          "notifyOnCritical": true
+        }
+      },
+      "apiOptimization": {
+        "enableCaching": true,
+        "responseTimeMonitoring": true,
+        "errorRateTracking": true,
+        "autoPerformanceTuning": true
+      },
+      "memoryIntegration": {
+        "enabled": true,
+        "consistencyChecks": true,
+        "errorLearning": true,
+        "patternRecognition": true
+      }
+    },
+    "composer.json": {
+      "title": "論文検証＆原稿生成Composer",
+      "version": "2.0.0",
+      "description": "まことさん独自のプロンプト連携システム",
+      "task_map": {
+        "doi_verification": "scripts/verify_doi.py",
+        "hallucination_check": "scripts/check_hallucination.py",
+        "structure_validation": "scripts/validate_structure.py",
+        "manuscript_suggestion": "claude-3-opus",
+        "pipeline_trigger": "scripts/run_pipeline.sh",
+        "quality_analysis": "scripts/quality_score_plot.py",
+        "security_scan": "scripts/security_scan.py",
+        "performance_test": "scripts/performance_test.py"
+      },
+      "chains": [
+        {
+          "name": "DeepResearch",
+          "model": "GPT-4o",
+          "prompt": "厳格なファクトチェックと原文構造の保持",
+          "temperature": 0.3,
+          "maxTokens": 4000,
+          "features": [
+            "factChecking",
+            "structurePreservation",
+            "academicRigor"
+          ],
+          "inputValidation": {
+            "required": [
+              "paperMetadata",
+              "researchContext"
+            ],
+            "optional": [
+              "userPreferences",
+              "styleGuide"
+            ]
+          }
+        },
+        {
+          "name": "SummarySimplifier",
+          "model": "Claude 3 Opus",
+          "prompt": "読者目線の要約＋構成整理",
+          "temperature": 0.7,
+          "maxTokens": 3000,
+          "features": [
+            "readerPerspective",
+            "simplification",
+            "structureOrganization"
+          ],
+          "inputValidation": {
+            "required": [
+              "researchSummary",
+              "targetAudience"
+            ],
+            "optional": [
+              "tone",
+              "complexityLevel"
+            ]
+          }
+        },
+        {
+          "name": "TranslationCheck",
+          "model": "GPT-4o",
+          "prompt": "翻訳精度検証と文化的適応",
+          "temperature": 0.4,
+          "maxTokens": 2000,
+          "features": [
+            "translationAccuracy",
+            "culturalAdaptation",
+            "idiomHandling"
+          ],
+          "inputValidation": {
+            "required": [
+              "sourceText",
+              "targetLanguage"
+            ],
+            "optional": [
+              "culturalContext",
+              "formalityLevel"
+            ]
+          }
+        },
+        {
+          "name": "SalesRoleplayAnalysis",
+          "model": "Claude 3 Opus",
+          "prompt": "営業会話の感情・構造分析",
+          "temperature": 0.6,
+          "maxTokens": 2500,
+          "features": [
+            "emotionAnalysis",
+            "conversationStructure",
+            "salesTechniqueIdentification"
+          ],
+          "inputValidation": {
+            "required": [
+              "conversationAudio",
+              "speakerInfo"
+            ],
+            "optional": [
+              "salesContext",
+              "targetMetrics"
+            ]
+          }
+        }
+      ],
+      "workflows": [
+        {
+          "name": "AcademicToYouTube",
+          "description": "学術論文からYouTube原稿生成",
+          "steps": [
+            {
+              "chain": "DeepResearch",
+              "input": "paperMetadata",
+              "output": "verifiedContent"
+            },
+            {
+              "chain": "SummarySimplifier",
+              "input": "verifiedContent",
+              "output": "simplifiedContent"
+            },
+            {
+              "chain": "TranslationCheck",
+              "input": "simplifiedContent",
+              "output": "finalScript"
+            }
+          ]
+        },
+        {
+          "name": "SalesPerformanceAnalysis",
+          "description": "営業会話のパフォーマンス分析",
+          "steps": [
+            {
+              "chain": "SalesRoleplayAnalysis",
+              "input": "conversationData",
+              "output": "analysisReport"
+            }
+          ]
+        }
+      ],
+      "settings": {
+        "defaultTemperature": 0.5,
+        "defaultMaxTokens": 3000,
+        "retryAttempts": 3,
+        "timeoutSeconds": 60,
+        "qualityThreshold": 0.8
+      },
+      "prompts": {
+        "deepResearch": {
+          "file": ".cursor/prompts/deep-research.md",
+          "description": "深い研究分析とファクトチェック"
+        },
+        "translationCheck": {
+          "file": ".cursor/prompts/translation-check.md",
+          "description": "翻訳精度検証"
+        },
+        "salesRoleplayAnalysis": {
+          "file": ".cursor/prompts/sales-roleplay-analysis.md",
+          "description": "営業会話分析"
+        }
+      }
+    },
+    "mcp.json": {
+      "name": "ai-systems-workspace",
+      "goals": [
+        "Set up CI/CD using GitHub Actions",
+        "Implement pre-commit hooks for quality and security",
+        "Deploy with GitHub Pages or FastAPI"
+      ],
+      "tools": [
+        "git",
+        "gh",
+        "pre-commit",
+        "black",
+        "flake8",
+        "bandit",
+        "pip-audit"
+      ],
+      "language": "Python",
+      "pythonVersion": "3.12",
+      "framework": "FastAPI"
+    }
+  },
+  "project_structure": {
+    "app": {
+      "exists": true,
+      "python_files": 41,
+      "total_files": 60
+    },
+    "config": {
+      "exists": true,
+      "python_files": 0,
+      "total_files": 13
+    },
+    "scripts": {
+      "exists": true,
+      "python_files": 53,
+      "total_files": 84
+    },
+    "modules": {
+      "exists": true,
+      "python_files": 2,
+      "total_files": 5
+    },
+    "paper_research_system": {
+      "exists": true,
+      "python_files": 32,
+      "total_files": 44
+    }
+  },
+  "active_files": [
+    {
+      "file": "main_hybrid.py",
+      "size": 35843,
+      "modified": "2025-08-09T01:14:29.092536"
+    },
+    {
+      "file": "system_monitor.py",
+      "size": 88625,
+      "modified": "2025-08-09T01:14:29.092836"
+    },
+    {
+      "file": "modules/composer.py",
+      "size": 13366,
+      "modified": "2025-08-08T22:09:56.520487"
+    },
+    {
+      "file": "quality_metrics.py",
+      "size": 9413,
+      "modified": "2025-08-08T16:44:26.916821"
+    },
+    {
+      "file": "streamlit_app.py",
+      "size": 23468,
+      "modified": "2025-08-08T22:02:24.095458"
+    }
+  ],
+  "system_status": {
+    "main_hybrid_running": true,
+    "python_files_count": 44478,
+    "cursor_configs_count": 14
+  },
+  "state_hash": "8f588497dfafe3551c169e7e023183d3"
+}
