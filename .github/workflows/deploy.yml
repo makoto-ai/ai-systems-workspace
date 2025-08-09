@@ -52,6 +52,14 @@ jobs:
           sleep 30
           curl -f http://localhost:8000/health || echo "⚠️ Health check failed"
 
+      - name: 🌐 Export STT Secrets
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          WHISPERX_ENDPOINT: ${{ secrets.WHISPERX_ENDPOINT }}
+        run: |
+          if [ -n "$GROQ_API_KEY" ]; then echo "GROQ_API_KEY=$GROQ_API_KEY" >> "$GITHUB_ENV"; fi
+          if [ -n "$WHISPERX_ENDPOINT" ]; then echo "WHISPERX_ENDPOINT=$WHISPERX_ENDPOINT" >> "$GITHUB_ENV"; fi
+
       - name: ✅ Notify Deployment Success
         run: |
           echo "🎉 Deployment completed successfully!"

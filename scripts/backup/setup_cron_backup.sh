@@ -20,22 +20,30 @@ log "📁 プロジェクトルート: $PROJECT_ROOT"
 # 1. 毎日バックアップ（毎朝3時）
 DAILY_BACKUP_JOB="0 3 * * * bash '$PROJECT_ROOT/scripts/backup/daily_backup.sh' >> '$PROJECT_ROOT/logs/cron_daily_backup.log' 2>&1"
 
+# 1b. restic オフサイトバックアップ（毎朝4時）
+RESTIC_BACKUP_JOB="0 4 * * * bash '$PROJECT_ROOT/scripts/backup/restic_backup.sh' >> '$PROJECT_ROOT/logs/cron_restic_backup.log' 2>&1"
+
 # 2. 週次フルバックアップ（毎週日曜日午前2時）
 WEEKLY_BACKUP_JOB="0 2 * * 0 bash '$PROJECT_ROOT/scripts/backup/weekly_rsync.sh' >> '$PROJECT_ROOT/logs/cron_weekly_backup.log' 2>&1"
+
+# 2b. 週次リストア検証（毎週日曜日午前3時）
+RESTORE_VERIFY_JOB="0 3 * * 0 bash '$PROJECT_ROOT/scripts/backup/restic_restore_verify.sh' >> '$PROJECT_ROOT/logs/cron_restore_verify.log' 2>&1"
 
 # 3. 現在のcronジョブを取得
 CURRENT_CRON=$(crontab -l 2>/dev/null || echo "")
 
 # 4. 既存のバックアップジョブを削除
 log "🧹 既存のバックアップジョブを削除中..."
-CURRENT_CRON=$(echo "$CURRENT_CRON" | grep -v "daily_backup.sh" | grep -v "weekly_rsync.sh" || true)
+CURRENT_CRON=$(echo "$CURRENT_CRON" | grep -v "daily_backup.sh" | grep -v "weekly_rsync.sh" | grep -v "restic_backup.sh" | grep -v "restic_restore_verify.sh" || true)
 
 # 5. 新しいバックアップジョブを追加
 log "📝 新しいバックアップジョブを追加中..."
 NEW_CRON="$CURRENT_CRON
 # AIシステム自動バックアップ
 $DAILY_BACKUP_JOB
-$WEEKLY_BACKUP_JOB"
+$RESTIC_BACKUP_JOB
+$WEEKLY_BACKUP_JOB
+$RESTORE_VERIFY_JOB"
 
 # 6. cronテーブルを更新
 echo "$NEW_CRON" | crontab -

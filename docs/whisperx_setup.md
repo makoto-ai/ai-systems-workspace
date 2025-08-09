@@ -75,6 +75,12 @@ cloudflared tunnel --url http://localhost:5000
 - 音質や速度に応じて `ctranslate2` の `compute_type` を変更してください。
 - 大規模モデルで GPU を用いる場合は CUDA 環境と対応 wheel を利用してください。
 
+### Groqメイン運用・WhisperXフォールバック
+
+- STT呼び出しは `stt.py` の `transcribe(path)` を使用
+- 優先順序: Groq(環境変数 `GROQ_API_KEY`) → WhisperX(環境変数 `WHISPERX_ENDPOINT`)
+- `.env` を使う場合は `python-dotenv` が読み込み（ローカルのみ）
+
 ---
 
 再構築が必要になった場合は本ドキュメントの 1→5 を順に実行してください。
