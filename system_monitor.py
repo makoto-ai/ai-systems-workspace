@@ -7,14 +7,14 @@
 
 import os
 import time
-import psutil
+import psutil  # type: ignore
 import logging
 import asyncio
 import json
 from typing import Dict, Any, List
 from datetime import datetime, timedelta
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from fastapi import Response, WebSocket
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST  # type: ignore
+from fastapi import Response, WebSocket  # type: ignore
 import threading
 import queue
 

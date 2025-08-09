@@ -17,18 +17,26 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: 🔐 Load Vault Secrets
+      - name: 🔐 Load Secrets (GitHub or Vault)
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          WHISPERX_ENDPOINT: ${{ secrets.WHISPERX_ENDPOINT }}
         run: |
-          # Vault CLI セットアップ
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update && sudo apt-get install vault
-          
-          # Vault認証（GitHub Secrets使用）
-          echo ${{ secrets.VAULT_TOKEN }} | vault login -
-          
-          # シークレット読み込み
-          source scripts/load_secrets.sh
+          # まずGitHub Secretsを環境に流す
+          if [ -n "$WHISPERX_ENDPOINT" ]; then
+            echo "WHISPERX_ENDPOINT=$WHISPERX_ENDPOINT" >> "$GITHUB_ENV"
+          fi
+
+          # VAULT_TOKENが設定されている場合のみVaultを使って上書き注入
+          if [ -n "$VAULT_TOKEN" ]; then
+            sudo apt-get update && sudo apt-get install -y jq curl gnupg lsb-release
+            curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+            sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+            sudo apt-get update && sudo apt-get install -y vault
+            echo "$VAULT_TOKEN" | vault login -
+            SECRETS_JSON=$(vault kv get -format=json secret/ai-systems)
+            echo "$SECRETS_JSON" | jq -r '.data.data | to_entries | .[] | "\(.key)=\(.value)"' >> "$GITHUB_ENV"
+          fi
 
       - name: 🧪 Run Pre-Deployment Tests
         run: |
