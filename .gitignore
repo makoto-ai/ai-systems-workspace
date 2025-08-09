@@ -326,3 +326,6 @@ final_*.txt
 # 一時監視ファイル
 enhanced_monitoring.yml
 
+.DS_Store
+__pycache__/
+.venv/
