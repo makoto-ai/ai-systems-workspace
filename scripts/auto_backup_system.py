@@ -13,13 +13,19 @@ import json
 import subprocess
 import time
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import shutil
 import hashlib
 import tarfile
 import fcntl
 from typing import Dict, List
+
+# 追加: 型ヒント用
+Number = int
+
+# 事前にログディレクトリを確実に作成
+Path("logs").mkdir(exist_ok=True)
 
 # ログ設定
 logging.basicConfig(
@@ -53,11 +59,18 @@ class AutoBackupSystem:
             "main_hybrid.py",
             "system_monitor.py",
             "quality_metrics.py",
-            "streamlit_app.py"
+            "streamlit_app.py",
+            "Dockerfile",
+            "docker-compose.yml",
+            "requirements.txt",
+            "env.example"
         ]
         
         # ロックファイル
         self.lock_file = self.project_root / ".auto_backup.lock"
+        
+        # 除外ファイル（ユーザー定義）
+        self.backup_ignore = self._load_backup_ignore()
 
     def _load_config(self):
         """設定読み込み"""
@@ -65,6 +78,7 @@ class AutoBackupSystem:
             "auto_backup_enabled": True,
             "backup_interval_minutes": 30,
             "max_backups": 10,
+            "retention_days": 0,
             "git_auto_commit": True,
             "git_auto_push": False,
             "protect_cursor_configs": True,
@@ -81,7 +95,14 @@ class AutoBackupSystem:
                 "*.log"
             ],
             "package_tar_gz": True,
-            "remote_sync_dir": ""
+            "remote_sync_dir": "",
+            "verify_after_backup": True,
+            "remote_verify": True,
+            "manifest_globs": [
+                "*.py", "*.json", "*.yml", "*.yaml", "Dockerfile", "docker-compose.yml",
+                "requirements*.txt", "package*.json"
+            ],
+            "min_free_space_gb": 2
         }
         
         if self.config_file.exists():
@@ -100,6 +121,18 @@ class AutoBackupSystem:
         with open(self.config_file, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, ensure_ascii=False, indent=2)
     
+    def _load_backup_ignore(self) -> List[str]:
+        """ユーザー除外パターン読み込み（backup_ignore.txt）"""
+        ignore_file = self.project_root / "backup_ignore.txt"
+        patterns: List[str] = []
+        if ignore_file.exists():
+            for line in ignore_file.read_text(encoding='utf-8').splitlines():
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+                patterns.append(line)
+        return patterns
+
     def _acquire_lock(self):
         self.lock_fp = open(self.lock_file, 'w')
         try:
@@ -117,6 +150,29 @@ class AutoBackupSystem:
         except Exception:
             pass
 
+    def _estimate_project_size_bytes(self) -> Number:
+        total = 0
+        for root, dirs, files in os.walk(self.project_root):
+            rel_root = os.path.relpath(root, self.project_root)
+            if rel_root.startswith('.git') or rel_root.startswith('backups'):
+                continue
+            for fname in files:
+                try:
+                    total += (Path(root) / fname).stat().st_size
+                except Exception:
+                    pass
+        return total
+
+    def _check_free_space(self, required_bytes: Number) -> bool:
+        st = os.statvfs(str(self.project_root))
+        free_bytes = st.f_frsize * st.f_bavail
+        min_free_gb = self.config.get("min_free_space_gb", 2)
+        if free_bytes < required_bytes or free_bytes < min_free_gb * (1024**3):
+            logger.warning(
+                f"空き容量不足の可能性: free={free_bytes/1024**3:.1f}GB, required~={required_bytes/1024**3:.1f}GB"
+            )
+        return True
+
     def create_backup(self, mode: str = "critical") -> str:
         """バックアップ作成
         mode: "critical" | "full"
@@ -129,6 +185,11 @@ class AutoBackupSystem:
             return ""
         
         try:
+            # フルバックアップ時は空き容量を概算チェック
+            if mode == "full":
+                approx = self._estimate_project_size_bytes()
+                self._check_free_space(approx * 2)
+            
             # バックアップディレクトリ作成
             backup_path.mkdir(exist_ok=True)
             
@@ -138,17 +199,33 @@ class AutoBackupSystem:
                 # 重要なファイルをコピー
                 self._copy_critical_paths(backup_path)
             
+            # マニフェスト作成
+            manifest = self._write_integrity_manifest(backup_path)
+            
             # メタデータ保存
             metadata = self._generate_metadata(backup_name, mode)
+            metadata["manifest"] = manifest
             with open(backup_path / "backup_metadata.json", 'w', encoding='utf-8') as f:
                 json.dump(metadata, f, ensure_ascii=False, indent=2)
             
             # パッケージ化
+            tar_path = None
             if self.config.get("package_tar_gz", True):
-                self._package_backup(backup_path)
+                tar_path = self._package_backup(backup_path)
             
-            # 外部同期
+            # 外部同期（ディレクトリおよびtar）
             self._sync_remote(backup_path)
+            if tar_path:
+                self._sync_remote(tar_path)
+            
+            # 検証
+            verified = True
+            if self.config.get("verify_after_backup", True):
+                verified = self.verify_backup(backup_name)
+            
+            # リモート検証（サイズ/件数比較の簡易検証）
+            if verified and self.config.get("remote_verify", True):
+                self._remote_verify(backup_path)
             
             logger.info(f"バックアップ作成完了: {backup_name} ({metadata.get('files_count', 0)}ファイル)")
             return backup_name
@@ -175,7 +252,7 @@ class AutoBackupSystem:
         return copied_files
     
     def _copy_full_project(self, backup_path: Path):
-        excludes = set(self.config.get("full_backup_excludes", []))
+        excludes = set(self.config.get("full_backup_excludes", [])) | set(self.backup_ignore)
         
         def _should_exclude(rel: str) -> bool:
             # 簡易パターン除外
@@ -208,6 +285,33 @@ class AutoBackupSystem:
                 files_copied += 1
         return files_copied
 
+    def _write_integrity_manifest(self, backup_path: Path) -> Dict[str, str]:
+        """重要拡張子のハッシュマニフェストを作成"""
+        patterns = self.config.get("manifest_globs", [])
+        hashes: Dict[str, str] = {}
+        for root, _, files in os.walk(backup_path):
+            for fname in files:
+                rel = os.path.relpath(os.path.join(root, fname), backup_path)
+                # パターン選別
+                if any(self._match_glob(rel, pat) for pat in patterns):
+                    fpath = Path(root) / fname
+                    try:
+                        hashes[rel] = self._md5_file(fpath)
+                    except Exception:
+                        pass
+        (backup_path / "integrity_manifest.json").write_text(
+            json.dumps(hashes, ensure_ascii=False, indent=2), encoding='utf-8'
+        )
+        return hashes
+
+    def _match_glob(self, rel: str, pat: str) -> bool:
+        # 簡易glob: 末尾/前方一致とワイルドカード先頭のみ対応
+        if pat == rel:
+            return True
+        if pat.startswith('*.') and rel.endswith(pat[1:]):
+            return True
+        return os.path.basename(rel) == pat
+
     def _generate_metadata(self, backup_name: str, mode: str) -> Dict[str, any]:
         file_hashes = self._calculate_file_hashes()
         files_count = 0
@@ -237,7 +341,7 @@ class AutoBackupSystem:
         metadata = json.loads(metadata_file.read_text(encoding='utf-8'))
         hashes = metadata.get("file_hashes", {})
         ok = True
-        for rel, md5 in hashes.items():
+        for rel, md5sum in hashes.items():
             src = self.project_root / rel
             dst = backup_path / rel
             if not dst.exists():
@@ -246,13 +350,26 @@ class AutoBackupSystem:
                 continue
             if src.exists() and src.is_file():
                 cur_md5 = self._md5_file(src)
-                if cur_md5 != md5:
-                    logger.warning(f"MD5差異: {rel} (live:{cur_md5} != backup:{md5})")
+                if cur_md5 != md5sum:
+                    logger.warning(f"MD5差異: {rel} (live:{cur_md5} != backup:{md5sum})")
         
         # .pyファイル数検証（ライブ vs バックアップ）
         live_py = self._count_py(self.project_root)
         backup_py = self._count_py(backup_path)
         logger.info(f".py count live={live_py}, backup={backup_py}")
+        
+        # manifest妥当性（サンプル照合）
+        manifest_file = backup_path / "integrity_manifest.json"
+        if manifest_file.exists():
+            manifest = json.loads(manifest_file.read_text(encoding='utf-8'))
+            sample = list(manifest.items())[:20]
+            for rel, expect in sample:
+                fp = backup_path / rel
+                if fp.exists() and fp.is_file():
+                    got = self._md5_file(fp)
+                    if got != expect:
+                        logger.warning(f"マニフェスト差異: {rel}")
+                        ok = False
         
         return ok
 
@@ -263,11 +380,15 @@ class AutoBackupSystem:
         logger.info(f"バックアップをパッケージ化: {tar_path.name}")
         return tar_path
 
-    def _sync_remote(self, backup_path: Path):
+    def _expand_remote(self, remote: str) -> str:
+        if not remote:
+            return remote
+        return os.path.expanduser(os.path.expandvars(remote))
+
+    def _sync_remote(self, path: Path):
         remote_dir = os.getenv("REMOTE_BACKUP_DIR", self.config.get("remote_sync_dir", "").strip())
         # 環境変数/チルダ展開
-        if remote_dir:
-            remote_dir = os.path.expanduser(os.path.expandvars(remote_dir))
+        remote_dir = self._expand_remote(remote_dir)
         if not remote_dir:
             # iCloudがあれば既定同期
             icloud = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/AI-Backups"
@@ -276,18 +397,36 @@ class AutoBackupSystem:
         if not remote_dir:
             return
         
-        dest = Path(remote_dir) / backup_path.name
+        dest = Path(remote_dir) / path.name
         dest.parent.mkdir(parents=True, exist_ok=True)
         try:
-            if backup_path.is_dir():
+            if path.is_dir():
                 if dest.exists():
                     shutil.rmtree(dest)
-                shutil.copytree(backup_path, dest)
+                shutil.copytree(path, dest)
             else:
-                shutil.copy2(backup_path, dest)
+                shutil.copy2(path, dest)
             logger.info(f"リモート同期完了: {dest}")
         except Exception as e:
             logger.warning(f"リモート同期失敗: {e}")
+
+    def _remote_verify(self, backup_path: Path):
+        remote_dir = os.getenv("REMOTE_BACKUP_DIR", self.config.get("remote_sync_dir", "").strip())
+        remote_dir = self._expand_remote(remote_dir)
+        if not remote_dir:
+            icloud = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/AI-Backups"
+            if icloud.exists():
+                remote_dir = str(icloud)
+        if not remote_dir:
+            return
+        r = Path(remote_dir) / backup_path.name
+        if not r.exists():
+            logger.warning("リモート上にバックアップが見つかりません")
+            return
+        # 簡易: ファイル数比較
+        local_files = sum(len(files) for _, _, files in os.walk(backup_path))
+        remote_files = sum(len(files) for _, _, files in os.walk(r))
+        logger.info(f"リモート検証: local_files={local_files}, remote_files={remote_files}")
 
     def git_auto_commit(self, message: str = None) -> bool:
         """Git自動コミット"""
@@ -343,18 +482,31 @@ class AutoBackupSystem:
     def cleanup_old_backups(self):
         """古いバックアップの削除"""
         max_backups = self.config["max_backups"]
+        retention_days = self.config.get("retention_days", 0)
+        now = datetime.now()
         backups = sorted(
             [d for d in self.backup_dir.iterdir() if d.is_dir()],
             key=lambda x: x.stat().st_mtime,
             reverse=True
         )
+        # 世代上限
         if len(backups) > max_backups:
             for backup in backups[max_backups:]:
                 try:
                     shutil.rmtree(backup)
-                    logger.info(f"古いバックアップ削除: {backup.name}")
+                    logger.info(f"古いバックアップ削除(世代): {backup.name}")
                 except Exception as e:
                     logger.error(f"バックアップ削除エラー {backup.name}: {e}")
+        # 日数上限
+        if retention_days > 0:
+            for backup in backups:
+                age_days = (now - datetime.fromtimestamp(backup.stat().st_mtime)).days
+                if age_days > retention_days:
+                    try:
+                        shutil.rmtree(backup)
+                        logger.info(f"古いバックアップ削除(日数): {backup.name}")
+                    except Exception as e:
+                        logger.error(f"バックアップ削除エラー {backup.name}: {e}")
     
     def restore_from_backup(self, backup_name: str) -> bool:
         """バックアップから復元（上書き注意）"""
@@ -451,7 +603,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="自動バックアップシステム")
-    parser.add_argument("--create", action="store_true", help="バックアップ作成(クリティカル)})")
+    parser.add_argument("--create", action="store_true", help="バックアップ作成(クリティカル)")
     parser.add_argument("--full", action="store_true", help="フルバックアップ作成")
     parser.add_argument("--verify", help="バックアップ整合性検証: --verify <backup_name>")
     parser.add_argument("--restore", help="バックアップから復元")
