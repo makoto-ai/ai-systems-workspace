@@ -22,7 +22,12 @@ try:
 except Exception:  # 依存が無い場合でも壊さない
     requests = None  # type: ignore
 
-# ログ設定
+# ログ設定（先にログディレクトリを確実に作成）
+try:
+    Path('logs').mkdir(parents=True, exist_ok=True)
+except Exception:
+    os.makedirs('logs', exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
