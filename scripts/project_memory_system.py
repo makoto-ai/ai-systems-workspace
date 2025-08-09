@@ -15,6 +15,12 @@ from datetime import datetime
 from pathlib import Path
 import subprocess
 import logging
+from typing import Dict, Any
+
+try:
+    import requests  # type: ignore
+except Exception:  # 依存が無い場合でも壊さない
+    requests = None  # type: ignore
 
 # ログ設定
 logging.basicConfig(
@@ -38,6 +44,10 @@ class ProjectMemorySystem:
         self.cursor_state = self.memory_dir / "cursor_state.json"
         self.mcp_snapshot = self.memory_dir / "mcp_snapshot.json"
         self.session_history = self.memory_dir / "session_history.json"
+        self.snapshots_dir = self.memory_dir / "snapshots"
+        self.snapshots_dir.mkdir(exist_ok=True)
+        self.events_log = self.project_root / "logs" / "project_events.jsonl"
+        self.events_log.parent.mkdir(parents=True, exist_ok=True)
         
         # 初期化時にファイルを作成
         self._initialize_memory_files()
@@ -88,6 +98,21 @@ class ProjectMemorySystem:
         with open(self.cursor_state, 'w', encoding='utf-8') as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
         
+        # MCPスナップショットを更新
+        snapshot_info = self._create_mcp_snapshot()
+        state["mcp_snapshot"] = snapshot_info
+        with open(self.mcp_snapshot, 'w', encoding='utf-8') as f:
+            json.dump(snapshot_info, f, ensure_ascii=False, indent=2)
+        
+        # イベントとして書き出し
+        self._export_event({
+            "type": "state_capture",
+            "purpose": session_purpose,
+            "state_hash": state["state_hash"],
+            "timestamp": timestamp,
+            "git": state["git_status"],
+        })
+        
         logger.info(f"プロジェクト状態キャプチャ完了: {state['state_hash'][:8]}")
         return state
     
@@ -111,6 +136,14 @@ class ProjectMemorySystem:
         
         # プロジェクトログに追記
         self._append_to_project_log(session_data)
+        
+        # イベントエクスポート
+        self._export_event({
+            "type": "session_memory",
+            "purpose": session_purpose,
+            "timestamp": session_data["timestamp"],
+            "git": session_data["state_after"]["git_status"],
+        })
         
         logger.info(f"セッション記憶保存完了: {session_purpose}")
     
@@ -163,8 +196,49 @@ python scripts/project_memory_system.py --emergency-restore
         with open(guide_file, 'w', encoding='utf-8') as f:
             f.write(guide)
         
+        # イベントエクスポート
+        self._export_event({"type": "restore_guide_generated", "timestamp": datetime.now().isoformat()})
+        
         return guide
-    
+
+    def _create_mcp_snapshot(self) -> Dict[str, Any]:
+        """.cursor配下の設定のスナップショットを作成し、snapshotsにも保存する"""
+        cursor_dir = self.project_root / ".cursor"
+        snapshot = {"files": [], "timestamp": datetime.now().isoformat()}
+        if not cursor_dir.exists():
+            return snapshot
+        
+        files = sorted(cursor_dir.glob("*.json"))
+        for f in files:
+            try:
+                content = json.loads(f.read_text(encoding='utf-8'))
+                snapshot["files"].append({
+                    "name": f.name,
+                    "size": f.stat().st_size,
+                    "hash": hashlib.md5(json.dumps(content, sort_keys=True).encode()).hexdigest()
+                })
+            except Exception as e:
+                snapshot["files"].append({"name": f.name, "error": str(e)})
+        
+        # スナップショットの実体保存
+        snap_file = self.snapshots_dir / f"mcp_snapshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        snap_file.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding='utf-8')
+        return snapshot
+
+    def _export_event(self, event: Dict[str, Any]):
+        """イベントをJSONLとして保存し、Webhookが指定されていれば送信"""
+        event = {**event, "project": self.project_root.name}
+        line = json.dumps(event, ensure_ascii=False)
+        with open(self.events_log, 'a', encoding='utf-8') as f:
+            f.write(line + "\n")
+        
+        webhook = os.getenv("PROJECT_LOG_WEBHOOK")
+        if webhook and requests:
+            try:
+                requests.post(webhook, json=event, timeout=5)
+            except Exception as e:
+                logger.warning(f"Webhook送信失敗: {e}")
+        
     def _get_git_status(self) -> dict:
         """Git状態取得"""
         try:
