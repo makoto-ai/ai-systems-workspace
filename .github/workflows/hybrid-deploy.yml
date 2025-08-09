@@ -156,6 +156,11 @@ jobs:
         curl -f http://localhost:8000/health || exit 1
         
         echo "🚀 Hybrid AI Systems deployed successfully!"
+        
+    - name: Run AI Pipeline
+      run: |
+        chmod +x scripts/run_ai_pipeline.sh
+        ./scripts/run_ai_pipeline.sh
     
     - name: Notify deployment
       run: |
