@@ -265,6 +265,9 @@ class AutoBackupSystem:
 
     def _sync_remote(self, backup_path: Path):
         remote_dir = os.getenv("REMOTE_BACKUP_DIR", self.config.get("remote_sync_dir", "").strip())
+        # 環境変数/チルダ展開
+        if remote_dir:
+            remote_dir = os.path.expanduser(os.path.expandvars(remote_dir))
         if not remote_dir:
             # iCloudがあれば既定同期
             icloud = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/AI-Backups"
