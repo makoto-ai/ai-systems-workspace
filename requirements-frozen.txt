@@ -102,7 +102,7 @@ tokenizers==0.21.2
 torch==2.7.1
 torchaudio==2.7.1
 tqdm==4.67.1
-transformers==4.54.0
+transformers==4.55.2
 typing-inspection==0.4.1
 typing_extensions==4.14.1
 tzdata==2025.2
