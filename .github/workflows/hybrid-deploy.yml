@@ -16,7 +16,7 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Run Bandit security scan
       run: |
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: security-scan
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -79,7 +79,7 @@ jobs:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup Vault
       run: |
@@ -140,7 +140,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     environment: production
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Deploy to production
       run: |
@@ -171,7 +171,7 @@ jobs:
     needs: deploy
     if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup monitoring
       run: |
@@ -192,7 +192,7 @@ jobs:
     needs: deploy
     if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Run performance tests
       run: |
@@ -222,7 +222,7 @@ jobs:
     needs: performance-test
     if: github.ref == 'refs/heads/main'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
     - name: Setup automation
       run: |
