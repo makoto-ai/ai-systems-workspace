@@ -1,0 +1,12 @@
+extends: relaxed
+
+rules:
+  line-length:
+    max: 200
+  document-start: disable
+  truthy:
+    allowed-values: ["true", "false", "on", "off"]
+  brackets: disable
+  comments: disable
+  indentation: disable
+  trailing-spaces: disable
