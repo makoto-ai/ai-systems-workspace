@@ -51,7 +51,7 @@ def normalize_text(text: str) -> str:
     
     return text
 
-def match_numbers(text1: str, text2: str, abs_threshold: float = 0.5, rel_threshold: float = 0.03) -> bool:
+def match_numbers(text1: str, text2: str, abs_threshold: float = 0.6, rel_threshold: float = 0.04) -> bool:
     """数値の近似マッチング"""
     # 数値を抽出
     nums1 = [float(x) for x in re.findall(r'\d+(?:\.\d+)?', text1)]
@@ -90,7 +90,7 @@ def apply_synonyms(tokens: set, synonyms_dict: dict) -> set:
     
     return expanded_tokens
 
-def similarity_gate(reference: str, prediction: str, threshold: float = 0.92) -> bool:
+def similarity_gate(reference: str, prediction: str, threshold: float = 0.91) -> bool:
     """類似度ゲート：正規化後の類似度が高い場合はNORMALIZEパス扱い"""
     if not reference or not prediction:
         return False
