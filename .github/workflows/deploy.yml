@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: ✅ Checkout repository
         uses: actions/checkout@v3
@@ -23,12 +23,12 @@ jobs:
           WHISPERX_ENDPOINT: ${{ secrets.WHISPERX_ENDPOINT }}
         run: |
           # まずGitHub Secretsを環境に流す
-          if [ -n "$WHISPERX_ENDPOINT" ]; then
+          if [-n "$WHISPERX_ENDPOINT"]; then
             echo "WHISPERX_ENDPOINT=$WHISPERX_ENDPOINT" >> "$GITHUB_ENV"
           fi
 
           # VAULT_TOKENが設定されている場合のみVaultを使って上書き注入
-          if [ -n "$VAULT_TOKEN" ]; then
+          if [-n "$VAULT_TOKEN"]; then
             sudo apt-get update && sudo apt-get install -y jq curl gnupg lsb-release
             curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
             sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
@@ -57,11 +57,11 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           WHISPERX_ENDPOINT: ${{ secrets.WHISPERX_ENDPOINT }}
         run: |
-          if [ -n "$GROQ_API_KEY" ]; then echo "GROQ_API_KEY=$GROQ_API_KEY" >> "$GITHUB_ENV"; fi
-          if [ -n "$WHISPERX_ENDPOINT" ]; then echo "WHISPERX_ENDPOINT=$WHISPERX_ENDPOINT" >> "$GITHUB_ENV"; fi
+          if [-n "$GROQ_API_KEY"]; then echo "GROQ_API_KEY=$GROQ_API_KEY" >> "$GITHUB_ENV"; fi
+          if [-n "$WHISPERX_ENDPOINT"]; then echo "WHISPERX_ENDPOINT=$WHISPERX_ENDPOINT" >> "$GITHUB_ENV"; fi
 
       - name: ✅ Notify Deployment Success
         run: |
           echo "🎉 Deployment completed successfully!"
           echo "📊 System Status:"
-          docker-compose ps 
+          docker-compose ps

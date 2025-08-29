@@ -2,14 +2,14 @@ name: Minimal Notifications
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   notify-completion:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
-    
+
     steps:
     - name: Manual Workflow Notification
       run: |
