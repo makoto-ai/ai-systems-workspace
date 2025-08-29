@@ -142,9 +142,10 @@ jobs:
         with:
           fetch-depth: 0
       - name: Gitleaks Scan
-        uses: zricethezav/gitleaks-action@v1
-        with:
-          config_path: .gitleaks.toml
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   detect-secrets:
     name: Detect Secrets Scan

@@ -1,7 +1,8 @@
 name: PR Quality Check - Golden Test Regression Guard
 
 on:
-   main, master 5.034001
+  pull_request:
+    branches: [ main, master ]
     paths:
       - 'tests/golden/**'
       - 'experiments/**'  
