@@ -76,6 +76,19 @@ jobs:
           echo "percentage=$PERCENTAGE" >> $GITHUB_OUTPUT
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+      - name: Shadow Evaluation (0.7 & 0.85)
+        run: |
+          echo "🔮 Multi-Shadow Evaluation 実行中..."
+          python tests/golden/runner.py --threshold-shadow "0.7,0.85" --report out/shadow_multi.json
+          
+          if [ -f out/shadow_multi.json ]; then
+            echo "✅ Multi-Shadow Evaluation 完了"
+            echo "📊 結果サマリー:"
+            jq '.multi_shadow_evaluation.thresholds | to_entries[] | "\(.key): \(.value.shadow_pass_rate)%"' out/shadow_multi.json
+          else
+            echo "⚠️ Shadow evaluation結果ファイルが見つかりません"
+          fi
           
       - name: Upload golden test logs
         uses: actions/upload-artifact@v4
@@ -85,6 +98,8 @@ jobs:
             tests/golden/logs/
             tests/golden/observation_log.md
             golden_output.txt
+            out/shadow_*.json
+            out/shadow_multi.json
           retention-days: 30
           
       - name: Check pass rate and create issue if needed

@@ -31,28 +31,31 @@ except ImportError:
         print("Please run from tests/golden directory or ensure modules are accessible")
         sys.exit(1)
 
-def run_shadow_evaluation(shadow_threshold: float, report_path: str = None) -> Dict[str, Any]:
-    """シャドー評価実行（本番しきい値は変更せず、予測評価のみ）"""
+def run_shadow_evaluation(shadow_thresholds: str, report_path: str = None) -> Dict[str, Any]:
+    """Multi-Shadow評価実行（複数しきい値での予測評価）"""
+    
+    # しきい値解析（カンマ区切り対応）
+    if isinstance(shadow_thresholds, str):
+        threshold_list = [float(t.strip()) for t in shadow_thresholds.split(',')]
+    else:
+        threshold_list = [float(shadow_thresholds)]
     
     # 現在の設定を読み込み
     config = load_config()
     current_threshold = config.get("threshold", 0.5)
     
-    print(f"🔍 Shadow Evaluation: threshold {current_threshold} → {shadow_threshold}")
-    print(f"📊 本番しきい値は {current_threshold} のまま、{shadow_threshold} での予測評価を実行")
+    print(f"🔍 Multi-Shadow Evaluation: current={current_threshold} → targets={threshold_list}")
+    print(f"📊 本番しきい値は {current_threshold} のまま、{threshold_list} での予測評価を実行")
     
     # テストケースを読み込み
     cases_dir = Path("tests/golden/cases")
     if not cases_dir.exists():
         raise FileNotFoundError(f"Test cases directory not found: {cases_dir}")
     
-    results = []
-    shadow_passed = 0
-    shadow_total = 0
-    new_failures = 0
-    total_failures = 0
-    flaky_failures = 0
-    root_cause_counts = {}
+    # テストケース読み込み・予測実行（1回だけ）
+    case_results = []
+    total_cases = len(list(cases_dir.glob("*.json")))
+    print(f"📄 テストケース数: {total_cases}")
     
     # 失敗履歴を構築（new_fail_ratio計算用）
     failure_history = build_failure_history()
@@ -71,19 +74,44 @@ def run_shadow_evaluation(shadow_threshold: float, report_path: str = None) -> D
             prediction = predict(input_text)
             test_score = score(reference, prediction)
             
-            # 現在のしきい値での結果
-            current_passed = test_score >= current_threshold
+            case_results.append({
+                "id": case_id,
+                "input": input_text,
+                "reference": reference,
+                "prediction": prediction,
+                "score": test_score
+            })
+        except Exception as e:
+            print(f"⚠️ Error processing {case_file}: {e}")
+            continue
+    
+    # 各しきい値での評価
+    threshold_reports = {}
+    
+    for shadow_threshold in threshold_list:
+        print(f"\n🎯 Evaluating threshold: {shadow_threshold}")
+        
+        shadow_passed = 0
+        total_failures = 0
+        new_failures = 0
+        flaky_failures = 0
+        root_cause_counts = {}
+        failed_cases = []
+        
+        for case_result in case_results:
+            case_id = case_result["id"]
+            reference = case_result["reference"]
+            prediction = case_result["prediction"]
+            test_score = case_result["score"]
             
             # シャドーしきい値での結果
             shadow_passed_case = test_score >= shadow_threshold
-            shadow_total += 1
             if shadow_passed_case:
                 shadow_passed += 1
-            
-            # 失敗分析（シャドーしきい値基準）
-            if not shadow_passed_case:
+            else:
                 total_failures += 1
-                
+                failed_cases.append(case_result.copy())
+            
                 # Root Cause分析
                 root_cause = analyze_failure_root_cause(case_id, reference, prediction, test_score)
                 root_cause_str = root_cause.value
@@ -97,36 +125,17 @@ def run_shadow_evaluation(shadow_threshold: float, report_path: str = None) -> D
                 # Flaky判定
                 if test_score >= 0.7:
                     flaky_failures += 1
-            
-            results.append({
-                "case_id": case_id,
-                "score": test_score,
-                "current_passed": current_passed,
-                "shadow_passed": shadow_passed_case,
-                "reference": reference,
-                "prediction": prediction,
-                "timestamp": datetime.now().isoformat()
-            })
-            
-        except Exception as e:
-            print(f"❌ Error processing {case_file}: {e}")
-            continue
-    
-    # 統計計算
-    shadow_pass_rate = (shadow_passed / shadow_total * 100) if shadow_total > 0 else 0
-    flaky_rate = (flaky_failures / max(total_failures, 1) * 100) if total_failures > 0 else 0
-    new_fail_ratio = (new_failures / max(total_failures, 1)) if total_failures > 0 else 0
-    
-    # Root Cause Top3
-    root_cause_top3 = sorted(root_cause_counts.items(), key=lambda x: x[1], reverse=True)[:3]
-    
-    # レポート生成
-    report = {
-        "shadow_evaluation": {
-            "current_threshold": current_threshold,
-            "shadow_threshold": shadow_threshold,
-            "timestamp": datetime.now().isoformat(),
-            "total_cases": shadow_total,
+        
+        # メトリクス計算
+        shadow_pass_rate = (shadow_passed / total_cases) * 100 if total_cases > 0 else 0
+        new_fail_ratio = new_failures / max(total_failures, 1)
+        flaky_rate = flaky_failures / max(total_failures, 1)
+        root_cause_top3 = sorted(root_cause_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+        
+        # しきい値別レポート
+        threshold_reports[str(shadow_threshold)] = {
+            "threshold": shadow_threshold,
+            "total_cases": total_cases,
             "shadow_passed": shadow_passed,
             "shadow_pass_rate": shadow_pass_rate,
             "total_failures": total_failures,
@@ -135,9 +144,24 @@ def run_shadow_evaluation(shadow_threshold: float, report_path: str = None) -> D
             "flaky_failures": flaky_failures,
             "flaky_rate": flaky_rate,
             "root_cause_top3": root_cause_top3,
-            "root_cause_distribution": root_cause_counts
-        },
-        "detailed_results": results
+            "failed_cases": failed_cases
+        }
+        
+        # 結果表示
+        print(f"  合格率: {shadow_passed}/{total_cases} ({shadow_pass_rate:.1f}%)")
+        print(f"  Flaky率: {flaky_rate:.1%}")
+        print(f"  新規失敗率: {new_fail_ratio:.1%}")
+        print(f"  Root Cause Top3: {root_cause_top3}")
+    
+    # 統合レポート生成
+    report = {
+        "multi_shadow_evaluation": {
+            "current_threshold": current_threshold,
+            "shadow_thresholds": threshold_list,
+            "timestamp": datetime.now().isoformat(),
+            "total_cases": total_cases,
+            "thresholds": threshold_reports
+        }
     }
     
     # レポート保存
@@ -148,12 +172,11 @@ def run_shadow_evaluation(shadow_threshold: float, report_path: str = None) -> D
             json.dump(report, f, ensure_ascii=False, indent=2)
         print(f"📄 Shadow evaluation report saved: {report_file}")
     
-    # 結果表示
-    print(f"\n📊 Shadow Evaluation Results (threshold={shadow_threshold}):")
-    print(f"  合格率: {shadow_passed}/{shadow_total} ({shadow_pass_rate:.1f}%)")
-    print(f"  Flaky率: {flaky_rate:.1f}%")
-    print(f"  新規失敗率: {new_fail_ratio:.1%}")
-    print(f"  Root Cause Top3: {root_cause_top3}")
+    # 結果サマリー表示
+    print(f"\n📊 Multi-Shadow Evaluation Summary:")
+    for threshold in threshold_list:
+        threshold_data = threshold_reports[str(threshold)]
+        print(f"  Threshold {threshold}: {threshold_data['shadow_passed']}/{total_cases} ({threshold_data['shadow_pass_rate']:.1f}%)")
     
     return report
 
@@ -199,8 +222,8 @@ def infer_freshness(case_id: str, current_date: str, history: Dict[str, set]) ->
 def main():
     """メイン関数"""
     parser = argparse.ArgumentParser(description="Golden Test Runner with Shadow Evaluation")
-    parser.add_argument("--threshold-shadow", type=float, 
-                       help="シャドー評価用しきい値（本番は変更されません）")
+    parser.add_argument("--threshold-shadow", type=str, 
+                       help="シャドー評価用しきい値（カンマ区切り可、例: 0.7,0.85）")
     parser.add_argument("--report", type=str, 
                        help="レポート出力パス（例: out/shadow_0_7.json）")
     

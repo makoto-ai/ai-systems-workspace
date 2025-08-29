@@ -158,7 +158,45 @@ python tests/golden/root_cause_analyzer.py --update-freshness
 - [GitHub Actions](https://github.com/makoto-ai/ai-systems-workspace/actions)
 - [Canary PR #29](https://github.com/makoto-ai/ai-systems-workspace/pull/29)
 
+## Phase 4 (0.85基準) 昇格準備
+
+### 昇格条件
+```
+✅ Predicted@0.85 >= 85% (2週連続)
+✅ 現在のPhase 3安定運用 (合格率 >= 85%)
+✅ new_fail_ratio <= 70%
+✅ flaky_rate < 5%
+```
+
+### Shadow Evaluation確認手順
+```bash
+# マルチシャドー評価実行
+python tests/golden/runner.py --threshold-shadow "0.7,0.85" --report out/shadow_multi.json
+
+# 結果確認
+jq '.multi_shadow_evaluation.thresholds."0.85".shadow_pass_rate' out/shadow_multi.json
+```
+
+### ダッシュボード確認方法
+1. **メトリクスカード**: `Predicted@0.85` の値を確認
+2. **比較チャート**: 0.7と0.85の予測合格率比較
+3. **Phase 4準備状況**: 85%基準達成の可否判定
+
+### 自動昇格プロセス
+- **評価期間**: 2週連続でPredicted@0.85 >= 85%
+- **トリガー**: `scripts/evaluate_phase4_readiness.py`（今後実装）
+- **承認**: カナリア週と同様の自動PR・マージ
+- **ロールバック**: 0.85 → 0.7への緊急復帰
+
+### Phase 4運用基準
+- **合格率**: 85%以上（Phase 3より厳格）
+- **監視強化**: 90%基準でのカナリア週
+- **new_fail_ratio**: 70%以下（Phase 3: 60%から緩和）
+- **品質目標**: 最終Phase 5 (0.9) への準備
+
 ## 更新履歴
 - 2025-08-29: Phase 3カナリア週運用開始
 - プロンプト最適化実装（複合語保持）
 - 二重ゲート通過（new_fail_ratio 50%達成）
+- 2025-08-30: Phase 4 Shadow Evaluation追加
+- マルチしきい値評価・ダッシュボード統合・Slack通知対応

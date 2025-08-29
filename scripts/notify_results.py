@@ -51,14 +51,34 @@ def load_latest_metrics():
     
     # Shadow evaluation結果
     shadow_pass_rate = 0.0
-    shadow_file = Path("out/shadow_0_7.json")
-    if shadow_file.exists():
+    # Shadow評価データ（複数しきい値対応）
+    shadow_data = {"0.7": 60.0, "0.85": 0.0}  # デフォルト値
+    
+    # マルチシャドー評価ファイルを優先
+    multi_shadow_file = Path("out/shadow_multi.json")
+    if multi_shadow_file.exists():
         try:
-            with open(shadow_file, 'r', encoding='utf-8') as f:
-                shadow_data = json.load(f)
-            shadow_pass_rate = shadow_data["shadow_evaluation"]["shadow_pass_rate"]
-        except:
-            pass
+            with open(multi_shadow_file, 'r', encoding='utf-8') as f:
+                multi_data = json.load(f)
+            
+            multi_eval = multi_data.get("multi_shadow_evaluation", {})
+            thresholds = multi_eval.get("thresholds", {})
+            
+            shadow_data["0.7"] = thresholds.get("0.7", {}).get("shadow_pass_rate", 60.0)
+            shadow_data["0.85"] = thresholds.get("0.85", {}).get("shadow_pass_rate", 0.0)
+        except Exception as e:
+            print(f"⚠️ Multi-shadow evaluation読み込みエラー: {e}")
+    
+    # 従来の0.7単体ファイルをフォールバック
+    elif Path("out/shadow_0_7.json").exists():
+        try:
+            with open("out/shadow_0_7.json", 'r', encoding='utf-8') as f:
+                single_data = json.load(f)
+            shadow_data["0.7"] = single_data["shadow_evaluation"]["shadow_pass_rate"]
+        except Exception as e:
+            print(f"⚠️ Shadow evaluation読み込みエラー: {e}")
+    
+    shadow_pass_rate = shadow_data["0.7"]  # 後方互換性
     
     return {
         "date": date_str,
@@ -70,7 +90,8 @@ def load_latest_metrics():
         "new_fail_ratio": (new_failures / max(total_failures, 1)) if total_failures > 0 else 0.0,
         "flaky_rate": 0.0,  # 簡易計算（実際はログから算出）
         "root_cause_top3": sorted(root_causes.items(), key=lambda x: x[1], reverse=True)[:3],
-        "shadow_pass_rate": shadow_pass_rate
+        "shadow_pass_rate": shadow_pass_rate,
+        "shadow_data": shadow_data  # 新しい複数しきい値データ
     }
 
 def create_slack_message(metrics, action_url=None, dashboard_url="http://localhost:8501", canary_mode=False, pr_url=None):
@@ -146,7 +167,11 @@ def create_slack_message(metrics, action_url=None, dashboard_url="http://localho
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*Predicted@0.7:* {metrics['shadow_pass_rate']:.1f}%"
+                        "text": f"*Predicted@0.7:* {metrics.get('shadow_pass_rate', 0):.1f}%"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Predicted@0.85:* {metrics.get('shadow_data', {}).get('0.85', 0):.1f}% {'✅' if metrics.get('shadow_data', {}).get('0.85', 0) >= 85 else '❌'}"
                     }
                 ]
             }

@@ -155,18 +155,50 @@ def calculate_flaky_rate(df):
     return len(flaky_cases) / len(failed_cases) * 100
 
 def load_shadow_evaluation():
-    """Shadow Evaluation @0.7の結果を読み込み"""
+    """Shadow Evaluation結果を読み込み（複数しきい値対応）"""
+    
+    # マルチシャドー評価ファイルを優先
+    multi_shadow_file = Path("out/shadow_multi.json")
+    if multi_shadow_file.exists():
+        try:
+            with open(multi_shadow_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            multi_eval = data.get("multi_shadow_evaluation", {})
+            thresholds = multi_eval.get("thresholds", {})
+            
+            # 0.7と0.85の結果を取得
+            shadow_0_7 = thresholds.get("0.7", {}).get("shadow_pass_rate", 0)
+            shadow_0_85 = thresholds.get("0.85", {}).get("shadow_pass_rate", 0)
+            
+            return {
+                "0.7": shadow_0_7,
+                "0.85": shadow_0_85,
+                "multi": True
+            }
+        except Exception as e:
+            st.error(f"Multi-shadow evaluation読み込みエラー: {e}")
+    
+    # 従来の0.7単体ファイルをフォールバック
     shadow_file = Path("out/shadow_0_7.json")
     if shadow_file.exists():
         try:
             with open(shadow_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            return data["shadow_evaluation"]["shadow_pass_rate"]
+            shadow_0_7 = data["shadow_evaluation"]["shadow_pass_rate"]
+            return {
+                "0.7": shadow_0_7,
+                "0.85": 0.0,  # データなし
+                "multi": False
+            }
         except Exception as e:
             st.error(f"Shadow evaluation読み込みエラー: {e}")
-            return 0.0
-    else:
-        return 0.0
+    
+    return {
+        "0.7": 0.0,
+        "0.85": 0.0,
+        "multi": False
+    }
 
 def load_canary_window_status():
     """Canary 7-Day Window評価結果を読み込み"""
@@ -260,6 +292,9 @@ else:
 
 # メトリクス表示
     col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+    
+    # Canary 7-Day Window評価（メトリクス表示前に取得）
+    canary_status, canary_decision = load_canary_window_status()
 
     if not df_filtered.empty:
         total_cases = len(df_filtered)
@@ -274,11 +309,8 @@ else:
         else:
             latest_new_fail_ratio = 0.0
         
-        # Shadow Evaluation @0.7の読み込み
-        shadow_pass_rate = load_shadow_evaluation()
-        
-        # Canary 7-Day Window評価
-        canary_status, canary_decision = load_canary_window_status()
+        # Shadow Evaluation結果読み込み（複数しきい値対応）
+        shadow_data = load_shadow_evaluation()
         
         col1.metric("総テスト数", total_cases)
         col2.metric("合格数", passed_cases)
@@ -286,8 +318,15 @@ else:
         col4.metric("平均スコア", f"{avg_score:.3f}")
         col5.metric("Flaky率", f"{flaky_rate:.1f}%")
         col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
-        col7.metric("Predicted@0.7", f"{shadow_pass_rate:.1f}%")
-        col8.metric("Canary 7-Day", canary_status, delta=canary_decision)
+        col7.metric("Predicted@0.7", f"{shadow_data['0.7']:.1f}%")
+        col8.metric("Predicted@0.85", f"{shadow_data['0.85']:.1f}%", 
+                   delta="Phase 4準備" if shadow_data['0.85'] > 0 else "データ待ち")
+    
+    # Canary 7-Day Window表示（メトリクス行の下）
+    st.subheader("🐤 Canary 7-Day Window Status")
+    col_canary1, col_canary2 = st.columns(2)
+    col_canary1.metric("Status", canary_status)
+    col_canary2.metric("Decision", canary_decision)
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")
@@ -328,6 +367,54 @@ if not weekly_df.empty:
             yaxis=dict(tickformat=".1%")
         )
         st.plotly_chart(fig_new_fail, use_container_width=True)
+
+# Shadow Evaluation比較チャート
+st.subheader("🔮 Shadow Evaluation 比較")
+
+shadow_data = load_shadow_evaluation()
+if shadow_data['multi'] and shadow_data['0.85'] > 0:
+    # 0.7と0.85の比較チャート
+    shadow_comparison_data = {
+        'Threshold': ['0.7 (Current)', '0.85 (Phase 4)'],
+        'Pass Rate': [shadow_data['0.7'], shadow_data['0.85']],
+        'Status': ['✅ 運用中' if shadow_data['0.7'] >= 70 else '⚠️ 要改善', 
+                  '✅ 準備完了' if shadow_data['0.85'] >= 85 else '🔄 準備中']
+    }
+    
+    fig_shadow = px.bar(
+        shadow_comparison_data,
+        x='Threshold',
+        y='Pass Rate',
+        title='Shadow Evaluation: しきい値別予測合格率',
+        labels={'Pass Rate': '予測合格率 (%)', 'Threshold': 'しきい値'},
+        color='Pass Rate',
+        color_continuous_scale='RdYlGn',
+        text='Status'
+    )
+    
+    # 基準線追加
+    fig_shadow.add_hline(y=85, line_dash="dash", line_color="red", 
+                        annotation_text="Phase 4基準: 85%")
+    fig_shadow.add_hline(y=70, line_dash="dash", line_color="orange", 
+                        annotation_text="Phase 3基準: 70%")
+    
+    fig_shadow.update_traces(textposition='outside')
+    fig_shadow.update_layout(height=400, showlegend=False)
+    
+    st.plotly_chart(fig_shadow, use_container_width=True)
+    
+    # Phase 4昇格条件表示
+    st.info(f"""
+    **Phase 4 昇格条件**:
+    - Predicted@0.85 ≥ 85% (現在: {shadow_data['0.85']:.1f}%)
+    - 2週連続で条件達成
+    - new_fail_ratio ≤ 70%
+    
+    **現在の状況**: {'✅ 条件達成' if shadow_data['0.85'] >= 85 else '🔄 改善継続中'}
+    """)
+else:
+    st.info("📊 Phase 4 Shadow Evaluation データを取得中...")
+    st.code("python tests/golden/runner.py --threshold-shadow '0.7,0.85' --report out/shadow_multi.json")
 else:
     st.info("週次データがありません。観測ログを確認してください。")
 

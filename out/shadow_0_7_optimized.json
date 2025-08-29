@@ -1,0 +1,121 @@
+{
+  "shadow_evaluation": {
+    "current_threshold": 0.5,
+    "shadow_threshold": 0.7,
+    "timestamp": "2025-08-29T22:43:04.977008",
+    "total_cases": 10,
+    "shadow_passed": 7,
+    "shadow_pass_rate": 70.0,
+    "total_failures": 3,
+    "new_failures": 2,
+    "new_fail_ratio": 0.6666666666666666,
+    "flaky_failures": 0,
+    "flaky_rate": 0.0,
+    "root_cause_top3": [
+      [
+        "TOKENIZE",
+        2
+      ],
+      [
+        "MODEL",
+        1
+      ]
+    ],
+    "root_cause_distribution": {
+      "TOKENIZE": 2,
+      "MODEL": 1
+    }
+  },
+  "detailed_results": [
+    {
+      "case_id": "sample_001",
+      "score": 1.0,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "営業ロープレ 自動化 暴走防止 CI 整備",
+      "prediction": "営業ロープレ 自動化 暴走防止 CI 整備",
+      "timestamp": "2025-08-29T22:42:58.498635"
+    },
+    {
+      "case_id": "sample_002",
+      "score": 0.85,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "BlackHole Whisper Obsidian 構成",
+      "prediction": "音声対話 BlackHole Whisper Obsidian",
+      "timestamp": "2025-08-29T22:42:58.946599"
+    },
+    {
+      "case_id": "sample_003",
+      "score": 0.85,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "品質ゲート テスト強化 システム 品質向上",
+      "prediction": "品質ゲート テスト強化 システム整備 品質向上 システム開発",
+      "timestamp": "2025-08-29T22:42:59.977448"
+    },
+    {
+      "case_id": "sample_004",
+      "score": 0.6,
+      "current_passed": true,
+      "shadow_passed": false,
+      "reference": "セキュリティ検知 脆弱性 チェック 機能",
+      "prediction": "セキュリティ対策 セキュリティ検知 脆弱性",
+      "timestamp": "2025-08-29T22:43:00.447926"
+    },
+    {
+      "case_id": "sample_005",
+      "score": 0.85,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "無駄削減 開発プロセス 最適化 効率化",
+      "prediction": "開発プロセス 最適化 無駄削減 效率化施策",
+      "timestamp": "2025-08-29T22:43:00.934749"
+    },
+    {
+      "case_id": "sample_006",
+      "score": 0.85,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "学習改善 モデル精度 向上 AIシステム",
+      "prediction": "AIシステム 学習改善 モデル精度",
+      "timestamp": "2025-08-29T22:43:01.424812"
+    },
+    {
+      "case_id": "sample_007",
+      "score": 0.35,
+      "current_passed": false,
+      "shadow_passed": false,
+      "reference": "分析ダッシュボード メトリクス 可視化 監視",
+      "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
+      "timestamp": "2025-08-29T22:43:02.377186"
+    },
+    {
+      "case_id": "sample_008",
+      "score": 0.6,
+      "current_passed": true,
+      "shadow_passed": false,
+      "reference": "フィードバック効率化 レスポンス時間 短縮 改善",
+      "prediction": "ユーザー体験 改善 フィードバック 效率化 レスポンス",
+      "timestamp": "2025-08-29T22:43:03.387084"
+    },
+    {
+      "case_id": "sample_009",
+      "score": 0.85,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "CI整備 デプロイ 自動化 DevOps",
+      "prediction": "DevOpsパイプライン CI デプロイ 自動化",
+      "timestamp": "2025-08-29T22:43:03.856505"
+    },
+    {
+      "case_id": "sample_010",
+      "score": 1.0,
+      "current_passed": true,
+      "shadow_passed": true,
+      "reference": "営業ロープレ 自動化 統合 システム",
+      "prediction": "営業ロープレ 自動化 機能 統合 システム",
+      "timestamp": "2025-08-29T22:43:04.976990"
+    }
+  ]
+}
