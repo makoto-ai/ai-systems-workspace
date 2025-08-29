@@ -167,7 +167,7 @@ jobs:
         BASELINE_85=${{ steps.baseline_eval.outputs.baseline_pred_85 }}
         BASELINE_FLAKY=${{ steps.baseline_eval.outputs.baseline_flaky_rate }}
 
-        # 差分計算（bashでの浮動小数点演算）
+        # 差分計算 (bashでの浮動小数点演算)
         DIFF_70=$(python -c "print(${PR_70} - ${BASELINE_70})")
         DIFF_85=$(python -c "print(${PR_85} - ${BASELINE_85})")
         DIFF_FLAKY=$(python -c "print(${PR_FLAKY} - ${BASELINE_FLAKY})")
@@ -266,7 +266,9 @@ jobs:
           |--------|----------|----|----|-------|
           | Pred@0.70 | ${baselinePred70}% | ${prPred70}% | ${diff70:+.1f}pp | ${diff70 >= -1.0 ? '✅' : '❌'} |
           | Pred@0.85 | ${baselinePred85}% | ${prPred85}% | ${diff85:+.1f}pp | ${diff85 >= -1.0 ? '✅' : '❌'} |
-          | Flaky Rate | ${{ steps.baseline_eval.outputs.baseline_flaky_rate }}% | ${{ steps.pr_eval.outputs.pr_flaky_rate }}% | ${diffFlaky:+.1f}pp | ${diffFlaky <= 2.0 ? '✅' : '❌'} |
+          | Flaky Rate | ${{ steps.baseline_eval.outputs.baseline_flaky_rate }}% | \
+            ${{ steps.pr_eval.outputs.pr_flaky_rate }}% | ${diffFlaky:+.1f}pp | \
+            ${diffFlaky <= 2.0 ? '✅' : '❌'} |
 
           ### 🚦 Quality Gate Rules
           - **Pred@0.70**: 悪化は-1.0pp以内
@@ -275,7 +277,9 @@ jobs:
 
           ${regressionDetected ? `
           ### ❌ 回帰検出理由
-          ${require('fs').existsSync('regression_reasons.txt') ? require('fs').readFileSync('regression_reasons.txt', 'utf8').split('\n').filter(line => line).map(line => `- ${line}`).join('\n') : ''}
+          ${require('fs').existsSync('regression_reasons.txt') ? \
+            require('fs').readFileSync('regression_reasons.txt', 'utf8') \
+            .split('\n').filter(line => line).map(line => `- ${line}`).join('\n') : ''}
 
           **このPRは品質ゲートを通過していません。回帰を修正してください。**
           ` : `
@@ -365,7 +369,7 @@ jobs:
 
     - name: Run Shadow Grid Evaluation
       run: |
-        echo "📊 Shadow Grid評価実行（データ収集用）"
+        echo "📊 Shadow Grid評価実行 (データ収集用)"
         python tests/golden/runner.py \
           --threshold-shadow "0.70,0.72,0.75,0.80,0.85" \
           --weights tests/golden/weights_phase4.yaml \
@@ -394,7 +398,10 @@ jobs:
         echo "reason=$ABORT_REASON" >> "$GITHUB_OUTPUT"
 
     - name: Close PR if Abort
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'data-collection') && steps.abort_check.outputs.abort == 'true' }}
+      if: ${{ 
+        contains(github.event.pull_request.labels.*.name, 'data-collection') && 
+        steps.abort_check.outputs.abort == 'true' 
+      }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -406,7 +413,9 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: prNumber,
-            body: `🛑 **早期Abort: データ収集完了**\n\n${reason}\n\nこのPRは自動的にクローズされます。収集されたデータは以下から確認できます:\n- Shadow Grid結果: Artifactsタブ\n- 詳細分析: Actionsログ`
+            body: `🛑 **早期Abort: データ収集完了**\n\n${reason}\n\n` +
+              `このPRは自動的にクローズされます。収集されたデータは以下から確認できます:\n` +
+              `- Shadow Grid結果: Artifactsタブ\n- 詳細分析: Actionsログ`
           });
 
           // PRクローズ
@@ -425,7 +434,7 @@ jobs:
       run: |
         SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
         if [ -z "$SLACK_WEBHOOK_URL" ]; then
-          echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+          echo "⏭️ Slack通知スキップ (SLACK_WEBHOOK_URL未設定)"
           exit 0
         fi
         echo "📢 データ収集結果をSlack通知"

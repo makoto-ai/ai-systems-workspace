@@ -62,7 +62,7 @@ jobs:
         print(f'{weighted_rate:.1f}')
         ")
 
-        echo "predicted_at_85=${PREDICTED_AT_85}" >> "$GITHUB_OUTPUT"
+        echo "predicted_at_85=${PREDICTED_AT_85}" >> "\$GITHUB_OUTPUT"
         echo "📊 Predicted@0.85: ${PREDICTED_AT_85}%"
 
     - name: Check Phase4 準備状況
@@ -72,7 +72,7 @@ jobs:
 
         # Phase4条件チェック
         PHASE4_READY=$(python -c "print('true' if float('${PREDICTED_AT_85}') >= 85 else 'false')")
-        if [ "$PHASE4_READY" = "true" ]; then
+        if [ "\${PHASE4_READY}" = "true" ]; then
           echo "ready_for_phase4=true" >> "$GITHUB_OUTPUT"
           echo "✅ Phase 4準備完了: Predicted@0.85=${PREDICTED_AT_85}%"
         else
@@ -81,7 +81,7 @@ jobs:
           echo "🔄 Phase 4準備中: Gap=${GAP}pp"
         fi
 
-    - name: Check 履歴（2週連続チェック）
+    - name: Check 履歴 (2週連続チェック)
       id: history_check
       if: steps.phase4_check.outputs.ready_for_phase4 == 'true'
       run: |
@@ -99,7 +99,7 @@ jobs:
             echo "🎉 2週連続でPhase4条件達成！"
           else
             echo "consecutive_weeks=1" >> "$GITHUB_OUTPUT"
-            echo "📅 1週連続（2週目待ち）"
+            echo "📅 1週連続 (2週目待ち)"
           fi
         else
           echo "consecutive_weeks=0" >> "$GITHUB_OUTPUT"
@@ -242,7 +242,7 @@ jobs:
       run: |
         SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
         if [ -z "$SLACK_WEBHOOK_URL" ]; then
-          echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+          echo "⏭️ Slack通知スキップ (SLACK_WEBHOOK_URL未設定)"
           exit 0
         fi
         echo "📢 Sending notification..."

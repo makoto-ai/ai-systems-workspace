@@ -68,8 +68,8 @@ jobs:
 
           # 合格率を抽出
           PASS_RATE=$(grep "合格率:" golden_output.txt | grep -o '[0-9]\+/[0-9]\+' | head -1)
-          PASSED=$(echo "$PASS_RATE" | cut -d'/' -f1)
-          TOTAL=$(echo "$PASS_RATE" | cut -d'/' -f2)
+          PASSED=$(echo "${PASS_RATE}" | cut -d'/' -f1)
+          TOTAL=$(echo "${PASS_RATE}" | cut -d'/' -f2)
           PERCENTAGE=$((PASSED * 100 / TOTAL))
 
           echo "pass_rate=${PASS_RATE}" >> "$GITHUB_OUTPUT"
@@ -170,7 +170,7 @@ jobs:
         run: |
           SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+            echo "⏭️ Slack通知スキップ (SLACK_WEBHOOK_URL未設定)"
             exit 0
           fi
 
@@ -185,7 +185,7 @@ jobs:
             echo "📊 通常週モードで通知"
           fi
 
-          # PR URL取得（カナリア週の場合）
+          # PR URL取得 (カナリア週の場合)
           PR_URL=""
           if [ "${{ github.event.inputs.canary }}" = "true" ]; then
             PR_URL="--pr-url https://github.com/${{ github.repository }}/pull/29"
