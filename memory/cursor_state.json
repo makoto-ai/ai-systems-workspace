@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-29T22:05:39.323191",
+  "timestamp": "2025-08-29T22:30:51.376915",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "13d3b6d13521c7a1b9e4175273cf1d3930f12a5e",
-    "branch": "master",
-    "uncommitted_changes": 0,
-    "status_details": ""
+    "commit_hash": "6392e0062ab47b333b31c94b67d7345572c8cc49",
+    "branch": "canary-threshold-0.5-to-0.7",
+    "uncommitted_changes": 15,
+    "status_details": "M experiments/model_swap.py\n M memory/cursor_state.json\n M memory/mcp_snapshot.json\n M out/shadow_0_7.json\n M scripts/bump_threshold_enhanced.sh\n?? memory/snapshots/mcp_snapshot_20250829_221741.json\n?? memory/snapshots/mcp_snapshot_20250829_222423.json\n?? memory/snapshots/mcp_snapshot_20250829_222541.json\n?? out/model_exp_phase2.json\n?? out/new_fails.json\n?? out/shadow_0_7_enhanced.json\n?? out/shadow_0_7_final.json\n?? out/shadow_0_7_phase1.json\n?? out/shadow_0_7_phase2.json\n?? out/shadow_0_7_with_history.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 51,
-      "total_files": 106
+      "python_files": 52,
+      "total_files": 109
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25889,
+    "python_files_count": 26426,
     "cursor_configs_count": 13
   },
-  "state_hash": "3d5aa933161cdca0fac9d66e6d3016f4"
+  "state_hash": "c5ffefc6be7e7b0678f0209db71bca31"
 }

@@ -91,7 +91,18 @@ def get_latest_metrics():
                     except json.JSONDecodeError:
                         continue
     
-    # 最新ログから指標計算
+    # Shadow evaluationから指標を取得（より正確）
+    shadow_file = Path("out/shadow_0_7.json")
+    if shadow_file.exists():
+        try:
+            with open(shadow_file, 'r', encoding='utf-8') as f:
+                shadow_data = json.load(f)
+            shadow_eval = shadow_data.get("shadow_evaluation", {})
+            return shadow_eval.get("flaky_rate", 0.0) / 100, shadow_eval.get("new_fail_ratio", 1.0)
+        except:
+            pass
+    
+    # フォールバック: 最新ログから指標計算
     current_date = latest_log.stem.split('_')[0]
     with open(latest_log, 'r', encoding='utf-8') as f:
         for line in f:

@@ -1,0 +1,72 @@
+{
+  "export_timestamp": "2025-08-29T22:21:29.900691",
+  "total_new_failures": 2,
+  "new_failures": [
+    {
+      "case_id": "sample_007",
+      "reference": "分析ダッシュボード メトリクス 可視化 監視",
+      "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
+      "score": 0.25,
+      "root_cause": "MODEL",
+      "date": "20250829",
+      "log_file": "20250829_220512.jsonl",
+      "diff_analysis": {
+        "missing_tokens": [
+          "可視化",
+          "監視",
+          "分析ダッシュボード",
+          "メトリクス"
+        ],
+        "extra_tokens": [
+          "ダッシュボード",
+          "構築",
+          "状況",
+          "分析",
+          "監視ツール"
+        ],
+        "common_tokens": [],
+        "similar_pairs": [
+          {
+            "missing": "分析ダッシュボード",
+            "extra": "ダッシュボード",
+            "similarity": 0.7777777777777778
+          }
+        ],
+        "jaccard_similarity": 0.0
+      }
+    },
+    {
+      "case_id": "sample_007",
+      "reference": "分析ダッシュボード メトリクス 可視化 監視",
+      "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
+      "score": 0.25,
+      "root_cause": "MODEL",
+      "date": "20250829",
+      "log_file": "20250829_215903.jsonl",
+      "diff_analysis": {
+        "missing_tokens": [
+          "可視化",
+          "監視",
+          "分析ダッシュボード",
+          "メトリクス"
+        ],
+        "extra_tokens": [
+          "ダッシュボード",
+          "構築",
+          "状況",
+          "分析",
+          "監視ツール"
+        ],
+        "common_tokens": [],
+        "similar_pairs": [
+          {
+            "missing": "分析ダッシュボード",
+            "extra": "ダッシュボード",
+            "similarity": 0.7777777777777778
+          }
+        ],
+        "jaccard_similarity": 0.0
+      }
+    }
+  ]
+}

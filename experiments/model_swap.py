@@ -175,23 +175,38 @@ class ModelExperiment:
 出力は必ずキーワードのみ（説明文不要）:"""
         
         try:
-            # UnifiedAIServiceの正しいメソッド名を使用
-            if hasattr(self.ai_service, 'generate_response'):
-                response = self.ai_service.generate_response(
-                    message=prompt,
-                    provider=model,
-                    temperature=0.0,
-                    max_tokens=60
-                )
+            # 簡易的な直接実装（非同期回避）
+            import os
+            import requests
+            
+            api_key = os.getenv('GROQ_API_KEY')
+            if not api_key:
+                raise Exception("GROQ_API_KEY not found")
+            
+            headers = {
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json'
+            }
+            
+            data = {
+                'model': 'llama3-8b-8192',
+                'messages': [{'role': 'user', 'content': prompt}],
+                'temperature': 0.0,
+                'max_tokens': 60
+            }
+            
+            response = requests.post(
+                'https://api.groq.com/openai/v1/chat/completions',
+                headers=headers,
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                response = result['choices'][0]['message']['content']
             else:
-                # フォールバック: 直接GroqServiceを使用
-                from app.services.groq_service import GroqService
-                groq = GroqService()
-                response = groq.chat_completion(
-                    message=prompt,
-                    temperature=0.0,
-                    max_tokens=60
-                )
+                raise Exception(f"API error: {response.status_code}")
             
             # レスポンスをサニタイズ
             prediction = response.strip().replace('\n', ' ')
