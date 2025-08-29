@@ -73,35 +73,60 @@ def load_latest_metrics():
         "shadow_pass_rate": shadow_pass_rate
     }
 
-def create_slack_message(metrics, action_url=None, dashboard_url="http://localhost:8501"):
-    """Slack用メッセージ作成"""
+def create_slack_message(metrics, action_url=None, dashboard_url="http://localhost:8501", canary_mode=False, pr_url=None):
+    """Slack用メッセージ作成（週次レポート対応）"""
     if not metrics:
         return None
     
-    # ステータス絵文字
-    if metrics["pass_rate"] >= 90:
+    # カナリア週判定
+    if canary_mode:
+        title_prefix = "🐤 Canary Weekly Report"
+        threshold_text = "(Threshold=0.7)"
+        canary_status = "カナリア週監視中"
+    else:
+        title_prefix = "📊 Weekly Report"
+        threshold_text = f"(Threshold={metrics.get('threshold', 0.5)})"
+        canary_status = "通常運用"
+    
+    # ステータス判定（カナリア週は85%基準）
+    threshold = 85 if canary_mode else 80
+    if metrics["pass_rate"] >= threshold:
         status_emoji = "✅"
         status_text = "良好"
-    elif metrics["pass_rate"] >= 80:
+    elif metrics["pass_rate"] >= (threshold - 5):
         status_emoji = "⚠️"
         status_text = "注意"
     else:
         status_emoji = "🚨"
         status_text = "緊急"
     
-    # Root Cause Top3
+    # KPI判定アイコン
+    pass_rate_icon = "✅" if metrics["pass_rate"] >= threshold else "❌"
+    flaky_rate_icon = "✅" if metrics["flaky_rate"] <= 5.0 else "❌"
+    new_fail_icon = "✅" if metrics["new_fail_ratio"] <= 0.60 else "❌"
+    
+    # Root Cause Top3の整形
     root_cause_text = ""
-    for i, (cause, count) in enumerate(metrics["root_cause_top3"]):
-        root_cause_text += f"{i+1}. {cause}: {count}件\n"
+    total_failures = sum(count for _, count in metrics["root_cause_top3"]) if metrics["root_cause_top3"] else 1
+    for i, (cause, count) in enumerate(metrics["root_cause_top3"][:3]):
+        percentage = (count / total_failures) * 100 if total_failures > 0 else 0
+        root_cause_text += f"{i+1}. {cause} ({percentage:.0f}%)\n"
     
     message = {
-        "text": f"{status_emoji} Golden Test 週次結果 ({metrics['date']})",
+        "text": f"{title_prefix} {threshold_text}",
         "blocks": [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"{status_emoji} Golden Test 週次結果"
+                    "text": f"{title_prefix} {threshold_text}"
+                }
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*状態:* {status_emoji} {status_text} ({canary_status})"
                 }
             },
             {
@@ -109,23 +134,15 @@ def create_slack_message(metrics, action_url=None, dashboard_url="http://localho
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": f"*日付:* {metrics['date']}"
+                        "text": f"*合格率:* {metrics['pass_rate']}% (基準 >={threshold}%) {pass_rate_icon}"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*状態:* {status_text}"
+                        "text": f"*Flaky率:* {metrics['flaky_rate']:.1f}% (<5%) {flaky_rate_icon}"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*合格率:* {metrics['pass_rate']}% ({metrics['passed']}/{metrics['total']})"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*新規失敗率:* {metrics['new_fail_ratio']:.1%}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Flaky率:* {metrics['flaky_rate']:.1%}"
+                        "text": f"*新規失敗率:* {metrics['new_fail_ratio']:.1%} (≤60%) {new_fail_icon}"
                     },
                     {
                         "type": "mrkdwn",
@@ -142,21 +159,56 @@ def create_slack_message(metrics, action_url=None, dashboard_url="http://localho
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*Root Cause Top3:*\n{root_cause_text}"
+                "text": f"*Root Cause Top3:*\n{root_cause_text.rstrip()}"
             }
         })
     
-    # リンクセクション
-    links_text = f"• <{dashboard_url}|📊 Golden KPI Dashboard>"
+    # アクションボタンセクション
+    elements = [
+        {
+            "type": "button",
+            "text": {
+                "type": "plain_text",
+                "text": "📊 Dashboard"
+            },
+            "url": dashboard_url
+        }
+    ]
+    
     if action_url:
-        links_text += f"\n• <{action_url}|🔗 実行ログ>"
+        elements.append({
+            "type": "button",
+            "text": {
+                "type": "plain_text",
+                "text": "🔗 Run Logs"
+            },
+            "url": action_url
+        })
+    
+    if pr_url:
+        elements.append({
+            "type": "button",
+            "text": {
+                "type": "plain_text",
+                "text": "🐤 Canary PR" if canary_mode else "📋 PR"
+            },
+            "url": pr_url
+        })
     
     message["blocks"].append({
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": links_text
-        }
+        "type": "actions",
+        "elements": elements
+    })
+    
+    # フッター
+    message["blocks"].append({
+        "type": "context",
+        "elements": [
+            {
+                "type": "mrkdwn",
+                "text": f"📅 {metrics['date']} | 🤖 自動生成レポート"
+            }
+        ]
     })
     
     return message
@@ -256,6 +308,9 @@ def main():
     parser.add_argument("--action-url", type=str, help="GitHub Actions実行URL")
     parser.add_argument("--dashboard-url", type=str, default="http://localhost:8501",
                        help="ダッシュボードURL")
+    parser.add_argument("--slack-webhook", type=str, help="Slack Webhook URL")
+    parser.add_argument("--canary", action="store_true", help="カナリア週モード")
+    parser.add_argument("--pr-url", type=str, help="関連PR URL")
     
     args = parser.parse_args()
     
@@ -269,9 +324,10 @@ def main():
     
     print(f"📈 合格率: {metrics['pass_rate']}%")
     print(f"📊 新規失敗率: {metrics['new_fail_ratio']:.1%}")
+    print(f"🐤 カナリア週: {args.canary}")
     
-    # Webhook URL取得
-    slack_webhook = os.getenv("SLACK_WEBHOOK_URL")
+    # Webhook URL取得（引数優先、環境変数フォールバック）
+    slack_webhook = args.slack_webhook or os.getenv("SLACK_WEBHOOK_URL")
     discord_webhook = os.getenv("DISCORD_WEBHOOK_URL")
     
     success = True
@@ -279,7 +335,13 @@ def main():
     # Slack通知
     if slack_webhook:
         print("📤 Slack通知送信中...")
-        slack_message = create_slack_message(metrics, args.action_url, args.dashboard_url)
+        slack_message = create_slack_message(
+            metrics, 
+            action_url=args.action_url, 
+            dashboard_url=args.dashboard_url,
+            canary_mode=args.canary,
+            pr_url=args.pr_url
+        )
         if slack_message:
             success &= send_slack_notification(slack_webhook, slack_message)
     else:
