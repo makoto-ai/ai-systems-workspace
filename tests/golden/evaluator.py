@@ -217,6 +217,12 @@ _NORM_MAP = {
     "総合システム": "システム",  # 総合システム → システム に正規化
     "概要": "概要",  # 概要の正規化
     "統合完了": "統合",  # 統合完了 → 統合 に正規化
+    '–': '-',  # en dash,
+    '—': '-',  # em dash,
+    '―': '-',  # horizontal bar,
+    'ｰ': '-',  # fullwidth hyphen-minus,
+    '‐': '-',  # hyphen,
+    'ー': '-',  # katakana-hiragana prolonged sound,
 }
 
 
