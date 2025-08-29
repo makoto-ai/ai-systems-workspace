@@ -1,0 +1,64 @@
+# Golden Test Phase 4 Enhanced Weighted Evaluation  
+# 過去2週間の実績ベースで重み精緻化
+
+# 重み付けルール（実績頻度ベース再計算）
+weights:
+  # 最重要ケース（2.0x重み）- 過去2週間で複数回失敗 + ビジネス影響大
+  critical_priority:
+    - sample_007  # 分析ダッシュボード（監視・可視化の基盤機能）
+    - sample_006  # AI学習改善（システム精度向上の核心）
+  
+  # 高重要度ケース（1.5x重み）- 過去失敗履歴あり + 重要機能
+  high_priority:
+    - sample_003  # 品質ゲート（品質保証基盤）
+    - sample_004  # セキュリティ検知（安全性基盤）
+    - sample_008  # フィードバック効率化（UX改善）
+  
+  # 中重要度ケース（1.2x重み）- 安定稼働中だが重要
+  medium_priority:
+    - sample_001  # 基本機能テスト（品質基準）
+    - sample_002  # 暴走防止（安全性確保）
+  
+  # 標準ケース（1.0x重み）- 安定稼働中
+  standard:
+    - sample_005  # 無駄削減（効率化）
+    - sample_009  # デプロイ自動化（運用自動化）
+    - sample_010  # 統合（システム連携）
+
+# デフォルト重み（未分類ケース用）
+default_weight: 1.0
+
+# 重み係数設定（精緻化）
+weight_multipliers:
+  critical_priority: 2.0   # 1.5 → 2.0に強化
+  high_priority: 1.5
+  medium_priority: 1.2
+  standard: 1.0
+
+# 重み付け理由
+weight_rationale:
+  critical_priority: "過去2週間複数回失敗 + ビジネス影響度最大"
+  high_priority: "過去失敗履歴あり + システム基盤機能"
+  medium_priority: "安定稼働中だが重要な基盤機能"
+  standard: "安定稼働中の一般機能"
+
+# Phase4向け特別設定（精緻化）
+phase4_config:
+  # 新規失敗ケースへの追加重み（強化）
+  new_failure_bonus: 0.5    # 0.3 → 0.5
+  # Flakyケースの重み減少（強化）
+  flaky_penalty: -0.3       # -0.2 → -0.3
+  # モデル起因失敗の重点評価（強化）
+  model_failure_bonus: 0.8  # 0.5 → 0.8
+  # TOKENIZE起因失敗への重み追加（新規）
+  tokenize_failure_bonus: 0.4
+
+# 動的重み調整設定
+dynamic_weights:
+  enabled: true
+  # 連続失敗回数に応じた重み増加
+  consecutive_failure_multiplier: 0.2  # 連続失敗1回につき+0.2
+  # 最大重み制限
+  max_weight: 3.0
+  # 最小重み制限  
+  min_weight: 0.5

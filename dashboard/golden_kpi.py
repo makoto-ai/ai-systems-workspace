@@ -155,9 +155,39 @@ def calculate_flaky_rate(df):
     return len(flaky_cases) / len(failed_cases) * 100
 
 def load_shadow_evaluation():
-    """Shadow Evaluation結果を読み込み（複数しきい値対応）"""
+    """Shadow Evaluation結果を読み込み（段階昇格対応）"""
     
-    # マルチシャドー評価ファイルを優先
+    # 段階昇格用グリッドファイルを最優先
+    grid_file = Path("out/shadow_grid.json") 
+    if grid_file.exists():
+        try:
+            with open(grid_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            multi_eval = data.get("multi_shadow_evaluation", {})
+            thresholds = multi_eval.get("thresholds", {})
+            staged_promotion = multi_eval.get("staged_promotion", {})
+            
+            # グリッド評価結果を取得
+            grid_data = {}
+            for threshold_str, threshold_data in thresholds.items():
+                threshold = float(threshold_str)
+                pass_rate = threshold_data.get("weighted_pass_rate", threshold_data.get("shadow_pass_rate", 0))
+                grid_data[threshold_str] = pass_rate
+            
+            return {
+                "0.7": grid_data.get("0.7", grid_data.get("0.70", 0)),
+                "0.85": grid_data.get("0.85", 0),
+                "grid": grid_data,
+                "staged_promotion": staged_promotion,
+                "weighted": any(thresholds[t].get("weighted_pass_rate") is not None for t in thresholds),
+                "multi": True,
+                "grid_enabled": True
+            }
+        except Exception as e:
+            st.error(f"Grid evaluation読み込みエラー: {e}")
+    
+    # マルチシャドー評価ファイルを次に確認
     multi_shadow_file = Path("out/shadow_multi.json")
     if multi_shadow_file.exists():
         try:
@@ -167,14 +197,19 @@ def load_shadow_evaluation():
             multi_eval = data.get("multi_shadow_evaluation", {})
             thresholds = multi_eval.get("thresholds", {})
             
-            # 0.7と0.85の結果を取得
-            shadow_0_7 = thresholds.get("0.7", {}).get("shadow_pass_rate", 0)
-            shadow_0_85 = thresholds.get("0.85", {}).get("shadow_pass_rate", 0)
+            # 0.7と0.85の結果を取得（重み付き優先）
+            threshold_0_7 = thresholds.get("0.7", {})
+            threshold_0_85 = thresholds.get("0.85", {})
+            
+            shadow_0_7 = threshold_0_7.get("weighted_pass_rate", threshold_0_7.get("shadow_pass_rate", 0))
+            shadow_0_85 = threshold_0_85.get("weighted_pass_rate", threshold_0_85.get("shadow_pass_rate", 0))
             
             return {
                 "0.7": shadow_0_7,
                 "0.85": shadow_0_85,
-                "multi": True
+                "weighted": threshold_0_85.get("weighted_pass_rate") is not None,
+                "multi": True,
+                "grid_enabled": False
             }
         except Exception as e:
             st.error(f"Multi-shadow evaluation読み込みエラー: {e}")
@@ -189,7 +224,9 @@ def load_shadow_evaluation():
             return {
                 "0.7": shadow_0_7,
                 "0.85": 0.0,  # データなし
-                "multi": False
+                "weighted": False,
+                "multi": False,
+                "grid_enabled": False
             }
         except Exception as e:
             st.error(f"Shadow evaluation読み込みエラー: {e}")
@@ -197,7 +234,9 @@ def load_shadow_evaluation():
     return {
         "0.7": 0.0,
         "0.85": 0.0,
-        "multi": False
+        "weighted": False,
+        "multi": False,
+        "grid_enabled": False
     }
 
 def load_canary_window_status():
@@ -291,7 +330,7 @@ else:
     df_filtered = df
 
 # メトリクス表示
-    col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
     
     # Canary 7-Day Window評価（メトリクス表示前に取得）
     canary_status, canary_decision = load_canary_window_status()
@@ -319,14 +358,23 @@ else:
         col5.metric("Flaky率", f"{flaky_rate:.1f}%")
         col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
         col7.metric("Predicted@0.7", f"{shadow_data['0.7']:.1f}%")
+        
+        # Phase4 Gap計算
+        phase4_gap = max(0, 85.0 - shadow_data['0.85']) if shadow_data['0.85'] > 0 else 85.0
+        gap_status = "✅ 準備完了" if phase4_gap <= 0 else f"🔄 Gap: {phase4_gap:.1f}pp"
+        
         col8.metric("Predicted@0.85", f"{shadow_data['0.85']:.1f}%", 
-                   delta="Phase 4準備" if shadow_data['0.85'] > 0 else "データ待ち")
+                   delta=gap_status)
     
     # Canary 7-Day Window表示（メトリクス行の下）
     st.subheader("🐤 Canary 7-Day Window Status")
     col_canary1, col_canary2 = st.columns(2)
     col_canary1.metric("Status", canary_status)
     col_canary2.metric("Decision", canary_decision)
+    
+    # 重み付き評価の表示
+    if shadow_data.get('weighted', False):
+        st.info("🎯 **重み付き評価**: 頻出失敗・重要ケースを1.5x重みで評価中")
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")
@@ -368,11 +416,107 @@ if not weekly_df.empty:
         )
         st.plotly_chart(fig_new_fail, use_container_width=True)
 
-# Shadow Evaluation比較チャート
-st.subheader("🔮 Shadow Evaluation 比較")
+    # 段階昇格グリッド可視化
+st.subheader("🚀 段階昇格グリッド")
 
 shadow_data = load_shadow_evaluation()
-if shadow_data['multi'] and shadow_data['0.85'] > 0:
+
+# 段階昇格情報表示
+if shadow_data.get('grid_enabled') and 'staged_promotion' in shadow_data:
+    staged_promotion = shadow_data['staged_promotion']
+    
+    # Next Recommended Threshold表示
+    st.subheader("🎯 Next Recommended Threshold")
+    next_col1, next_col2, next_col3 = st.columns(3)
+    
+    with next_col1:
+        current_threshold = staged_promotion.get('current_threshold', 0.5)
+        st.metric("Current Threshold", f"{current_threshold:.2f}")
+    
+    with next_col2:
+        next_recommended = staged_promotion.get('next_recommended', 0.5)
+        promotion_step = staged_promotion.get('promotion_step', 0)
+        st.metric("Next Recommended", f"{next_recommended:.2f}", 
+                 delta=f"+{promotion_step:.2f}" if promotion_step > 0 else "待機中")
+    
+    with next_col3:
+        promotion_ready = staged_promotion.get('promotion_ready', False)
+        status_text = "✅ 昇格可能" if promotion_ready else "🟡 条件待ち"
+        st.metric("昇格ステータス", status_text)
+    
+    # グリッド可視化
+    if 'grid' in shadow_data and shadow_data['grid']:
+        st.subheader("📊 しきい値グリッド分析")
+        
+        grid_data = shadow_data['grid']
+        
+        # データフレーム作成
+        thresholds = sorted([float(t) for t in grid_data.keys()])
+        pass_rates = [grid_data[str(t)] for t in thresholds]
+        
+        # ステータス判定
+        statuses = []
+        for rate in pass_rates:
+            if rate >= 80:
+                statuses.append('✅ 昇格可能')
+            elif rate >= 70:
+                statuses.append('🔄 改善中')
+            else:
+                statuses.append('❌ 要改善')
+        
+        grid_df = pd.DataFrame({
+            'Threshold': [f"{t:.2f}" for t in thresholds],
+            'Pass Rate': pass_rates,
+            'Status': statuses
+        })
+        
+        # 棒グラフで可視化
+        fig_grid = px.bar(
+            grid_df,
+            x='Threshold',
+            y='Pass Rate',
+            title='段階昇格グリッド: しきい値別予測合格率',
+            labels={'Pass Rate': '予測合格率 (%)', 'Threshold': 'しきい値'},
+            color='Pass Rate',
+            color_continuous_scale='RdYlGn',
+            text='Status'
+        )
+        
+        # 基準線追加
+        fig_grid.add_hline(y=85, line_dash="dash", line_color="red", 
+                          annotation_text="Phase 4基準: 85%")
+        fig_grid.add_hline(y=80, line_dash="dash", line_color="green", 
+                          annotation_text="昇格基準: 80%")
+        fig_grid.add_hline(y=70, line_dash="dash", line_color="orange", 
+                          annotation_text="Phase 3基準: 70%")
+        
+        # Next Recommendedをハイライト
+        if promotion_ready:
+            next_idx = thresholds.index(next_recommended) if next_recommended in thresholds else -1
+            if next_idx >= 0:
+                fig_grid.add_shape(
+                    type="rect",
+                    x0=next_idx - 0.4,
+                    x1=next_idx + 0.4,
+                    y0=0,
+                    y1=pass_rates[next_idx] + 5,
+                    line=dict(color="gold", width=3),
+                    fillcolor="gold",
+                    opacity=0.2
+                )
+        
+        fig_grid.update_traces(textposition='outside')
+        fig_grid.update_layout(height=500, showlegend=False)
+        
+        st.plotly_chart(fig_grid, use_container_width=True)
+        
+        # グリッドテーブル表示
+        st.subheader("📋 グリッド詳細")
+        st.dataframe(grid_df, use_container_width=True)
+
+# 従来のShadow Evaluation比較（グリッドがない場合）
+elif shadow_data['multi'] and shadow_data['0.85'] > 0:
+    st.subheader("🔮 Shadow Evaluation 比較")
     # 0.7と0.85の比較チャート
     shadow_comparison_data = {
         'Threshold': ['0.7 (Current)', '0.85 (Phase 4)'],
@@ -403,15 +547,40 @@ if shadow_data['multi'] and shadow_data['0.85'] > 0:
     
     st.plotly_chart(fig_shadow, use_container_width=True)
     
-    # Phase 4昇格条件表示
+    # Phase 4昇格条件表示（強化版）
+    phase4_gap = max(0, 85.0 - shadow_data['0.85']) if shadow_data['0.85'] > 0 else 85.0
+    latest_new_fail_ratio = latest_new_fail_ratio if not weekly_df.empty else 0.0
+    new_fail_ok = latest_new_fail_ratio <= 70.0
+    
     st.info(f"""
     **Phase 4 昇格条件**:
-    - Predicted@0.85 ≥ 85% (現在: {shadow_data['0.85']:.1f}%)
+    - Predicted@0.85 ≥ 85% (現在: {shadow_data['0.85']:.1f}%, Gap: {phase4_gap:.1f}pp)
     - 2週連続で条件達成
-    - new_fail_ratio ≤ 70%
+    - new_fail_ratio ≤ 70% (現在: {latest_new_fail_ratio:.1f}% {'✅' if new_fail_ok else '❌'})
     
-    **現在の状況**: {'✅ 条件達成' if shadow_data['0.85'] >= 85 else '🔄 改善継続中'}
+    **現在の状況**: {'✅ 条件達成' if shadow_data['0.85'] >= 85 and new_fail_ok else '🔄 改善継続中'}
+    
+    **残り改善項目**:
+    {f'- Predicted@0.85を{phase4_gap:.1f}pp向上' if phase4_gap > 0 else ''}
+    {f'- 新規失敗率を{latest_new_fail_ratio - 70:.1f}pp削減' if not new_fail_ok else ''}
     """)
+    
+    # Phase4 Gapカード表示
+    st.subheader("📊 Phase 4 Gap Analysis")
+    gap_col1, gap_col2, gap_col3 = st.columns(3)
+    
+    with gap_col1:
+        st.metric("Phase 4 Gap", f"{phase4_gap:.1f}pp", 
+                 delta=f"目標まで{phase4_gap:.1f}pp" if phase4_gap > 0 else "目標達成")
+    
+    with gap_col2:
+        # Flaky率とNew失敗率のサブ指標
+        st.metric("Flaky率", f"{flaky_rate:.1f}%", 
+                 delta="要改善" if flaky_rate > 15 else "良好")
+    
+    with gap_col3:
+        st.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%",
+                 delta="良好" if new_fail_ok else "要改善")
 else:
     st.info("📊 Phase 4 Shadow Evaluation データを取得中...")
     st.code("python tests/golden/runner.py --threshold-shadow '0.7,0.85' --report out/shadow_multi.json")

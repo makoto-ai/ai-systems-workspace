@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-29T23:01:37.258332",
-  "session_purpose": "post-commit",
+  "timestamp": "2025-08-30T00:09:22.423961",
+  "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "7e117f960219f653851db6b693fce9aee0cccb7b",
-    "branch": "master",
-    "uncommitted_changes": 7,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250829_224251.json\n?? memory/snapshots/mcp_snapshot_20250829_224324.json\n?? memory/snapshots/mcp_snapshot_20250829_224419.json\n?? memory/snapshots/mcp_snapshot_20250829_225219.json\n?? out/shadow_0_7_optimized.json"
+    "commit_hash": "2df6d6c74671f3646091e3fdbc3e251400ed5f2c",
+    "branch": "canary/threshold-0.72",
+    "uncommitted_changes": 37,
+    "status_details": "M  .github/workflows/canary-auto-promote.yml\nA  .github/workflows/pr-quality-check.yml\nA  .github/workflows/staged-promotion.yml\nM  dashboard/golden_kpi.py\nM  experiments/prompt_optimization.py\nMM memory/cursor_state.json\nMM memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250829_230406.json\nA  memory/snapshots/mcp_snapshot_20250829_231410.json\nA  memory/snapshots/mcp_snapshot_20250829_233412.json\nM  out/new_fails.json\nA  out/norm_rule_candidates_phase4.yaml\nA  out/shadow_0_85_baseline_confirmed.json\nA  out/shadow_0_85_baseline_restored.json\nA  out/shadow_0_85_pr1.json\nA  out/shadow_0_85_pr2.json\nA  out/shadow_0_85_pr3.json\nA  out/shadow_0_85_weighted.json\nA  out/shadow_after_norm.json\nA  out/shadow_compound.json\nAM out/shadow_grid.json\nA  out/shadow_multi.json\nA  out/shadow_reverted.json\nA  out/staged_decision.json\nA  scripts/create_canary_pr.py\nA  scripts/decide_abort.py\nM  scripts/notify_results.py\nA  scripts/staged_decider.py\nM  tests/golden/config.yml\nM  tests/golden/evaluator.py\nA  tests/golden/run_golden_enhanced.py\nA  tests/golden/run_golden_pr2.py\nM  tests/golden/runner.py\nA  tests/golden/runner_pr2.py\nA  tests/golden/weights_phase4.yaml\nA  tests/golden/weights_phase4_enhanced.yaml\n?? memory/snapshots/mcp_snapshot_20250830_000418.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 58,
-      "total_files": 116
+      "python_files": 61,
+      "total_files": 119
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25920,
+    "python_files_count": 25159,
     "cursor_configs_count": 13
   },
-  "state_hash": "d7b7c207d499953bdd6f260972239d13"
+  "state_hash": "4ca39c25a8cc5bdfef1784095c3e0abb"
 }
