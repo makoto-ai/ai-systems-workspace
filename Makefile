@@ -27,7 +27,7 @@ comment:
 
 abort:
 	. out/metrics.env && PASS=$$PASS NEW=$$NEW FLAKY=$$FLAKY python scripts/quality/abort_if_needed.py
-.PHONY: run-log tag pareto pareto-comment learn-loop
+.PHONY: run-log tag pareto pareto-comment learn-loop auto-improve quality-cycle regression-check learning-report
 run-log:
 	gh run view $$(gh run list --limit 1 --json databaseId --jq '.[0].databaseId') --log > out/latest.log
 tag:
@@ -37,3 +37,25 @@ pareto:
 pareto-comment:
 	scripts/quality/comment_pareto.sh 10
 learn-loop: run-log tag pareto pareto-comment
+
+# 高品質自動改善システム
+auto-improve: learn-loop
+	@echo "🚀 自動品質改善システム開始"
+	python scripts/quality/regression_detector.py baseline before_fix
+	python scripts/quality/auto_fix_generator.py
+	python scripts/quality/regression_detector.py detect after_fix
+
+# 完全品質サイクル（分析→修正→検証→学習）
+quality-cycle:
+	@echo "🔄 完全品質改善サイクル実行"
+	$(MAKE) auto-improve
+	python scripts/quality/continuous_learner.py
+	@echo "✅ 品質改善サイクル完了"
+
+# 回帰チェックのみ
+regression-check:
+	python scripts/quality/regression_detector.py detect
+
+# 学習レポート表示
+learning-report:
+	python scripts/quality/continuous_learner.py

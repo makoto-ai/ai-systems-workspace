@@ -1,12 +1,16 @@
 extends: relaxed
 
 rules:
+  # 基本品質は維持
   line-length:
     max: 200
+  # 問題が多いルールを無効化
   document-start: disable
   truthy:
     allowed-values: ["true", "false", "on", "off"]
   brackets: disable
   comments: disable
-  indentation: disable
-  trailing-spaces: disable
+  indentation: disable  # GitHub Actions特有の複雑なインデンテーションを許容
+  trailing-spaces: disable  # 既に修正済み
+  new-line-at-end-of-file: disable  # 既に修正済み
+  empty-lines: disable

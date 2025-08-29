@@ -1,19 +1,19 @@
 {
-  "total": 2,
+  "total": 19,
   "counts": {
-    "TOKENIZE.hyphen_longdash": 2
+    "YAML.wrong_indentation": 19
   },
   "pareto": [
     [
-      "TOKENIZE.hyphen_longdash",
-      2,
+      "YAML.wrong_indentation",
+      19,
       100.0
     ]
   ],
   "examples": {
-    "TOKENIZE.hyphen_longdash": [
-      "pre-commit\tInstall dependencies\t2025-08-29T22:10:25.6318077Z An unexpected error has occurred: CalledProcessError: command: ('/usr/bin/git', 'fetch', 'origin', '--tags')",
-      "pre-commit\tInstall dependencies\t2025-08-29T22:10:25.6516959Z ##[error]Process completed with exit code 3."
+    "YAML.wrong_indentation": [
+      "16:5      error    wrong indentation: expected 6 but found 4  (indentation)",
+      "22:5      error    wrong indentation: expected 6 but found 4  (indentation)"
     ]
   }
 }

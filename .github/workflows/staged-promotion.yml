@@ -35,7 +35,7 @@ jobs:
 
     - name: Setup environment
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
 
     - name: Run Multi-Shadow Grid Evaluation
       id: shadow_grid
@@ -83,10 +83,10 @@ jobs:
         print(f'{promotion[\"promotion_step\"]:.2f}')
         ")
 
-        echo "next_recommended=${NEXT_RECOMMENDED}" >> $GITHUB_OUTPUT
-        echo "current_threshold=${CURRENT_THRESHOLD}" >> $GITHUB_OUTPUT
-        echo "promotion_ready=${PROMOTION_READY}" >> $GITHUB_OUTPUT
-        echo "promotion_step=${PROMOTION_STEP}" >> $GITHUB_OUTPUT
+        echo "next_recommended=${NEXT_RECOMMENDED}" >> "$GITHUB_OUTPUT"
+        echo "current_threshold=${CURRENT_THRESHOLD}" >> "$GITHUB_OUTPUT"
+        echo "promotion_ready=${PROMOTION_READY}" >> "$GITHUB_OUTPUT"
+        echo "promotion_step=${PROMOTION_STEP}" >> "$GITHUB_OUTPUT"
 
         echo "📊 Current: ${CURRENT_THRESHOLD}"
         echo "🎯 Next Recommended: ${NEXT_RECOMMENDED}"
@@ -105,11 +105,11 @@ jobs:
 
         if [ -f "$WEEK_AGO_FILE" ]; then
           echo "✅ 7日前も同じしきい値で昇格準備完了"
-          echo "consecutive_achievement=true" >> $GITHUB_OUTPUT
+          echo "consecutive_achievement=true" >> "$GITHUB_OUTPUT"
           echo "🎉 2連続で昇格条件達成！"
         else
           echo "🔄 今回が初回準備完了"
-          echo "consecutive_achievement=false" >> $GITHUB_OUTPUT
+          echo "consecutive_achievement=false" >> "$GITHUB_OUTPUT"
         fi
 
         # 今回の達成をマーカーファイルに記録
@@ -125,10 +125,10 @@ jobs:
         # 昇格ステップが安全範囲内かチェック（0.02〜0.05）
         if (( $(echo "$PROMOTION_STEP >= 0.02 && $PROMOTION_STEP <= 0.05" | bc -l) )); then
           echo "✅ 昇格ステップが安全範囲内: ${PROMOTION_STEP}"
-          echo "safe_promotion_step=true" >> $GITHUB_OUTPUT
+          echo "safe_promotion_step=true" >> "$GITHUB_OUTPUT"
         else
           echo "⚠️ 昇格ステップが範囲外: ${PROMOTION_STEP} (0.02-0.05 推奨)"
-          echo "safe_promotion_step=false" >> $GITHUB_OUTPUT
+          echo "safe_promotion_step=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Create Staged Promotion PR

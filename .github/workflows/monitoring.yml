@@ -44,7 +44,7 @@ jobs:
     - name: API統合テスト実行
       run: |
         echo "🧪 API統合テスト実行..."
-        if [-f run_accurate_test.py]; then
+        if [ -f run_accurate_test.py ]; then
           python run_accurate_test.py
         else
           echo "run_accurate_test.py が見つからないためスキップ"

@@ -35,8 +35,8 @@ jobs:
 
     - name: Setup environment
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
-        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> "$GITHUB_ENV"
 
     - name: Run Shadow Evaluation (Phase4準備チェック)
       id: shadow_eval
@@ -62,7 +62,7 @@ jobs:
         print(f'{weighted_rate:.1f}')
         ")
 
-        echo "predicted_at_85=${PREDICTED_AT_85}" >> $GITHUB_OUTPUT
+        echo "predicted_at_85=${PREDICTED_AT_85}" >> "$GITHUB_OUTPUT"
         echo "📊 Predicted@0.85: ${PREDICTED_AT_85}%"
 
     - name: Check Phase4 準備状況
@@ -72,11 +72,11 @@ jobs:
 
         # Phase4条件チェック
         if (( $(echo "$PREDICTED_AT_85 >= 85" | bc -l) )); then
-          echo "ready_for_phase4=true" >> $GITHUB_OUTPUT
+          echo "ready_for_phase4=true" >> "$GITHUB_OUTPUT"
           echo "✅ Phase 4準備完了: Predicted@0.85=${PREDICTED_AT_85}%"
         else
           GAP=$(echo "85 - $PREDICTED_AT_85" | bc -l)
-          echo "ready_for_phase4=false" >> $GITHUB_OUTPUT
+          echo "ready_for_phase4=false" >> "$GITHUB_OUTPUT"
           echo "🔄 Phase 4準備中: Gap=${GAP}pp"
         fi
 
@@ -94,14 +94,14 @@ jobs:
         if [ -f "$WEEK_1_FILE" ]; then
           echo "✅ 1週間前も条件達成"
           if [ -f "$WEEK_2_FILE" ]; then
-            echo "consecutive_weeks=2" >> $GITHUB_OUTPUT
+            echo "consecutive_weeks=2" >> "$GITHUB_OUTPUT"
             echo "🎉 2週連続でPhase4条件達成！"
           else
-            echo "consecutive_weeks=1" >> $GITHUB_OUTPUT
+            echo "consecutive_weeks=1" >> "$GITHUB_OUTPUT"
             echo "📅 1週連続（2週目待ち）"
           fi
         else
-          echo "consecutive_weeks=0" >> $GITHUB_OUTPUT
+          echo "consecutive_weeks=0" >> "$GITHUB_OUTPUT"
           echo "🔄 今週が初回達成"
         fi
 
@@ -114,7 +114,7 @@ jobs:
       if: steps.phase4_check.outputs.ready_for_phase4 == 'true' && steps.history_check.outputs.consecutive_weeks == '2'
       run: |
         echo "🚀 Phase 4自動昇格条件達成！"
-        echo "auto_promote=true" >> $GITHUB_OUTPUT
+        echo "auto_promote=true" >> "$GITHUB_OUTPUT"
 
         # 昇格通知データを準備
         echo '{

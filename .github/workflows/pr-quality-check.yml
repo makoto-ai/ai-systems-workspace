@@ -37,7 +37,7 @@ jobs:
 
     - name: Setup environment
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
 
     - name: Run PR Branch Shadow Evaluation
       id: pr_eval
@@ -80,9 +80,9 @@ jobs:
         print(f'{rate:.1f}')
         ")
 
-        echo "pr_pred_70=${PR_PRED_70}" >> $GITHUB_OUTPUT
-        echo "pr_pred_85=${PR_PRED_85}" >> $GITHUB_OUTPUT
-        echo "pr_flaky_rate=${PR_FLAKY_RATE}" >> $GITHUB_OUTPUT
+        echo "pr_pred_70=${PR_PRED_70}" >> "$GITHUB_OUTPUT"
+        echo "pr_pred_85=${PR_PRED_85}" >> "$GITHUB_OUTPUT"
+        echo "pr_flaky_rate=${PR_FLAKY_RATE}" >> "$GITHUB_OUTPUT"
 
         echo "📊 PR結果: Pred@0.70=${PR_PRED_70}%, Pred@0.85=${PR_PRED_85}%, Flaky=${PR_FLAKY_RATE}%"
 
@@ -138,9 +138,9 @@ jobs:
         print(f'{rate:.1f}')
         ")
 
-        echo "baseline_pred_70=${BASELINE_PRED_70}" >> $GITHUB_OUTPUT
-        echo "baseline_pred_85=${BASELINE_PRED_85}" >> $GITHUB_OUTPUT
-        echo "baseline_flaky_rate=${BASELINE_FLAKY_RATE}" >> $GITHUB_OUTPUT
+        echo "baseline_pred_70=${BASELINE_PRED_70}" >> "$GITHUB_OUTPUT"
+        echo "baseline_pred_85=${BASELINE_PRED_85}" >> "$GITHUB_OUTPUT"
+        echo "baseline_flaky_rate=${BASELINE_FLAKY_RATE}" >> "$GITHUB_OUTPUT"
 
         echo "📊 ベースライン: Pred@0.70=${BASELINE_PRED_70}%, Pred@0.85=${BASELINE_PRED_85}%, Flaky=${BASELINE_FLAKY_RATE}%"
 
@@ -193,13 +193,13 @@ jobs:
         fi
 
         # 結果出力
-        echo "regression_detected=${REGRESSION_DETECTED}" >> $GITHUB_OUTPUT
-        echo "diff_70=${DIFF_70}" >> $GITHUB_OUTPUT
-        echo "diff_85=${DIFF_85}" >> $GITHUB_OUTPUT
-        echo "diff_flaky=${DIFF_FLAKY}" >> $GITHUB_OUTPUT
+        echo "regression_detected=${REGRESSION_DETECTED}" >> "$GITHUB_OUTPUT"
+        echo "diff_70=${DIFF_70}" >> "$GITHUB_OUTPUT"
+        echo "diff_85=${DIFF_85}" >> "$GITHUB_OUTPUT"
+        echo "diff_flaky=${DIFF_FLAKY}" >> "$GITHUB_OUTPUT"
 
         # 回帰理由をJSONで保存
-        if [ "$REGRESSION_DETECTED" = true ]; then
+        if [ "$REGRESSION_DETECTED" = "true" ]; then
           printf '%s\n' "${REGRESSION_REASONS[@]}" > regression_reasons.txt
           echo "❌ 回帰検出！理由:"
           cat regression_reasons.txt | sed 's/^/  - /'
@@ -215,11 +215,11 @@ jobs:
         REGRESSION=${{ steps.regression_check.outputs.regression_detected }}
 
         if [ "$REGRESSION" = "true" ]; then
-          echo "quality_gate_passed=false" >> $GITHUB_OUTPUT
+          echo "quality_gate_passed=false" >> "$GITHUB_OUTPUT"
           echo "❌ 品質ゲート: FAILED"
           exit 1
         else
-          echo "quality_gate_passed=true" >> $GITHUB_OUTPUT
+          echo "quality_gate_passed=true" >> "$GITHUB_OUTPUT"
           echo "✅ 品質ゲート: PASSED"
         fi
 
@@ -354,7 +354,7 @@ jobs:
 
     - name: Setup environment
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
 
     - name: Run Shadow Grid Evaluation
       run: |
@@ -383,8 +383,8 @@ jobs:
           --hard-max-new 0.70
 
         # 結果を出力に保存
-        echo "abort=$ABORT" >> $GITHUB_OUTPUT
-        echo "reason=$ABORT_REASON" >> $GITHUB_OUTPUT
+        echo "abort=$ABORT" >> "$GITHUB_OUTPUT"
+        echo "reason=$ABORT_REASON" >> "$GITHUB_OUTPUT"
 
     - name: Close PR if Abort
       if: |
