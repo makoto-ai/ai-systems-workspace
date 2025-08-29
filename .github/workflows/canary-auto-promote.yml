@@ -240,13 +240,10 @@ jobs:
       if: always()
       continue-on-error: true
       run: |
-        SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
-        if [ -z "$SLACK_WEBHOOK_URL" ]; then
-          echo "⏭️ Slack通知スキップ (SLACK_WEBHOOK_URL未設定)"
-          exit 0
-        fi
-        echo "📢 Sending notification..."
-        python scripts/notify_results.py
+        # Slack通知は手動実行をガイド
+        echo "⏭️ Slack通知は手動で実行してください"
+        echo "💡 使用方法: python scripts/notify_results.py"
+        echo "🔧 SLACK_WEBHOOK_URL をrepository secretsに設定すると自動化できます"
 
     - name: アーティファクト保存
       if: always()

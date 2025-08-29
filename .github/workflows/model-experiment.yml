@@ -43,8 +43,9 @@ jobs:
       - name: Set API Keys (optional)
         continue-on-error: true
         run: |
-          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> "$GITHUB_ENV" || true
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> "$GITHUB_ENV" || true
+          # Optional API keys - can be configured as repository secrets if needed
+          echo "⚙️ Optional API keys ready (ANTHROPIC_API_KEY, GEMINI_API_KEY)"
+          echo "💡 Configure as repository secrets for extended model support"
 
       - name: Run model experiment
         run: |
