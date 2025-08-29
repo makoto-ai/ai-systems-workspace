@@ -10,7 +10,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Any
 
 class RootCause(Enum):
     """失敗理由の分類"""
@@ -284,16 +284,145 @@ def update_observation_log_with_analysis():
             percentage = (count / len(all_failures)) * 100
             print(f"  - {cause}: {count}件 ({percentage:.1f}%)")
 
+def export_new_failures(output_path: str):
+    """新規失敗ケースを抽出してJSONで出力"""
+    logs_dir = Path("tests/golden/logs")
+    if not logs_dir.exists():
+        print("❌ ログディレクトリが見つかりません")
+        return
+    
+    # 最新2つのログファイルから新規失敗を抽出
+    log_files = sorted(logs_dir.glob("*.jsonl"), key=lambda x: x.stat().st_mtime, reverse=True)[:2]
+    
+    new_failures = []
+    failure_history = build_failure_history()
+    
+    for log_file in log_files:
+        date_str = log_file.stem.split('_')[0]
+        
+        with open(log_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        data = json.loads(line)
+                        if not data.get('passed', True):  # 失敗ケース
+                            case_id = data.get('id', '')
+                            reference = data.get('reference', '')
+                            prediction = data.get('prediction', '')
+                            score = data.get('score', 0.0)
+                            
+                            # Freshness判定
+                            freshness = infer_freshness(case_id, date_str, failure_history)
+                            
+                            if freshness == Freshness.NEW:
+                                # Root Cause分析
+                                root_cause = analyze_failure_root_cause(case_id, reference, prediction, score)
+                                
+                                new_failures.append({
+                                    "case_id": case_id,
+                                    "reference": reference,
+                                    "prediction": prediction,
+                                    "score": score,
+                                    "root_cause": root_cause.value,
+                                    "date": date_str,
+                                    "log_file": log_file.name,
+                                    "diff_analysis": analyze_token_diff(reference, prediction)
+                                })
+                    except json.JSONDecodeError:
+                        continue
+    
+    # 結果保存
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    export_data = {
+        "export_timestamp": datetime.now().isoformat(),
+        "total_new_failures": len(new_failures),
+        "new_failures": new_failures
+    }
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(export_data, f, ensure_ascii=False, indent=2)
+    
+    print(f"✅ 新規失敗 {len(new_failures)} 件を出力: {output_file}")
+    
+    # 統計表示
+    root_cause_counts = {}
+    for failure in new_failures:
+        cause = failure['root_cause']
+        root_cause_counts[cause] = root_cause_counts.get(cause, 0) + 1
+    
+    print(f"📊 Root Cause分布:")
+    for cause, count in sorted(root_cause_counts.items(), key=lambda x: x[1], reverse=True):
+        percentage = (count / len(new_failures)) * 100 if new_failures else 0
+        print(f"  - {cause}: {count}件 ({percentage:.1f}%)")
+
+def analyze_token_diff(reference: str, prediction: str) -> Dict[str, Any]:
+    """参照と予測の差分を詳細分析"""
+    ref_tokens = set(reference.split()) if reference else set()
+    pred_tokens = set(prediction.split()) if prediction else set()
+    
+    missing_tokens = ref_tokens - pred_tokens
+    extra_tokens = pred_tokens - ref_tokens
+    common_tokens = ref_tokens & pred_tokens
+    
+    # 類似トークンペアを検出
+    similar_pairs = []
+    for missing in missing_tokens:
+        for extra in extra_tokens:
+            if _is_potentially_similar(missing, extra):
+                similar_pairs.append({"missing": missing, "extra": extra, "similarity": _calculate_similarity(missing, extra)})
+    
+    return {
+        "missing_tokens": list(missing_tokens),
+        "extra_tokens": list(extra_tokens),
+        "common_tokens": list(common_tokens),
+        "similar_pairs": similar_pairs,
+        "jaccard_similarity": len(common_tokens) / len(ref_tokens | pred_tokens) if (ref_tokens | pred_tokens) else 0.0
+    }
+
+def _is_potentially_similar(token1: str, token2: str) -> bool:
+    """トークンが類似している可能性をチェック"""
+    # 長さが大きく異なる場合は除外
+    if abs(len(token1) - len(token2)) > max(len(token1), len(token2)) * 0.5:
+        return False
+    
+    # 部分文字列チェック
+    if token1 in token2 or token2 in token1:
+        return True
+    
+    # 編集距離チェック（簡易）
+    return _calculate_similarity(token1, token2) > 0.6
+
+def _calculate_similarity(token1: str, token2: str) -> float:
+    """簡易類似度計算（Jaccard）"""
+    set1 = set(token1.lower())
+    set2 = set(token2.lower())
+    
+    if not set1 and not set2:
+        return 1.0
+    if not set1 or not set2:
+        return 0.0
+    
+    intersection = len(set1 & set2)
+    union = len(set1 | set2)
+    
+    return intersection / union
+
 def main():
     """メイン関数（CLI対応）"""
     parser = argparse.ArgumentParser(description="Golden Test Root Cause Analyzer")
     parser.add_argument("--update-freshness", action="store_true", 
                        help="観測ログにfreshnessタグを追加")
+    parser.add_argument("--export-new-fails", type=str,
+                       help="新規失敗ケースをJSONで出力（例: out/new_fails.json）")
     
     args = parser.parse_args()
     
     if args.update_freshness:
         apply_freshness_to_log()
+    elif args.export_new_fails:
+        export_new_failures(args.export_new_fails)
     else:
         update_observation_log_with_analysis()
 
