@@ -1,0 +1,36 @@
+{
+  "experiment": {
+    "timestamp": "2025-08-29T22:14:05.744763",
+    "root_cause_filter": "MODEL",
+    "total_cases": 1,
+    "models_tested": 1
+  },
+  "results": {
+    "groq": {
+      "model": "groq",
+      "cases": [
+        {
+          "case_id": "sample_007",
+          "score": 0.0,
+          "passed": false,
+          "time_ms": 0.0040531158447265625,
+          "reference": "分析ダッシュボード メトリクス 可視化 監視",
+          "prediction": ""
+        }
+      ],
+      "pass_at_1": 0.0,
+      "avg_score": 0.0,
+      "total_time": 0.0006067752838134766,
+      "api_calls": 1
+    }
+  },
+  "cost_estimates_usd": {
+    "groq": 1e-05
+  },
+  "summary": {
+    "best_model": "groq",
+    "best_pass_rate": 0.0,
+    "fastest_model": "groq",
+    "cheapest_model": "groq"
+  }
+}

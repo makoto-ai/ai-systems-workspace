@@ -154,6 +154,20 @@ def calculate_flaky_rate(df):
     flaky_cases = failed_cases[failed_cases['score'] >= 0.7]
     return len(flaky_cases) / len(failed_cases) * 100
 
+def load_shadow_evaluation():
+    """Shadow Evaluation @0.7の結果を読み込み"""
+    shadow_file = Path("out/shadow_0_7.json")
+    if shadow_file.exists():
+        try:
+            with open(shadow_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data["shadow_evaluation"]["shadow_pass_rate"]
+        except Exception as e:
+            st.error(f"Shadow evaluation読み込みエラー: {e}")
+            return 0.0
+    else:
+        return 0.0
+
 def calculate_model_efficiency(df):
     """モデル別効率性の計算（合格1件あたりの試行回数）"""
     # 現在のデータ構造では試行回数の情報がないため、
@@ -216,7 +230,7 @@ else:
     df_filtered = df
 
 # メトリクス表示
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
 if not df_filtered.empty:
     total_cases = len(df_filtered)
@@ -231,12 +245,16 @@ if not df_filtered.empty:
     else:
         latest_new_fail_ratio = 0.0
     
+    # Shadow Evaluation @0.7の読み込み
+    shadow_pass_rate = load_shadow_evaluation()
+    
     col1.metric("総テスト数", total_cases)
     col2.metric("合格数", passed_cases)
     col3.metric("合格率", f"{pass_rate:.1f}%")
     col4.metric("平均スコア", f"{avg_score:.3f}")
     col5.metric("Flaky率", f"{flaky_rate:.1f}%")
     col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
+    col7.metric("Predicted@0.7", f"{shadow_pass_rate:.1f}%")
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")

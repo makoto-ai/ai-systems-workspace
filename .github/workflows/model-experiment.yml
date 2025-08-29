@@ -1,0 +1,89 @@
+name: Model Experiment
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_experiment:
+        description: 'Run model experiment'
+        type: boolean
+        default: false
+      root_cause:
+        description: 'Target root cause (MODEL, TOKENIZE, etc.)'
+        type: string
+        default: 'MODEL'
+      models:
+        description: 'Models to compare (space-separated: groq openai anthropic gemini)'
+        type: string
+        default: 'groq openai'
+
+jobs:
+  model_exp:
+    if: ${{ github.event.inputs.run_experiment == 'true' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run model experiment
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "🧪 Running model experiment..."
+          echo "Target root cause: ${{ github.event.inputs.root_cause }}"
+          echo "Models: ${{ github.event.inputs.models }}"
+          
+          PYTHONPATH=$PWD python experiments/model_swap.py \
+            --cases "${{ github.event.inputs.root_cause }}" \
+            --models ${{ github.event.inputs.models }} \
+            --out "out/model_exp_${{ github.run_number }}.json"
+      
+      - name: Upload experiment results
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-experiment-results-${{ github.run_number }}
+          path: out/model_exp_*.json
+          retention-days: 30
+      
+      - name: Create experiment summary
+        run: |
+          if [ -f "out/model_exp_${{ github.run_number }}.json" ]; then
+            echo "📊 Experiment completed successfully"
+            echo "Results saved to artifacts"
+            
+            # 簡易サマリー表示
+            python3 << 'EOF'
+          import json
+          import sys
+          
+          try:
+              with open("out/model_exp_${{ github.run_number }}.json", 'r') as f:
+                  data = json.load(f)
+              
+              summary = data.get("summary", {})
+              print(f"🏆 Best Model: {summary.get('best_model', 'N/A')}")
+              print(f"📈 Best Pass Rate: {summary.get('best_pass_rate', 0):.1%}")
+              print(f"⚡ Fastest Model: {summary.get('fastest_model', 'N/A')}")
+              print(f"💰 Cheapest Model: {summary.get('cheapest_model', 'N/A')}")
+              
+          except Exception as e:
+              print(f"❌ Error reading results: {e}")
+              sys.exit(1)
+          EOF
+          else
+            echo "❌ Experiment failed - no results file found"
+            exit 1
+          fi

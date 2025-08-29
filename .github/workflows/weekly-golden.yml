@@ -4,7 +4,12 @@ on:
   schedule:
     # 毎週金曜日 09:00 JST (00:00 UTC)
     - cron: '0 0 * * 5'
-  workflow_dispatch: # 手動実行も可能
+  workflow_dispatch:
+    inputs:
+      canary:
+        description: 'Canary week mode (enhanced monitoring)'
+        type: boolean
+        default: false # 手動実行も可能
 
 jobs:
   weekly-golden-check:
