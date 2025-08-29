@@ -65,11 +65,33 @@ def load_observation_log():
         
         for match in matches:
             date_str, passed, total, percentage = match
+            
+            # 該当セクションからfreshness情報を抽出
+            section_pattern = rf'## {re.escape(date_str)} - 週次観測(.*?)(?=## |\Z)'
+            section_match = re.search(section_pattern, content, re.DOTALL)
+            
+            new_failures = 0
+            total_failures = 0
+            
+            if section_match:
+                section_content = section_match.group(1)
+                # 失敗分析セクションを検索
+                failure_matches = re.findall(r'- \*\*([^*]+)\*\*: `root_cause:([^`]+)`(?:\s*\|\s*`freshness:([^`]+)`)?', section_content)
+                for case_id, root_cause, freshness in failure_matches:
+                    total_failures += 1
+                    if freshness == "NEW":
+                        new_failures += 1
+            
+            new_fail_ratio = new_failures / max(total_failures, 1) if total_failures > 0 else 0.0
+            
             weekly_data.append({
                 'date': datetime.strptime(date_str, "%Y-%m-%d").date(),
                 'passed': int(passed),
                 'total': int(total),
-                'percentage': int(percentage)
+                'pass_rate': int(percentage),
+                'total_failures': total_failures,
+                'new_failures': new_failures,
+                'new_fail_ratio': new_fail_ratio
             })
     
     except Exception as e:
@@ -78,7 +100,7 @@ def load_observation_log():
     return pd.DataFrame(weekly_data)
 
 def analyze_failure_reasons(df):
-    """失敗理由の分析"""
+    """失敗理由の分析（Root Cause分析含む）"""
     failed_cases = df[df['passed'] == False]
     if failed_cases.empty:
         return pd.DataFrame()
@@ -91,16 +113,60 @@ def analyze_failure_reasons(df):
         missing_words = ref_words - pred_words
         extra_words = pred_words - ref_words
         
+        # Root Cause分析（簡易版）
+        root_cause = analyze_root_cause(case['score'], missing_words, pred_words)
+        
         failure_analysis.append({
             'case_id': case['id'],
             'score': case['score'],
             'missing_words': ', '.join(missing_words) if missing_words else 'なし',
             'extra_words': ', '.join(extra_words) if extra_words else 'なし',
             'missing_count': len(missing_words),
+            'root_cause': root_cause,
             'date': case.get('date', 'Unknown')
         })
     
     return pd.DataFrame(failure_analysis)
+
+def analyze_root_cause(score, missing_words, pred_words):
+    """Root Cause簡易分析"""
+    if not pred_words:
+        return "INFRA"
+    elif score == 0:
+        return "MODEL"
+    elif score < 0.3 and missing_words:
+        return "NORMALIZE"
+    elif score < 0.7:
+        return "TOKENIZE"
+    else:
+        return "FLAKY"
+
+def calculate_flaky_rate(df):
+    """Flaky率の計算"""
+    if df.empty:
+        return 0.0
+    
+    failed_cases = df[df['passed'] == False]
+    if failed_cases.empty:
+        return 0.0
+    
+    # スコア0.7以上の失敗をFlakyと判定
+    flaky_cases = failed_cases[failed_cases['score'] >= 0.7]
+    return len(flaky_cases) / len(failed_cases) * 100
+
+def load_shadow_evaluation():
+    """Shadow Evaluation @0.7の結果を読み込み"""
+    shadow_file = Path("out/shadow_0_7.json")
+    if shadow_file.exists():
+        try:
+            with open(shadow_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data["shadow_evaluation"]["shadow_pass_rate"]
+        except Exception as e:
+            st.error(f"Shadow evaluation読み込みエラー: {e}")
+            return 0.0
+    else:
+        return 0.0
 
 def calculate_model_efficiency(df):
     """モデル別効率性の計算（合格1件あたりの試行回数）"""
@@ -164,18 +230,31 @@ else:
     df_filtered = df
 
 # メトリクス表示
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
 if not df_filtered.empty:
     total_cases = len(df_filtered)
     passed_cases = len(df_filtered[df_filtered['passed'] == True])
     pass_rate = passed_cases / total_cases * 100 if total_cases > 0 else 0
     avg_score = df_filtered['score'].mean()
+    flaky_rate = calculate_flaky_rate(df_filtered)
+    
+    # New Fail Ratio計算（週次データから）
+    if not weekly_df.empty and 'new_fail_ratio' in weekly_df.columns:
+        latest_new_fail_ratio = weekly_df.iloc[-1]['new_fail_ratio'] * 100
+    else:
+        latest_new_fail_ratio = 0.0
+    
+    # Shadow Evaluation @0.7の読み込み
+    shadow_pass_rate = load_shadow_evaluation()
     
     col1.metric("総テスト数", total_cases)
     col2.metric("合格数", passed_cases)
     col3.metric("合格率", f"{pass_rate:.1f}%")
     col4.metric("平均スコア", f"{avg_score:.3f}")
+    col5.metric("Flaky率", f"{flaky_rate:.1f}%")
+    col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
+    col7.metric("Predicted@0.7", f"{shadow_pass_rate:.1f}%")
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")
@@ -184,9 +263,9 @@ if not weekly_df.empty:
     fig_weekly = px.line(
         weekly_df, 
         x='date', 
-        y='percentage',
+        y='pass_rate',
         title='週次合格率の推移',
-        labels={'percentage': '合格率 (%)', 'date': '日付'},
+        labels={'pass_rate': '合格率 (%)', 'date': '日付'},
         markers=True
     )
     
@@ -198,6 +277,24 @@ if not weekly_df.empty:
     
     fig_weekly.update_layout(height=400)
     st.plotly_chart(fig_weekly, use_container_width=True)
+    
+    # 新規失敗率トレンド
+    if 'new_fail_ratio' in weekly_df.columns:
+        st.subheader("📊 新規失敗率トレンド")
+        fig_new_fail = px.line(
+            weekly_df,
+            x='date',
+            y='new_fail_ratio',
+            title='週次新規失敗率の推移',
+            labels={'new_fail_ratio': '新規失敗率', 'date': '日付'},
+            markers=True
+        )
+        fig_new_fail.update_traces(line_color='red')
+        fig_new_fail.update_layout(
+            height=300,
+            yaxis=dict(tickformat=".1%")
+        )
+        st.plotly_chart(fig_new_fail, use_container_width=True)
 else:
     st.info("週次データがありません。観測ログを確認してください。")
 
@@ -208,7 +305,24 @@ if not df_filtered.empty:
     failure_df = analyze_failure_reasons(df_filtered)
     
     if not failure_df.empty:
+        # Root Cause Top3の表示
+        st.subheader("📊 Root Cause Top3")
+        root_cause_counts = failure_df['root_cause'].value_counts().head(3)
+        
+        if not root_cause_counts.empty:
+            col1, col2, col3 = st.columns(3)
+            
+            for i, (cause, count) in enumerate(root_cause_counts.items()):
+                percentage = (count / len(failure_df)) * 100
+                with [col1, col2, col3][i]:
+                    st.metric(
+                        f"#{i+1} {cause}",
+                        f"{count}件",
+                        f"{percentage:.1f}%"
+                    )
+        
         # 不足キーワードの頻度分析
+        st.subheader("🔤 不足キーワード上位10")
         missing_words_flat = []
         for words_str in failure_df['missing_words']:
             if words_str != 'なし':
@@ -221,7 +335,7 @@ if not df_filtered.empty:
                 x=missing_freq.values,
                 y=missing_freq.index,
                 orientation='h',
-                title='不足キーワード上位10',
+                title='不足キーワード頻度',
                 labels={'x': '出現回数', 'y': 'キーワード'}
             )
             fig_failures.update_layout(height=400)

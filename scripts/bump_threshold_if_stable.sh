@@ -23,10 +23,11 @@ if [ ! -f "$LOG_FILE" ]; then
     exit 1
 fi
 
-# Python スクリプトで詳細な判定を実行
+# Python スクリプトで詳細な判定を実行（Phase 3: 二重ゲート対応）
 python3 << 'EOF'
 import yaml
 import re
+import json
 from datetime import datetime
 from pathlib import Path
 

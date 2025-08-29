@@ -34,3 +34,19 @@ repos:
     rev: v2.7.2
     hooks:
       - id: pip-audit
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: ^\.secrets\.baseline$
+
+  - repo: local
+    hooks:
+      - id: pytest-fast
+        name: pytest (fast)
+        entry: bash -c 'source .venv/bin/activate && pytest -q -m "not slow"'
+        language: system
+        types: [python]
+        pass_filenames: false

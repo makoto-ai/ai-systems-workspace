@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-08-29T21:42:06.107301",
+  "timestamp": "2025-08-29T22:05:39.323191",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "e093e66304083361cbd38c36541ed4e38e79b309",
-    "branch": "threshold-upgrade-clean",
+    "commit_hash": "13d3b6d13521c7a1b9e4175273cf1d3930f12a5e",
+    "branch": "master",
     "uncommitted_changes": 0,
     "status_details": ""
   },
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 51,
-      "total_files": 107
+      "total_files": 106
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25600,
+    "python_files_count": 25889,
     "cursor_configs_count": 13
   },
-  "state_hash": "a6807544db001ca8f69941cd6d0940d4"
+  "state_hash": "3d5aa933161cdca0fac9d66e6d3016f4"
 }
