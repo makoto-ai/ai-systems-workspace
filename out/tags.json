@@ -1,0 +1,19 @@
+{
+  "total": 2,
+  "counts": {
+    "TOKENIZE.hyphen_longdash": 2
+  },
+  "pareto": [
+    [
+      "TOKENIZE.hyphen_longdash",
+      2,
+      100.0
+    ]
+  ],
+  "examples": {
+    "TOKENIZE.hyphen_longdash": [
+      "pre-commit\tInstall dependencies\t2025-08-29T22:10:25.6318077Z An unexpected error has occurred: CalledProcessError: command: ('/usr/bin/git', 'fetch', 'origin', '--tags')",
+      "pre-commit\tInstall dependencies\t2025-08-29T22:10:25.6516959Z ##[error]Process completed with exit code 3."
+    ]
+  }
+}

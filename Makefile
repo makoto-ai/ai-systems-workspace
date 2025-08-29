@@ -27,3 +27,13 @@ comment:
 
 abort:
 	. out/metrics.env && PASS=$$PASS NEW=$$NEW FLAKY=$$FLAKY python scripts/quality/abort_if_needed.py
+.PHONY: run-log tag pareto pareto-comment learn-loop
+run-log:
+	gh run view $$(gh run list --limit 1 --json databaseId --jq '.[0].databaseId') --log > out/latest.log
+tag:
+	python scripts/quality/tag_failures.py out/latest.log
+pareto:
+	@tail -n +2 out/pareto.csv | column -t -s, | head -n 10
+pareto-comment:
+	scripts/quality/comment_pareto.sh 10
+learn-loop: run-log tag pareto pareto-comment

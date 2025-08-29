@@ -1,0 +1,18 @@
+# scripts/quality/tag_rules.yaml
+rules:
+  - tag: TOKENIZE.hyphen_longdash
+    pattern: '(-|–|—|―|ｰ|‐|ー)'
+  - tag: PUNCT.brackets_mismatch
+    pattern: '(\(|\)|（|）|\[|\]|【|】).*mismatch|unbalanced|missing'
+  - tag: SPACE.fullwidth_halfwidth
+    pattern: '全角|半角|full[- ]?width|half[- ]?width|\u3000'
+  - tag: UNIT.ms_to_sec
+    pattern: '\bms\b.*(sec|second|s)\b|ms→?s|s→?ms'
+  - tag: NUM.tolerance_small
+    pattern: '±\s?(1|2|3)\s?%|tolerance|round(ing)?'
+  - tag: CASE.case_insensitive
+    pattern: 'case[- ]?sensitive|lowercase|uppercase'
+  - tag: NORMALIZE.kana_long_vowel
+    pattern: '長音|チルダ|音引き|ー'
+  - tag: TEMPLATE.explicit
+    pattern: 'template[_ -]?explicit|prompt fix|explicit mode'
