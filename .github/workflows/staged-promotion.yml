@@ -123,7 +123,7 @@ jobs:
         PROMOTION_STEP="${{ steps.shadow_grid.outputs.promotion_step }}"
 
         # 昇格ステップが安全範囲内かチェック（0.02〜0.05）
-        if (( $(echo "$PROMOTION_STEP >= 0.02 && $PROMOTION_STEP <= 0.05" | bc -l) )); then
+        if [ "$(python -c "print('true' if 0.02 <= float('$PROMOTION_STEP') <= 0.05 else 'false')")" = "true" ]; then
           echo "✅ 昇格ステップが安全範囲内: ${PROMOTION_STEP}"
           echo "safe_promotion_step=true" >> "$GITHUB_OUTPUT"
         else
@@ -132,11 +132,7 @@ jobs:
         fi
 
     - name: Create Staged Promotion PR
-      if: |
-        steps.shadow_grid.outputs.promotion_ready == 'true' &&
-        steps.history_check.outputs.consecutive_achievement == 'true' &&
-        steps.validate_step.outputs.safe_promotion_step == 'true' &&
-        github.event.inputs.dry_run != 'true'
+      if: ${{ steps.shadow_grid.outputs.promotion_ready == 'true' && steps.history_check.outputs.consecutive_achievement == 'true' && steps.validate_step.outputs.safe_promotion_step == 'true' && github.event.inputs.dry_run != 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -247,7 +243,7 @@ jobs:
           }
 
     - name: ドライラン結果表示
-      if: github.event.inputs.dry_run == 'true'
+      if: ${{ github.event.inputs.dry_run == 'true' }}
       run: |
         echo "🧪 ドライラン実行完了"
         echo "実際の実行では以下のPRが作成されます:"
