@@ -168,6 +168,35 @@ def load_shadow_evaluation():
     else:
         return 0.0
 
+def load_canary_window_status():
+    """Canary 7-Day Window評価結果を読み込み"""
+    canary_file = Path("out/canary_window.json")
+    if canary_file.exists():
+        try:
+            with open(canary_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            decision = data.get("decision", "unknown")
+            avg_pass_rate = data.get("metrics", {}).get("avg_pass_rate", 0)
+            
+            if decision == "promote":
+                status = "✅ 本採用"
+                decision_text = "自動昇格"
+            elif decision == "continue_canary":
+                status = f"🐤 継続 ({avg_pass_rate:.1f}%)"
+                decision_text = "改善要求"
+            else:
+                status = "❓ データ不足"
+                decision_text = "手動確認"
+            
+            return status, decision_text
+            
+        except Exception as e:
+            st.error(f"Canary window読み込みエラー: {e}")
+            return "❌ エラー", "読み込み失敗"
+    else:
+        return "⏳ 評価待ち", "未実行"
+
 def calculate_model_efficiency(df):
     """モデル別効率性の計算（合格1件あたりの試行回数）"""
     # 現在のデータ構造では試行回数の情報がないため、
@@ -230,31 +259,35 @@ else:
     df_filtered = df
 
 # メトリクス表示
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
+    col1, col2, col3, col4, col5, col6, col7, col8 = st.columns(8)
 
-if not df_filtered.empty:
-    total_cases = len(df_filtered)
-    passed_cases = len(df_filtered[df_filtered['passed'] == True])
-    pass_rate = passed_cases / total_cases * 100 if total_cases > 0 else 0
-    avg_score = df_filtered['score'].mean()
-    flaky_rate = calculate_flaky_rate(df_filtered)
-    
-    # New Fail Ratio計算（週次データから）
-    if not weekly_df.empty and 'new_fail_ratio' in weekly_df.columns:
-        latest_new_fail_ratio = weekly_df.iloc[-1]['new_fail_ratio'] * 100
-    else:
-        latest_new_fail_ratio = 0.0
-    
-    # Shadow Evaluation @0.7の読み込み
-    shadow_pass_rate = load_shadow_evaluation()
-    
-    col1.metric("総テスト数", total_cases)
-    col2.metric("合格数", passed_cases)
-    col3.metric("合格率", f"{pass_rate:.1f}%")
-    col4.metric("平均スコア", f"{avg_score:.3f}")
-    col5.metric("Flaky率", f"{flaky_rate:.1f}%")
-    col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
-    col7.metric("Predicted@0.7", f"{shadow_pass_rate:.1f}%")
+    if not df_filtered.empty:
+        total_cases = len(df_filtered)
+        passed_cases = len(df_filtered[df_filtered['passed'] == True])
+        pass_rate = passed_cases / total_cases * 100 if total_cases > 0 else 0
+        avg_score = df_filtered['score'].mean()
+        flaky_rate = calculate_flaky_rate(df_filtered)
+        
+        # New Fail Ratio計算（週次データから）
+        if not weekly_df.empty and 'new_fail_ratio' in weekly_df.columns:
+            latest_new_fail_ratio = weekly_df.iloc[-1]['new_fail_ratio'] * 100
+        else:
+            latest_new_fail_ratio = 0.0
+        
+        # Shadow Evaluation @0.7の読み込み
+        shadow_pass_rate = load_shadow_evaluation()
+        
+        # Canary 7-Day Window評価
+        canary_status, canary_decision = load_canary_window_status()
+        
+        col1.metric("総テスト数", total_cases)
+        col2.metric("合格数", passed_cases)
+        col3.metric("合格率", f"{pass_rate:.1f}%")
+        col4.metric("平均スコア", f"{avg_score:.3f}")
+        col5.metric("Flaky率", f"{flaky_rate:.1f}%")
+        col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
+        col7.metric("Predicted@0.7", f"{shadow_pass_rate:.1f}%")
+        col8.metric("Canary 7-Day", canary_status, delta=canary_decision)
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")

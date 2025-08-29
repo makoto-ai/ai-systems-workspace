@@ -1,0 +1,138 @@
+name: Canary Auto Promote
+
+on:
+  schedule:
+    # 毎日 09:10 JST (00:10 UTC)
+    - cron: '10 0 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (no actual PR actions)'
+        type: boolean
+        default: false
+      days:
+        description: 'Evaluation window (days)'
+        type: number
+        default: 7
+
+jobs:
+  canary-auto-promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 履歴取得のため
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r dashboard/requirements.txt
+
+      - name: Evaluate 7-day canary window
+        id: evaluate
+        run: |
+          echo "📊 カナリア週7日ウィンドウ評価開始"
+          
+          DAYS="${{ github.event.inputs.days || 7 }}"
+          echo "評価期間: ${DAYS}日"
+          
+          python scripts/evaluate_canary_window.py \
+            --days ${DAYS} \
+            --out out/canary_window.json
+          
+          # 評価結果の確認
+          if [ -f out/canary_window.json ]; then
+            echo "✅ 7日ウィンドウ評価完了"
+            cat out/canary_window.json | jq '.'
+          else
+            echo "❌ 評価結果ファイルが見つかりません"
+            exit 1
+          fi
+
+      - name: Decide canary action
+        id: decide
+        run: |
+          echo "🤖 カナリア自動判定開始"
+          
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "🧪 Dry Run モード"
+          fi
+          
+          python scripts/decide_canary_action.py \
+            --window out/canary_window.json \
+            --pr-url "https://github.com/${{ github.repository }}/pull/29" \
+            --auto-merge \
+            --create-issue-on-fail \
+            $DRY_RUN_FLAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload canary evaluation artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canary-evaluation-${{ github.run_number }}
+          path: |
+            out/canary_window.json
+            out/shadow_0_7*.json
+            out/notify_payload.json
+          retention-days: 30
+
+      - name: Notify Slack (Auto Promote Result)
+        if: always()
+        run: |
+          echo "📤 自動昇格結果をSlack通知"
+          
+          # 判定結果の取得
+          if [ -f out/canary_window.json ]; then
+            DECISION=$(jq -r '.decision // "unknown"' out/canary_window.json)
+            PASS_RATE=$(jq -r '.metrics.avg_pass_rate // 0' out/canary_window.json)
+            FLAKY_RATE=$(jq -r '.metrics.avg_flaky_rate // 0' out/canary_window.json)
+            NEW_FAIL_RATIO=$(jq -r '.metrics.avg_new_fail_ratio // 0' out/canary_window.json)
+            
+            echo "判定結果: $DECISION"
+            echo "平均合格率: $PASS_RATE%"
+            echo "平均Flaky率: $FLAKY_RATE%"
+            echo "平均新規失敗率: $NEW_FAIL_RATIO%"
+            
+            # Slack通知（簡易版）
+            if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+              python scripts/notify_canary_decision.py \
+                --decision "$DECISION" \
+                --window out/canary_window.json \
+                --action-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            fi
+          else
+            echo "⚠️ 判定結果ファイルが見つかりません"
+          fi
+
+      - name: Safety check (consecutive failures)
+        run: |
+          echo "🛡️ セーフティネット確認"
+          
+          # 連続失敗チェック（簡易実装）
+          python scripts/check_consecutive_failures.py \
+            --threshold 2 \
+            --escalate-on-exceed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Success summary
+        if: success()
+        run: |
+          echo "✅ カナリア自動昇格ワークフロー完了"
+          echo "📊 評価期間: ${{ github.event.inputs.days || 7 }}日"
+          echo "🤖 判定結果: $(jq -r '.decision // "unknown"' out/canary_window.json)"
+          echo "📈 詳細はArtifactを確認してください"
