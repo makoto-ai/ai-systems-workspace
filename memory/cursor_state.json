@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T08:08:30.763580",
-  "session_purpose": "pre-commit",
+  "timestamp": "2025-08-30T08:35:57.783783",
+  "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "98e35082f1bd57bb122aac4e74b71200e8f83fe7",
+    "commit_hash": "66d8a205f685f93bf1f56756d4bf59e4e0182d75",
     "branch": "fix/ide-warnings-final-victory",
-    "uncommitted_changes": 24,
-    "status_details": "M  .github/workflows/monitoring.yml\nM  .github/workflows/pr-quality-check.yml\nM  .github/workflows/weekly-golden.yml\nM  .yamllint\nM  Makefile\nM  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250830_073538.json\nA  memory/snapshots/mcp_snapshot_20250830_073839.json\nA  memory/snapshots/mcp_snapshot_20250830_074652.json\nA  memory/snapshots/mcp_snapshot_20250830_075201.json\nA  memory/snapshots/mcp_snapshot_20250830_075855.json\nA  memory/snapshots/mcp_snapshot_20250830_080432.json\nM  out/pareto.csv\nA  out/quality_history.json\nM  out/tags.json\nA  scripts/quality/auto_fix_generator.py\nA  scripts/quality/continuous_learner.py\nA  scripts/quality/fix_secrets_warnings.py\nA  scripts/quality/github_actions_fixer.py\nA  scripts/quality/regression_detector.py\nA  scripts/quality/yaml_auto_fixer.py\nA  scripts/quality/yaml_indentation_fixer.py\nA  scripts/quality/yaml_tag_rules.yaml"
+    "uncommitted_changes": 5,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250830_081041.json\n?? memory/snapshots/mcp_snapshot_20250830_081739.json\n?? memory/snapshots/mcp_snapshot_20250830_082652.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 72,
-      "total_files": 135
+      "python_files": 73,
+      "total_files": 136
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 26140,
+    "python_files_count": 25901,
     "cursor_configs_count": 13
   },
-  "state_hash": "eb92bb4c8ecfdec5a54dc12c63057507"
+  "state_hash": "a5d24fd3c00d66a2c5c814ffd197df6f"
 }

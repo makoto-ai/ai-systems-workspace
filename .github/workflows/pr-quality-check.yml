@@ -398,10 +398,7 @@ jobs:
         echo "reason=$ABORT_REASON" >> "$GITHUB_OUTPUT"
 
     - name: Close PR if Abort
-      if: ${{ 
-        contains(github.event.pull_request.labels.*.name, 'data-collection') && 
-        steps.abort_check.outputs.abort == 'true' 
-      }}
+      if: ${{ contains(github.event.pull_request.labels.*.name, 'data-collection') && steps.abort_check.outputs.abort == 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -432,13 +429,10 @@ jobs:
       if: always()
       continue-on-error: true
       run: |
-        SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
-        if [ -z "$SLACK_WEBHOOK_URL" ]; then
-          echo "⏭️ Slack通知スキップ (SLACK_WEBHOOK_URL未設定)"
-          exit 0
-        fi
-        echo "📢 データ収集結果をSlack通知"
-        python scripts/notify_results.py \
-          --data-collection \
-          --action-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-          --pr-url "${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+        # Slack通知スキップ (設定可能な場合のみ実行)
+        echo "⏭️ Slack通知は手動で scripts/notify_results.py を実行してください"
+        echo "📢 使用方法:"
+        echo "  python scripts/notify_results.py \\"
+        echo "    --data-collection \\"
+        echo "    --action-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \\"
+        echo "    --pr-url '${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}'"
