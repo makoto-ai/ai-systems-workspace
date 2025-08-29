@@ -240,9 +240,14 @@ jobs:
     
     - name: 通知送信
       if: always()
+      continue-on-error: true
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
+          echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+          exit 0
+        fi
         echo "📢 Sending notification..."
         python scripts/notify_results.py
     

@@ -166,7 +166,13 @@ jobs:
           
       - name: Notify Slack (Weekly Report)
         if: always()
+        continue-on-error: true
         run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+            exit 0
+          fi
+          
           echo "📤 Slack週次レポート送信中..."
           
           # カナリア週判定
@@ -187,11 +193,12 @@ jobs:
           python scripts/notify_results.py \
             --action-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --dashboard-url "http://localhost:8501" \
-            --slack-webhook "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            --slack-webhook "$SLACK_WEBHOOK_URL" \
             $CANARY_FLAG \
             $PR_URL
         env:
           PYTHONPATH: ${{ github.workspace }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Success notification
         if: steps.golden_check.outputs.percentage >= 80

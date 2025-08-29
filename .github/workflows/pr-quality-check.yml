@@ -420,9 +420,14 @@ jobs:
     
     - name: Notify Slack (Data Collection)
       if: always()
+      continue-on-error: true
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
+          echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
+          exit 0
+        fi
         echo "📢 データ収集結果をSlack通知"
         python scripts/notify_results.py \
           --data-collection \

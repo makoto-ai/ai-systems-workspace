@@ -35,12 +35,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: Run model experiment
+      - name: Set API Keys (required)
+        run: |
+          echo "GROQ_API_KEY=${GROQ_API_KEY}" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> $GITHUB_ENV
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Set API Keys (optional)
+        continue-on-error: true
+        run: |
+          echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> $GITHUB_ENV
+          echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> $GITHUB_ENV
+        env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Run model experiment
         run: |
           echo "🧪 Running model experiment..."
           echo "Target root cause: ${{ github.event.inputs.root_cause }}"
