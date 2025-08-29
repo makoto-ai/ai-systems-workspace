@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-29T23:01:37.258332",
+  "timestamp": "2025-08-30T00:32:44.217104",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "7e117f960219f653851db6b693fce9aee0cccb7b",
-    "branch": "master",
-    "uncommitted_changes": 7,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250829_224251.json\n?? memory/snapshots/mcp_snapshot_20250829_224324.json\n?? memory/snapshots/mcp_snapshot_20250829_224419.json\n?? memory/snapshots/mcp_snapshot_20250829_225219.json\n?? out/shadow_0_7_optimized.json"
+    "commit_hash": "d52207e7991cc5811d2a3dedd5f27bac04be408b",
+    "branch": "fix/tokenize-normalization-pr1",
+    "uncommitted_changes": 8,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250830_001233.json\n?? memory/snapshots/mcp_snapshot_20250830_001544.json\n?? memory/snapshots/mcp_snapshot_20250830_002325.json\n?? memory/snapshots/mcp_snapshot_20250830_002954.json\n?? memory/snapshots/mcp_snapshot_20250830_003135.json\n?? out/current_status_0_72.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 58,
-      "total_files": 116
+      "python_files": 61,
+      "total_files": 119
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25920,
+    "python_files_count": 25301,
     "cursor_configs_count": 13
   },
-  "state_hash": "d7b7c207d499953bdd6f260972239d13"
+  "state_hash": "3e1be3ced4072f74736638f762b23f44"
 }

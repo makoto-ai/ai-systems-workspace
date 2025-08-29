@@ -1,392 +1,439 @@
 #!/usr/bin/env python3
 """
 Golden Test Results Notification System
-Slack/Discord統合通知システム
+Slack通知システム（Phase4対応）
 """
 
 import json
 import os
 import requests
-from datetime import datetime
-from pathlib import Path
 import argparse
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 
-def load_latest_metrics():
-    """最新のメトリクスを読み込み"""
-    # 週次データから最新情報を取得
-    log_file = Path("tests/golden/observation_log.md")
-    if not log_file.exists():
+class NotificationSender:
+    """通知送信クラス"""
+    
+    def __init__(self):
+        self.slack_webhook = os.getenv('SLACK_WEBHOOK_URL')
+        if not self.slack_webhook:
+            print("⚠️ SLACK_WEBHOOK_URL not found, will print to console instead")
+    
+    def load_shadow_results(self) -> Optional[Dict[str, Any]]:
+        """Shadow Evaluation結果を読み込み（段階昇格対応）"""
+        # 段階昇格用グリッドファイルを優先
+        grid_file = Path("out/shadow_grid.json")
+        if grid_file.exists():
+            try:
+                with open(grid_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"❌ Grid results読み込みエラー: {e}")
+        
+        # 従来のマルチシャドー評価ファイル
+        multi_shadow_file = Path("out/shadow_multi.json")
+        if multi_shadow_file.exists():
+            try:
+                with open(multi_shadow_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"❌ Shadow results読み込みエラー: {e}")
         return None
     
-    with open(log_file, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    # 最新の週次観測を抽出
-    import re
-    pattern = r'## (\d{4}-\d{2}-\d{2}) - 週次観測.*?合格率.*?(\d+)/(\d+) \((\d+)%\)'
-    matches = re.findall(pattern, content, re.DOTALL)
-    
-    if not matches:
+    def load_prompt_optimization_results(self) -> Optional[Dict[str, Any]]:
+        """プロンプト最適化結果を読み込み"""
+        prompt_opt_file = Path("out/prompt_opt_phase4.json")
+        if prompt_opt_file.exists():
+            try:
+                with open(prompt_opt_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"❌ Prompt optimization結果読み込みエラー: {e}")
         return None
     
-    latest_match = matches[-1]
-    date_str, passed, total, percentage = latest_match
-    
-    # Root Cause Top3とfreshness情報を抽出
-    section_pattern = rf'## {re.escape(date_str)} - 週次観測(.*?)(?=## |\Z)'
-    section_match = re.search(section_pattern, content, re.DOTALL)
-    
-    root_causes = {}
-    new_failures = 0
-    total_failures = 0
-    
-    if section_match:
-        section_content = section_match.group(1)
-        failure_matches = re.findall(r'- \*\*([^*]+)\*\*: `root_cause:([^`]+)`(?:\s*\|\s*`freshness:([^`]+)`)?', section_content)
-        for case_id, root_cause, freshness in failure_matches:
-            total_failures += 1
-            root_causes[root_cause] = root_causes.get(root_cause, 0) + 1
-            if freshness == "NEW":
-                new_failures += 1
-    
-    # Shadow evaluation結果
-    shadow_pass_rate = 0.0
-    # Shadow評価データ（複数しきい値対応）
-    shadow_data = {"0.7": 60.0, "0.85": 0.0}  # デフォルト値
-    
-    # マルチシャドー評価ファイルを優先
-    multi_shadow_file = Path("out/shadow_multi.json")
-    if multi_shadow_file.exists():
-        try:
-            with open(multi_shadow_file, 'r', encoding='utf-8') as f:
-                multi_data = json.load(f)
-            
-            multi_eval = multi_data.get("multi_shadow_evaluation", {})
-            thresholds = multi_eval.get("thresholds", {})
-            
-            shadow_data["0.7"] = thresholds.get("0.7", {}).get("shadow_pass_rate", 60.0)
-            shadow_data["0.85"] = thresholds.get("0.85", {}).get("shadow_pass_rate", 0.0)
-        except Exception as e:
-            print(f"⚠️ Multi-shadow evaluation読み込みエラー: {e}")
-    
-    # 従来の0.7単体ファイルをフォールバック
-    elif Path("out/shadow_0_7.json").exists():
-        try:
-            with open("out/shadow_0_7.json", 'r', encoding='utf-8') as f:
-                single_data = json.load(f)
-            shadow_data["0.7"] = single_data["shadow_evaluation"]["shadow_pass_rate"]
-        except Exception as e:
-            print(f"⚠️ Shadow evaluation読み込みエラー: {e}")
-    
-    shadow_pass_rate = shadow_data["0.7"]  # 後方互換性
-    
-    return {
-        "date": date_str,
-        "pass_rate": int(percentage),
-        "passed": int(passed),
-        "total": int(total),
-        "total_failures": total_failures,
-        "new_failures": new_failures,
-        "new_fail_ratio": (new_failures / max(total_failures, 1)) if total_failures > 0 else 0.0,
-        "flaky_rate": 0.0,  # 簡易計算（実際はログから算出）
-        "root_cause_top3": sorted(root_causes.items(), key=lambda x: x[1], reverse=True)[:3],
-        "shadow_pass_rate": shadow_pass_rate,
-        "shadow_data": shadow_data  # 新しい複数しきい値データ
-    }
-
-def create_slack_message(metrics, action_url=None, dashboard_url="http://localhost:8501", canary_mode=False, pr_url=None):
-    """Slack用メッセージ作成（週次レポート対応）"""
-    if not metrics:
+    def load_new_failures(self) -> Optional[Dict[str, Any]]:
+        """新規失敗データを読み込み"""
+        new_fails_file = Path("out/new_fails.json")
+        if new_fails_file.exists():
+            try:
+                with open(new_fails_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"❌ New failures読み込みエラー: {e}")
         return None
     
-    # カナリア週判定
-    if canary_mode:
-        title_prefix = "🐤 Canary Weekly Report"
-        threshold_text = "(Threshold=0.7)"
-        canary_status = "カナリア週監視中"
-    else:
-        title_prefix = "📊 Weekly Report"
-        threshold_text = f"(Threshold={metrics.get('threshold', 0.5)})"
-        canary_status = "通常運用"
+    def calculate_phase4_metrics(self, shadow_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Phase4関連メトリクスを計算"""
+        multi_eval = shadow_data.get("multi_shadow_evaluation", {})
+        thresholds = multi_eval.get("thresholds", {})
+        
+        # 0.85しきい値の結果
+        threshold_85 = thresholds.get("0.85", {})
+        predicted_at_85 = threshold_85.get("weighted_pass_rate", threshold_85.get("shadow_pass_rate", 0))
+        
+        # Phase4 Gap計算
+        phase4_gap = max(0, 85.0 - predicted_at_85)
+        
+        # 新規失敗率
+        new_fail_ratio = threshold_85.get("new_fail_ratio", 0) * 100
+        
+        # Flaky率
+        flaky_rate = threshold_85.get("flaky_rate", 0) * 100
+        
+        return {
+            "predicted_at_85": predicted_at_85,
+            "phase4_gap": phase4_gap,
+            "new_fail_ratio": new_fail_ratio,
+            "flaky_rate": flaky_rate,
+            "ready_for_phase4": predicted_at_85 >= 85 and new_fail_ratio <= 70
+        }
     
-    # ステータス判定（カナリア週は85%基準）
-    threshold = 85 if canary_mode else 80
-    if metrics["pass_rate"] >= threshold:
-        status_emoji = "✅"
-        status_text = "良好"
-    elif metrics["pass_rate"] >= (threshold - 5):
-        status_emoji = "⚠️"
-        status_text = "注意"
-    else:
-        status_emoji = "🚨"
-        status_text = "緊急"
+    def generate_improvement_suggestions(self, prompt_results: Optional[Dict], new_fails: Optional[Dict], phase4_metrics: Dict) -> List[str]:
+        """改善提案Top3を生成"""
+        suggestions = []
+        
+        # プロンプト最適化からの提案
+        if prompt_results:
+            prompt_suggestions = prompt_results.get("improvement_suggestions", [])
+            for suggestion in prompt_suggestions[:2]:  # 上位2つ
+                suggestions.append(f"`{suggestion['type']}`: {suggestion['description']}")
+        
+        # 新規失敗からの提案
+        if new_fails:
+            total_new = new_fails.get("total_new_failures", 0)
+            if total_new > 0:
+                suggestions.append(f"`norm:new-fails`: {total_new}件の新規失敗に対応")
+        
+        # Phase4 Gap解消提案
+        if phase4_metrics["phase4_gap"] > 0:
+            suggestions.append(f"`phase4:gap-reduction`: Pred@0.85を{phase4_metrics['phase4_gap']:.1f}pp向上")
+        
+        # 数値近似厳格化の提案
+        if phase4_metrics["predicted_at_85"] < 80:
+            suggestions.append(f"`evaluator:precision`: 数値近似±3%への厳格化適用")
+        
+        return suggestions[:3]  # Top3のみ
     
-    # KPI判定アイコン
-    pass_rate_icon = "✅" if metrics["pass_rate"] >= threshold else "❌"
-    flaky_rate_icon = "✅" if metrics["flaky_rate"] <= 5.0 else "❌"
-    new_fail_icon = "✅" if metrics["new_fail_ratio"] <= 0.60 else "❌"
-    
-    # Root Cause Top3の整形
-    root_cause_text = ""
-    total_failures = sum(count for _, count in metrics["root_cause_top3"]) if metrics["root_cause_top3"] else 1
-    for i, (cause, count) in enumerate(metrics["root_cause_top3"][:3]):
-        percentage = (count / total_failures) * 100 if total_failures > 0 else 0
-        root_cause_text += f"{i+1}. {cause} ({percentage:.0f}%)\n"
-    
-    message = {
-        "text": f"{title_prefix} {threshold_text}",
-        "blocks": [
+    def create_slack_message(self, shadow_data: Dict, phase4_metrics: Dict, suggestions: List[str], data_collection: bool = False, action_url: str = None, pr_url: str = None) -> Dict[str, Any]:
+        """Slack通知メッセージを作成（データ収集モード対応）"""
+        multi_eval = shadow_data.get("multi_shadow_evaluation", {})
+        timestamp = multi_eval.get("timestamp", datetime.now().isoformat())
+        staged_promotion = multi_eval.get("staged_promotion", {})
+        
+        # 段階昇格情報
+        has_staged_promotion = bool(staged_promotion)
+        promotion_ready = staged_promotion.get("promotion_ready", False)
+        next_recommended = staged_promotion.get("next_recommended", 0.5)
+        current_threshold = staged_promotion.get("current_threshold", 0.5)
+        promotion_step = staged_promotion.get("promotion_step", 0)
+        
+        # ステータス絵文字とタイトル
+        if data_collection:
+            status_emoji = "🧪"
+            text = f"{status_emoji} **Data Collection Canary Report**"
+        elif has_staged_promotion and promotion_ready:
+            status_emoji = "🚀"
+            text = f"{status_emoji} **Golden Test 段階昇格 Report**"
+        else:
+            status_emoji = "✅" if phase4_metrics["ready_for_phase4"] else "🔄"
+            text = f"{status_emoji} **Golden Test Phase 4 Status Report**"
+        
+        gap_emoji = "🎯" if phase4_metrics["phase4_gap"] <= 5 else "⚠️"
+        
+        # 詳細セクション
+        if data_collection:
+            header_text = f"{status_emoji} Data Collection Canary Report"
+        elif has_staged_promotion:
+            header_text = f"{status_emoji} Golden Test 段階昇格 Report"
+        else:
+            header_text = f"{status_emoji} Golden Test Phase 4 Report"
+        
+        blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"{title_prefix} {threshold_text}"
+                    "text": header_text
                 }
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*状態:* {status_emoji} {status_text} ({canary_status})"
-                }
-            },
-            {
-                "type": "section",
-                "fields": [
+                "type": "context",
+                "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": f"*合格率:* {metrics['pass_rate']}% (基準 >={threshold}%) {pass_rate_icon}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Flaky率:* {metrics['flaky_rate']:.1f}% (<5%) {flaky_rate_icon}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*新規失敗率:* {metrics['new_fail_ratio']:.1%} (≤60%) {new_fail_icon}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Predicted@0.7:* {metrics.get('shadow_pass_rate', 0):.1f}%"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Predicted@0.85:* {metrics.get('shadow_data', {}).get('0.85', 0):.1f}% {'✅' if metrics.get('shadow_data', {}).get('0.85', 0) >= 85 else '❌'}"
+                        "text": f"📅 {timestamp[:19].replace('T', ' ')}"
                     }
                 ]
             }
         ]
-    }
-    
-    # Root Cause Top3セクション
-    if root_cause_text:
-        message["blocks"].append({
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Root Cause Top3:*\n{root_cause_text.rstrip()}"
-            }
-        })
-    
-    # アクションボタンセクション
-    elements = [
-        {
-            "type": "button",
-            "text": {
-                "type": "plain_text",
-                "text": "📊 Dashboard"
-            },
-            "url": dashboard_url
-        }
-    ]
-    
-    if action_url:
-        elements.append({
-            "type": "button",
-            "text": {
-                "type": "plain_text",
-                "text": "🔗 Run Logs"
-            },
-            "url": action_url
-        })
-    
-    if pr_url:
-        elements.append({
-            "type": "button",
-            "text": {
-                "type": "plain_text",
-                "text": "🐤 Canary PR" if canary_mode else "📋 PR"
-            },
-            "url": pr_url
-        })
-    
-    message["blocks"].append({
-        "type": "actions",
-        "elements": elements
-    })
-    
-    # フッター
-    message["blocks"].append({
-        "type": "context",
-        "elements": [
+        
+        # 段階昇格情報がある場合
+        if has_staged_promotion:
+            promotion_fields = [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Current Threshold*\n{current_threshold:.2f}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Next Recommended*\n{next_recommended:.2f}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*昇格ステップ*\n{promotion_step:+.2f}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*昇格ステータス*\n{'✅ 可能' if promotion_ready else '🟡 待機'}"
+                }
+            ]
+            blocks.append({
+                "type": "section",
+                "fields": promotion_fields
+            })
+        
+        # データ収集モード特別セクション
+        if data_collection:
+            # 0.72のKPIを抽出
+            thresholds = multi_eval.get("thresholds", {})
+            target_72 = thresholds.get("0.72", {})
+            pass_72 = target_72.get("weighted_pass_rate", target_72.get("shadow_pass_rate", 0))
+            new_fail_72 = target_72.get("new_fail_ratio", 1.0) * 100
+            flaky_72 = target_72.get("flaky_rate", 1.0) * 100
+            
+            # 早期Abort判定
+            abort_triggered = pass_72 < 65 or new_fail_72 > 70
+            
+            data_collection_fields = [
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Target Threshold*\n0.72"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*Pass Rate@0.72*\n{pass_72:.1f}% {'❌' if pass_72 < 65 else '✅'}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*New Fail@0.72*\n{new_fail_72:.1f}% {'❌' if new_fail_72 > 70 else '✅'}"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": f"*早期Abort*\n{'🛑 発動' if abort_triggered else '✅ 継続'}"
+                }
+            ]
+            blocks.append({
+                "type": "section",
+                "fields": data_collection_fields
+            })
+            
+            if abort_triggered:
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*🛑 早期Abort条件に該当*\n• Pass Rate {pass_72:.1f}% < 65% または New Fail {new_fail_72:.1f}% > 70%\n• PRは自動クローズされます"
+                    }
+                })
+        
+        # Phase4メトリクス（通常モード）
+        phase4_fields = [
             {
                 "type": "mrkdwn",
-                "text": f"📅 {metrics['date']} | 🤖 自動生成レポート"
+                "text": f"*Predicted@0.85*\n{phase4_metrics['predicted_at_85']:.1f}%"
+            },
+            {
+                "type": "mrkdwn", 
+                "text": f"*Phase 4 Gap*\n{gap_emoji} {phase4_metrics['phase4_gap']:.1f}pp"
+            },
+            {
+                "type": "mrkdwn",
+                "text": f"*新規失敗率*\n{phase4_metrics['new_fail_ratio']:.1f}%"
+            },
+            {
+                "type": "mrkdwn",
+                "text": f"*Flaky率*\n{phase4_metrics['flaky_rate']:.1f}%"
             }
         ]
-    })
-    
-    return message
-
-def create_discord_message(metrics, action_url=None, dashboard_url="http://localhost:8501"):
-    """Discord用メッセージ作成"""
-    if not metrics:
-        return None
-    
-    # ステータス色
-    if metrics["pass_rate"] >= 90:
-        color = 0x00ff00  # 緑
-    elif metrics["pass_rate"] >= 80:
-        color = 0xffaa00  # オレンジ
-    else:
-        color = 0xff0000  # 赤
-    
-    # Root Cause Top3
-    root_cause_text = ""
-    for i, (cause, count) in enumerate(metrics["root_cause_top3"]):
-        root_cause_text += f"{i+1}. **{cause}**: {count}件\n"
-    
-    embed = {
-        "title": f"📊 Golden Test 週次結果 ({metrics['date']})",
-        "color": color,
-        "fields": [
-            {
-                "name": "合格率",
-                "value": f"{metrics['pass_rate']}% ({metrics['passed']}/{metrics['total']})",
-                "inline": True
-            },
-            {
-                "name": "新規失敗率",
-                "value": f"{metrics['new_fail_ratio']:.1%}",
-                "inline": True
-            },
-            {
-                "name": "Flaky率",
-                "value": f"{metrics['flaky_rate']:.1%}",
-                "inline": True
-            },
-            {
-                "name": "Predicted@0.7",
-                "value": f"{metrics['shadow_pass_rate']:.1f}%",
-                "inline": True
-            }
-        ],
-        "timestamp": datetime.now().isoformat()
-    }
-    
-    # Root Cause Top3
-    if root_cause_text:
-        embed["fields"].append({
-            "name": "Root Cause Top3",
-            "value": root_cause_text,
-            "inline": False
+        blocks.append({
+            "type": "section",
+            "fields": phase4_fields
         })
+        
+        # 段階昇格推奨アクション
+        if has_staged_promotion and promotion_ready:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*🚀 推奨アクション*\n• threshold を {promotion_step:+.2f} 引き上げ (→ {next_recommended:.2f})\n• 段階昇格PRの自動作成を待機中\n• 7日間のカナリア監視後に本採用判定"
+                }
+            })
+        
+        # 改善提案セクション
+        if suggestions:
+            suggestion_text = "\n".join([f"• {suggestion}" for suggestion in suggestions])
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*💡 改善提案 Top 3*\n{suggestion_text}"
+                }
+            })
+        
+        # Phase4準備状況
+        if has_staged_promotion and promotion_ready:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 *段階昇格準備完了*\n2連続で昇格条件を満たしました"
+                }
+            })
+        elif phase4_metrics["ready_for_phase4"]:
+            blocks.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "✅ *Phase 4準備完了*\n2週連続で条件達成すれば自動昇格"
+                }
+            })
+        else:
+            remaining_tasks = []
+            if phase4_metrics["phase4_gap"] > 0:
+                remaining_tasks.append(f"Pred@0.85を{phase4_metrics['phase4_gap']:.1f}pp向上")
+            if phase4_metrics["new_fail_ratio"] > 70:
+                remaining_tasks.append(f"新規失敗率を{phase4_metrics['new_fail_ratio'] - 70:.1f}pp削減")
+            
+            if remaining_tasks:
+                task_text = "\n".join([f"• {task}" for task in remaining_tasks])
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"🔄 *残り改善項目*\n{task_text}"
+                    }
+                })
+        
+        # リンクセクション（データ収集モード）
+        if data_collection and (action_url or pr_url):
+            links = []
+            if pr_url:
+                links.append(f"<{pr_url}|📄 PR>")
+            if action_url:
+                links.append(f"<{action_url}|🏃 Actions>")
+            
+            if links:
+                blocks.append({
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*🔗 関連リンク*\n{' | '.join(links)}"
+                    }
+                })
+        
+        return {
+            "text": text,
+            "blocks": blocks
+        }
     
-    # リンク
-    links_text = f"[📊 Dashboard]({dashboard_url})"
-    if action_url:
-        links_text += f" | [🔗 実行ログ]({action_url})"
+    def send_notification(self, message: Dict[str, Any]) -> bool:
+        """通知を送信"""
+        if not self.slack_webhook:
+            # Slack未設定の場合はコンソール出力
+            print("\n" + "="*50)
+            print("📢 Golden Test Phase 4 Notification")
+            print("="*50)
+            print(f"Text: {message['text']}")
+            
+            for block in message.get('blocks', []):
+                if block['type'] == 'section' and 'text' in block:
+                    print(f"\n{block['text']['text']}")
+                elif block['type'] == 'section' and 'fields' in block:
+                    for field in block['fields']:
+                        print(f"  {field['text'].replace('*', '').replace('\n', ': ')}")
+            
+            print("="*50)
+            return True
+        
+        try:
+            response = requests.post(
+                self.slack_webhook,
+                json=message,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                print("✅ Slack通知送信成功")
+                return True
+            else:
+                print(f"❌ Slack通知送信失敗: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Slack通知送信エラー: {e}")
+            return False
     
-    embed["fields"].append({
-        "name": "リンク",
-        "value": links_text,
-        "inline": False
-    })
-    
-    return {"embeds": [embed]}
-
-def send_slack_notification(webhook_url, message):
-    """Slack通知送信"""
-    try:
-        response = requests.post(webhook_url, json=message, timeout=10)
-        response.raise_for_status()
-        print("✅ Slack通知送信完了")
-        return True
-    except Exception as e:
-        print(f"❌ Slack通知送信失敗: {e}")
-        return False
-
-def send_discord_notification(webhook_url, message):
-    """Discord通知送信"""
-    try:
-        response = requests.post(webhook_url, json=message, timeout=10)
-        response.raise_for_status()
-        print("✅ Discord通知送信完了")
-        return True
-    except Exception as e:
-        print(f"❌ Discord通知送信失敗: {e}")
-        return False
+    def run_notification(self) -> bool:
+        """通知実行メイン処理"""
+        try:
+            # データ読み込み
+            print("📊 Loading results...")
+            shadow_data = self.load_shadow_results()
+            if not shadow_data:
+                print("❌ Shadow evaluation results not found")
+                return False
+            
+            prompt_results = self.load_prompt_optimization_results()
+            new_fails = self.load_new_failures()
+            
+            # Phase4メトリクス計算
+            phase4_metrics = self.calculate_phase4_metrics(shadow_data)
+            
+            # 改善提案生成
+            suggestions = self.generate_improvement_suggestions(prompt_results, new_fails, phase4_metrics)
+            
+                    # Slackメッセージ作成
+        message = self.create_slack_message(
+            shadow_data, 
+            phase4_metrics, 
+            suggestions,
+            data_collection=args.data_collection,
+            action_url=args.action_url,
+            pr_url=args.pr_url
+        )
+            
+            # 通知送信
+            return self.send_notification(message)
+            
+        except Exception as e:
+            print(f"❌ Notification failed: {e}")
+            return False
 
 def main():
     """メイン関数"""
     parser = argparse.ArgumentParser(description="Golden Test Results Notification")
-    parser.add_argument("--action-url", type=str, help="GitHub Actions実行URL")
-    parser.add_argument("--dashboard-url", type=str, default="http://localhost:8501",
-                       help="ダッシュボードURL")
-    parser.add_argument("--slack-webhook", type=str, help="Slack Webhook URL")
-    parser.add_argument("--canary", action="store_true", help="カナリア週モード")
-    parser.add_argument("--pr-url", type=str, help="関連PR URL")
+    parser.add_argument("--test", action="store_true", help="テスト送信（実際には送信しない）")
     
     args = parser.parse_args()
     
-    # メトリクス読み込み
-    print("📊 最新メトリクス読み込み中...")
-    metrics = load_latest_metrics()
-    
-    if not metrics:
-        print("❌ メトリクスが見つかりません")
+    try:
+        sender = NotificationSender()
+        
+        if args.test:
+            print("🧪 Test mode: notification will be printed to console")
+            # テストモードではSlackを無効化
+            sender.slack_webhook = None
+        
+        success = sender.run_notification()
+        return success
+        
+    except Exception as e:
+        print(f"❌ Main process failed: {e}")
         return False
-    
-    print(f"📈 合格率: {metrics['pass_rate']}%")
-    print(f"📊 新規失敗率: {metrics['new_fail_ratio']:.1%}")
-    print(f"🐤 カナリア週: {args.canary}")
-    
-    # Webhook URL取得（引数優先、環境変数フォールバック）
-    slack_webhook = args.slack_webhook or os.getenv("SLACK_WEBHOOK_URL")
-    discord_webhook = os.getenv("DISCORD_WEBHOOK_URL")
-    
-    success = True
-    
-    # Slack通知
-    if slack_webhook:
-        print("📤 Slack通知送信中...")
-        slack_message = create_slack_message(
-            metrics, 
-            action_url=args.action_url, 
-            dashboard_url=args.dashboard_url,
-            canary_mode=args.canary,
-            pr_url=args.pr_url
-        )
-        if slack_message:
-            success &= send_slack_notification(slack_webhook, slack_message)
-    else:
-        print("⚠️ SLACK_WEBHOOK_URL が設定されていません")
-    
-    # Discord通知
-    if discord_webhook:
-        print("📤 Discord通知送信中...")
-        discord_message = create_discord_message(metrics, args.action_url, args.dashboard_url)
-        if discord_message:
-            success &= send_discord_notification(discord_webhook, discord_message)
-    else:
-        print("⚠️ DISCORD_WEBHOOK_URL が設定されていません")
-    
-    if not slack_webhook and not discord_webhook:
-        print("⚠️ 通知先が設定されていません（SLACK_WEBHOOK_URL または DISCORD_WEBHOOK_URL を設定してください）")
-        return False
-    
-    return success
 
 if __name__ == "__main__":
+    import sys
     success = main()
-    exit(0 if success else 1)
+    sys.exit(0 if success else 1)

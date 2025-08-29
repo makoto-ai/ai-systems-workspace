@@ -1,35 +1,37 @@
 {
-  "export_timestamp": "2025-08-29T22:21:29.900691",
+  "export_timestamp": "2025-08-29T23:52:03.605522",
   "total_new_failures": 2,
   "new_failures": [
     {
-      "case_id": "sample_007",
-      "reference": "分析ダッシュボード メトリクス 可視化 監視",
-      "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
-      "score": 0.25,
+      "case_id": "sample_006",
+      "reference": "営業ロープレ 自動化 CI整備",
+      "prediction": "営業システム 自動 CI",
+      "score": 0.3,
       "root_cause": "MODEL",
-      "date": "20250829",
-      "log_file": "20250829_220512.jsonl",
+      "date": "20250815",
+      "log_file": "20250815_120000.jsonl",
       "diff_analysis": {
         "missing_tokens": [
-          "可視化",
-          "監視",
-          "分析ダッシュボード",
-          "メトリクス"
+          "自動化",
+          "CI整備",
+          "営業ロープレ"
         ],
         "extra_tokens": [
-          "ダッシュボード",
-          "構築",
-          "状況",
-          "分析",
-          "監視ツール"
+          "自動",
+          "営業システム",
+          "CI"
         ],
         "common_tokens": [],
         "similar_pairs": [
           {
-            "missing": "分析ダッシュボード",
-            "extra": "ダッシュボード",
-            "similarity": 0.7777777777777778
+            "missing": "自動化",
+            "extra": "自動",
+            "similarity": 0.6666666666666666
+          },
+          {
+            "missing": "CI整備",
+            "extra": "CI",
+            "similarity": 0.5
           }
         ],
         "jaccard_similarity": 0.0
@@ -41,21 +43,21 @@
       "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
       "score": 0.25,
       "root_cause": "MODEL",
-      "date": "20250829",
-      "log_file": "20250829_215903.jsonl",
+      "date": "20250822",
+      "log_file": "20250822_120000.jsonl",
       "diff_analysis": {
         "missing_tokens": [
-          "可視化",
           "監視",
-          "分析ダッシュボード",
-          "メトリクス"
+          "可視化",
+          "メトリクス",
+          "分析ダッシュボード"
         ],
         "extra_tokens": [
-          "ダッシュボード",
+          "監視ツール",
           "構築",
           "状況",
-          "分析",
-          "監視ツール"
+          "ダッシュボード",
+          "分析"
         ],
         "common_tokens": [],
         "similar_pairs": [

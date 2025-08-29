@@ -1,0 +1,65 @@
+{
+  "multi_shadow_evaluation": {
+    "current_threshold": 0.5,
+    "shadow_thresholds": [
+      0.85
+    ],
+    "timestamp": "2025-08-29T23:25:31.664916",
+    "total_cases": 10,
+    "thresholds": {
+      "0.85": {
+        "threshold": 0.85,
+        "total_cases": 10,
+        "shadow_passed": 6,
+        "shadow_pass_rate": 60.0,
+        "weighted_pass_rate": 55.94405594405594,
+        "total_weight": 14.3,
+        "total_failures": 4,
+        "new_failures": 3,
+        "new_fail_ratio": 0.75,
+        "flaky_failures": 0,
+        "flaky_rate": 0.0,
+        "root_cause_top3": [
+          [
+            "TOKENIZE",
+            3
+          ],
+          [
+            "MODEL",
+            1
+          ]
+        ],
+        "failed_cases": [
+          {
+            "id": "sample_003",
+            "input": "システム品質向上の要点: 品質ゲートの設置とテスト強化を実施しました",
+            "reference": "品質ゲート テスト強化 システム 品質向上",
+            "prediction": "システム 品質 ゲート テスト 強化",
+            "score": 0.35
+          },
+          {
+            "id": "sample_004",
+            "input": "セキュリティ対策の実装概要: セキュリティ検知機能の導入により脆弱性をチェックしています",
+            "reference": "セキュリティ検知 脆弱性 チェック 機能",
+            "prediction": "セキュリティ対策 セキュリティ検知 脆弱性",
+            "score": 0.6
+          },
+          {
+            "id": "sample_007",
+            "input": "監視ツール構築状況: 分析ダッシュボードの設置が完了し、メトリクスを可視化できます",
+            "reference": "分析ダッシュボード メトリクス 可視化 監視",
+            "prediction": "監視ツール 構築 状況 分析 ダッシュボード",
+            "score": 0.35
+          },
+          {
+            "id": "sample_008",
+            "input": "ユーザー体験の改善: フィードバック効率化によりレスポンス時間を短縮",
+            "reference": "フィードバック効率化 レスポンス時間 短縮 改善",
+            "prediction": "ユーザー体験 改善 フィードバック 效率化 レスポンス",
+            "score": 0.6
+          }
+        ]
+      }
+    }
+  }
+}
