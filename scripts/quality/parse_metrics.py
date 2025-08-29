@@ -5,10 +5,10 @@ txt = open(sys.argv[1], 'r', encoding='utf-8', errors='ignore').read() if len(sy
 def find(pat):
     m = re.search(pat, txt, re.IGNORECASE)
     return m.group(1) if m else 'unknown'
-# 代表的な表記ゆれをカバー（Pass: 70% / PASS=70% / pass 70 % など）
-pass_v  = find(r'Pass\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%')
-new_v   = find(r'New\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%')
-flaky_v = find(r'Flaky\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%')
+# 代表的な表記ゆれをカバー（Pass: 70% / PASS=70% / pass 70 % / 合格率: 70.0% など）
+pass_v  = find(r'(?:Pass|合格率)\s*[:=]\s*(?:[0-9]+/[0-9]+\s*\()?\s*([0-9]+(?:\.[0-9]+)?)%')
+new_v   = find(r'(?:New|新規失敗率)\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%')
+flaky_v = find(r'(?:Flaky|Flaky率)\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)%')
 print(f"PASS={pass_v}")
 print(f"NEW={new_v}")
 print(f"FLAKY={flaky_v}")
