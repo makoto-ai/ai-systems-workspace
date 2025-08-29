@@ -36,10 +36,8 @@ jobs:
         pip install pyyaml
 
     - name: Setup environment
-      env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       run: |
-        echo "GROQ_API_KEY=${GROQ_API_KEY}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
 
     - name: Run PR Branch Shadow Evaluation
       id: pr_eval
@@ -355,10 +353,8 @@ jobs:
         pip install pyyaml
 
     - name: Setup environment
-      env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       run: |
-        echo "GROQ_API_KEY=${GROQ_API_KEY}" >> $GITHUB_ENV
+        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
 
     - name: Run Shadow Grid Evaluation
       run: |
@@ -421,9 +417,8 @@ jobs:
     - name: Notify Slack (Data Collection)
       if: always()
       continue-on-error: true
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
+        SLACK_WEBHOOK_URL="${{ secrets.SLACK_WEBHOOK_URL }}"
         if [ -z "$SLACK_WEBHOOK_URL" ]; then
           echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
           exit 0
