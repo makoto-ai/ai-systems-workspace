@@ -329,3 +329,8 @@ enhanced_monitoring.yml
 .DS_Store
 __pycache__/
 .venv/
+# .env files and secrets
+.env*
+*.env
+secrets/
+**/secrets/
