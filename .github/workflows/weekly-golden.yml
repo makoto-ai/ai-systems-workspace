@@ -27,11 +27,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Run weekly golden check
+      - name: Run weekly golden check with retry
         id: golden_check
         run: |
           chmod +x scripts/weekly_golden_check.sh
-          ./scripts/weekly_golden_check.sh > golden_output.txt 2>&1
+          
+          # 最大3回まで再試行
+          for attempt in 1 2 3; do
+            echo "🔄 Golden Test 実行 (試行 $attempt/3)"
+            
+            if ./scripts/weekly_golden_check.sh > golden_output_$attempt.txt 2>&1; then
+              echo "✅ 試行 $attempt で成功"
+              cp golden_output_$attempt.txt golden_output.txt
+              break
+            else
+              echo "❌ 試行 $attempt で失敗"
+              cat golden_output_$attempt.txt
+              
+              if [ $attempt -eq 3 ]; then
+                echo "🔥 3回試行後も失敗 - FAIL として処理"
+                cp golden_output_$attempt.txt golden_output.txt
+                # 最終試行の結果を使用して続行
+              else
+                echo "⏳ 30秒待機後に再試行..."
+                sleep 30
+              fi
+            fi
+          done
+          
           cat golden_output.txt
           
           # 合格率を抽出

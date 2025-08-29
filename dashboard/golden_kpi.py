@@ -78,7 +78,7 @@ def load_observation_log():
     return pd.DataFrame(weekly_data)
 
 def analyze_failure_reasons(df):
-    """失敗理由の分析"""
+    """失敗理由の分析（Root Cause分析含む）"""
     failed_cases = df[df['passed'] == False]
     if failed_cases.empty:
         return pd.DataFrame()
@@ -91,16 +91,46 @@ def analyze_failure_reasons(df):
         missing_words = ref_words - pred_words
         extra_words = pred_words - ref_words
         
+        # Root Cause分析（簡易版）
+        root_cause = analyze_root_cause(case['score'], missing_words, pred_words)
+        
         failure_analysis.append({
             'case_id': case['id'],
             'score': case['score'],
             'missing_words': ', '.join(missing_words) if missing_words else 'なし',
             'extra_words': ', '.join(extra_words) if extra_words else 'なし',
             'missing_count': len(missing_words),
+            'root_cause': root_cause,
             'date': case.get('date', 'Unknown')
         })
     
     return pd.DataFrame(failure_analysis)
+
+def analyze_root_cause(score, missing_words, pred_words):
+    """Root Cause簡易分析"""
+    if not pred_words:
+        return "INFRA"
+    elif score == 0:
+        return "MODEL"
+    elif score < 0.3 and missing_words:
+        return "NORMALIZE"
+    elif score < 0.7:
+        return "TOKENIZE"
+    else:
+        return "FLAKY"
+
+def calculate_flaky_rate(df):
+    """Flaky率の計算"""
+    if df.empty:
+        return 0.0
+    
+    failed_cases = df[df['passed'] == False]
+    if failed_cases.empty:
+        return 0.0
+    
+    # スコア0.7以上の失敗をFlakyと判定
+    flaky_cases = failed_cases[failed_cases['score'] >= 0.7]
+    return len(flaky_cases) / len(failed_cases) * 100
 
 def calculate_model_efficiency(df):
     """モデル別効率性の計算（合格1件あたりの試行回数）"""
@@ -164,18 +194,20 @@ else:
     df_filtered = df
 
 # メトリクス表示
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 if not df_filtered.empty:
     total_cases = len(df_filtered)
     passed_cases = len(df_filtered[df_filtered['passed'] == True])
     pass_rate = passed_cases / total_cases * 100 if total_cases > 0 else 0
     avg_score = df_filtered['score'].mean()
+    flaky_rate = calculate_flaky_rate(df_filtered)
     
     col1.metric("総テスト数", total_cases)
     col2.metric("合格数", passed_cases)
     col3.metric("合格率", f"{pass_rate:.1f}%")
     col4.metric("平均スコア", f"{avg_score:.3f}")
+    col5.metric("Flaky率", f"{flaky_rate:.1f}%")
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")
@@ -208,7 +240,24 @@ if not df_filtered.empty:
     failure_df = analyze_failure_reasons(df_filtered)
     
     if not failure_df.empty:
+        # Root Cause Top3の表示
+        st.subheader("📊 Root Cause Top3")
+        root_cause_counts = failure_df['root_cause'].value_counts().head(3)
+        
+        if not root_cause_counts.empty:
+            col1, col2, col3 = st.columns(3)
+            
+            for i, (cause, count) in enumerate(root_cause_counts.items()):
+                percentage = (count / len(failure_df)) * 100
+                with [col1, col2, col3][i]:
+                    st.metric(
+                        f"#{i+1} {cause}",
+                        f"{count}件",
+                        f"{percentage:.1f}%"
+                    )
+        
         # 不足キーワードの頻度分析
+        st.subheader("🔤 不足キーワード上位10")
         missing_words_flat = []
         for words_str in failure_df['missing_words']:
             if words_str != 'なし':
@@ -221,7 +270,7 @@ if not df_filtered.empty:
                 x=missing_freq.values,
                 y=missing_freq.index,
                 orientation='h',
-                title='不足キーワード上位10',
+                title='不足キーワード頻度',
                 labels={'x': '出現回数', 'y': 'キーワード'}
             )
             fig_failures.update_layout(height=400)

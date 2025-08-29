@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-29T21:42:06.107301",
+  "timestamp": "2025-08-29T21:50:33.071691",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "e093e66304083361cbd38c36541ed4e38e79b309",
-    "branch": "threshold-upgrade-clean",
-    "uncommitted_changes": 0,
-    "status_details": ""
+    "commit_hash": "6158b785b8aeac3a501a39f8b18fd4b238aac384",
+    "branch": "master",
+    "uncommitted_changes": 4,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250829_214645.json\n?? memory/snapshots/mcp_snapshot_20250829_214955.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 51,
-      "total_files": 107
+      "total_files": 106
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25600,
+    "python_files_count": 27481,
     "cursor_configs_count": 13
   },
-  "state_hash": "a6807544db001ca8f69941cd6d0940d4"
+  "state_hash": "badcf82521653ec293c5f7b0b8797ae1"
 }
