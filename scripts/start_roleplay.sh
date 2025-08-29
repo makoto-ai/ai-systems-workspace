@@ -1,210 +1,164 @@
 #!/bin/bash
+# AIロールプレイシステム起動スクリプト
 
-# 🎤 AI Voice Roleplay System - Quick Start Script
-# 作成日: 2025-08-04
-# 目的: 1行でロールプレイシステムを起動
+set -e
 
-set -e  # エラー時に停止
+# ログ設定
+LOG_FILE="logs/roleplay_start.log"
+mkdir -p logs
 
-# カラー出力設定
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# ログ関数
-log_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-log_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-# ヘルプ表示
-show_help() {
-    echo "🎤 AI Voice Roleplay System - Quick Start"
-    echo ""
-    echo "使用方法:"
-    echo "  ./scripts/start_roleplay.sh [オプション]"
-    echo ""
-    echo "オプション:"
-    echo "  -h, --help     このヘルプを表示"
-    echo "  -d, --docker   Dockerで起動"
-    echo "  -v, --verbose  詳細ログを表示"
-    echo "  --backup       起動前にバックアップ実行"
-    echo ""
-    echo "例:"
-    echo "  ./scripts/start_roleplay.sh              # 通常起動"
-    echo "  ./scripts/start_roleplay.sh --docker     # Docker起動"
-    echo "  ./scripts/start_roleplay.sh --backup     # バックアップ後起動"
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
 # 環境チェック
 check_environment() {
-    log_info "🔍 環境チェック中..."
+    log "🔍 環境チェック開始"
     
-    # Python環境チェック
-    if ! command -v python3 &> /dev/null; then
-        log_error "Python3がインストールされていません"
-        exit 1
-    fi
-    
-    # 仮想環境チェック
+    # Python仮想環境確認
     if [ ! -d ".venv" ]; then
-        log_warning "仮想環境が見つかりません。作成します..."
-        python3 -m venv .venv
-        log_success "仮想環境を作成しました"
+        log "❌ Python仮想環境が見つかりません"
+        log "📥 作成方法: python3 -m venv .venv"
+        return 1
     fi
     
-    # 依存関係チェック
-    if [ ! -f "requirements.txt" ]; then
-        log_warning "requirements.txtが見つかりません"
+    # 依存関係確認
+    if ! source .venv/bin/activate && python -c "import fastapi, psutil, requests" 2>/dev/null; then
+        log "❌ 依存関係が不足しています"
+        log "📥 インストール方法: pip install -r requirements.txt"
+        return 1
     fi
     
-    log_success "環境チェック完了"
+    # 環境変数確認
+    if [ -z "$CLAUDE_API_KEY" ] && [ -z "$OPENAI_API_KEY" ]; then
+        log "⚠️  APIキーが設定されていません"
+        log "📝 設定方法: .envファイルにAPIキーを追加"
+    fi
+    
+    log "✅ 環境チェック完了"
 }
 
-# バックアップ実行
-run_backup() {
-    log_info "💾 バックアップ実行中..."
-    if [ -f "scripts/backup/weekly_backup.sh" ]; then
-        bash scripts/backup/weekly_backup.sh
-        log_success "バックアップ完了"
+# サービス起動
+start_services() {
+    log "🚀 サービス起動開始"
+    
+    # 1. データベース起動
+    if command -v docker &> /dev/null; then
+        log "🐳 Docker Compose起動中..."
+        docker-compose up -d postgres redis 2>/dev/null || log "⚠️  Docker Compose起動失敗"
     else
-        log_warning "バックアップスクリプトが見つかりません"
+        log "⚠️  Dockerがインストールされていません"
     fi
+    
+    # 2. 監視サービス起動
+    if [ -d "monitoring" ]; then
+        log "📊 監視サービス起動中..."
+        docker-compose up -d prometheus grafana 2>/dev/null || log "⚠️  監視サービス起動失敗"
+    fi
+    
+    log "✅ サービス起動完了"
 }
 
-# 通常起動
-start_normal() {
-    log_info "🚀 通常モードで起動中..."
+# メインアプリケーション起動
+start_main_app() {
+    log "🎤 AIロールプレイシステム起動中..."
     
     # 仮想環境アクティベート
-    if [ -f ".venv/bin/activate" ]; then
-        source .venv/bin/activate
-        log_info "✅ 仮想環境をアクティベートしました"
+    source .venv/bin/activate
+    
+    # 環境変数読み込み
+    if [ -f ".env" ]; then
+        export $(cat .env | grep -v '^#' | xargs)
+        log "✅ 環境変数読み込み完了"
+    fi
+    
+    # メインアプリケーション起動
+    log "🌐 FastAPIサーバー起動中..."
+    uvicorn main_hybrid:app --host 0.0.0.0 --port 8000 --reload &
+    APP_PID=$!
+    
+    # 起動待機
+    sleep 5
+    
+    # ヘルスチェック
+    if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+        log "✅ アプリケーション起動完了"
+        log "🌐 ダッシュボード: http://localhost:8000"
+        log "📊 メトリクス: http://localhost:8000/metrics"
+        log "🔍 ヘルスチェック: http://localhost:8000/health"
     else
-        log_error "仮想環境が見つかりません"
-        exit 1
-    fi
-    
-    # 依存関係インストール
-    if [ -f "requirements.txt" ]; then
-        log_info "📦 依存関係をインストール中..."
-        pip install --upgrade pip
-        pip install -r requirements.txt || {
-            log_warning "一部の依存関係のインストールに失敗しました。基本パッケージのみインストールします..."
-            pip install fastapi uvicorn python-dotenv requests || {
-                log_error "基本パッケージのインストールにも失敗しました"
-                exit 1
-            }
-        }
-    fi
-    
-    # 環境変数チェック
-    if [ ! -f ".env" ]; then
-        log_warning ".envファイルが見つかりません"
-        if [ -f "env.example" ]; then
-            log_info "env.exampleから.envを作成中..."
-            cp env.example .env
-            log_success ".envファイルを作成しました"
-        fi
-    fi
-    
-    # メインスクリプト実行
-    if [ -f "scripts/run_voice_loop.py" ]; then
-        log_info "🎤 音声ループ開始..."
-        python scripts/run_voice_loop.py
-    elif [ -f "main_hybrid.py" ]; then
-        log_info "🤖 ハイブリッドシステム開始..."
-        python main_hybrid.py
-    elif [ -f "youtube_script_generation_system.py" ]; then
-        log_info "📝 YouTubeスクリプト生成システム開始..."
-        python youtube_script_generation_system.py
-    else
-        log_warning "起動可能なメインスクリプトが見つかりません"
-        log_info "利用可能なスクリプト:"
-        ls -la *.py 2>/dev/null || log_info "  - メインディレクトリにPythonファイルが見つかりません"
-        ls -la scripts/*.py 2>/dev/null || log_info "  - scriptsディレクトリにPythonファイルが見つかりません"
-        log_info "システムを手動で起動してください"
-        exit 0
+        log "❌ アプリケーション起動失敗"
+        return 1
     fi
 }
 
-# Docker起動
-start_docker() {
-    log_info "🐳 Dockerモードで起動中..."
+# 音声処理サービス起動
+start_voice_services() {
+    log "🎵 音声処理サービス起動中..."
     
-    if [ ! -f "docker-compose.yml" ]; then
-        log_error "docker-compose.ymlが見つかりません"
-        exit 1
+    # WhisperX起動（オプション）
+    if command -v whisperx &> /dev/null; then
+        log "🎤 WhisperX起動中..."
+        # WhisperX起動コマンド（環境に応じて調整）
+    else
+        log "⚠️  WhisperXがインストールされていません"
     fi
     
-    # Docker Compose起動
-    docker-compose up -d
-    
-    log_success "Dockerコンテナを起動しました"
-    log_info "📊 監視ダッシュボード: http://localhost:3000"
-    log_info "🎤 音声API: http://localhost:50021"
+    # Voicevox起動（オプション）
+    if [ -d "voicevox" ] || command -v voicevox &> /dev/null; then
+        log "🔊 Voicevox起動中..."
+        # Voicevox起動コマンド（環境に応じて調整）
+    else
+        log "⚠️  Voicevoxがインストールされていません"
+    fi
 }
 
-# メイン処理
+# 使用方法表示
+show_usage() {
+    log "📖 使用方法"
+    echo ""
+    echo "🎤 AIロールプレイシステム"
+    echo "=========================="
+    echo ""
+    echo "🌐 Webインターフェース:"
+    echo "   http://localhost:8000"
+    echo ""
+    echo "📊 監視ダッシュボード:"
+    echo "   http://localhost:3000 (Grafana)"
+    echo "   http://localhost:9090 (Prometheus)"
+    echo ""
+    echo "🔧 管理コマンド:"
+    echo "   ./scripts/backup/weekly_backup.sh  # バックアップ"
+    echo "   ./scripts/run_ai_pipeline.sh       # AIパイプライン"
+    echo "   ./scripts/setup_vault.sh           # Vault設定"
+    echo ""
+    echo "🛑 停止方法:"
+    echo "   Ctrl+C または docker-compose down"
+    echo ""
+}
+
+# メイン実行
 main() {
-    # 引数解析
-    BACKUP_FLAG=false
-    DOCKER_FLAG=false
-    VERBOSE_FLAG=false
+    log "🎯 AIロールプレイシステム起動開始"
     
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            -h|--help)
-                show_help
-                exit 0
-                ;;
-            -d|--docker)
-                DOCKER_FLAG=true
-                shift
-                ;;
-            -v|--verbose)
-                VERBOSE_FLAG=true
-                shift
-                ;;
-            --backup)
-                BACKUP_FLAG=true
-                shift
-                ;;
-            *)
-                log_error "不明なオプション: $1"
-                show_help
-                exit 1
-                ;;
-        esac
-    done
+    # 1. 環境チェック
+    check_environment || exit 1
     
-    # バックアップ実行
-    if [ "$BACKUP_FLAG" = true ]; then
-        run_backup
-    fi
+    # 2. サービス起動
+    start_services
     
-    # 環境チェック
-    check_environment
+    # 3. 音声処理サービス起動
+    start_voice_services
     
-    # 起動モード選択
-    if [ "$DOCKER_FLAG" = true ]; then
-        start_docker
-    else
-        start_normal
-    fi
+    # 4. メインアプリケーション起動
+    start_main_app || exit 1
+    
+    # 5. 使用方法表示
+    show_usage
+    
+    # 6. プロセス監視
+    log "🔄 システム稼働中... (Ctrl+Cで停止)"
+    wait $APP_PID
 }
 
 # スクリプト実行

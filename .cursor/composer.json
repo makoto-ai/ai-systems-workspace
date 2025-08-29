@@ -7,7 +7,7 @@
     "hallucination_check": "scripts/check_hallucination.py",
     "structure_validation": "scripts/validate_structure.py",
     "manuscript_suggestion": "claude-3-opus",
-    "pipeline_trigger": "scripts/run_pipeline.sh",
+    "pipeline_trigger": "scripts/run_ai_pipeline.sh",
     "quality_analysis": "scripts/quality_score_plot.py",
     "security_scan": "scripts/security_scan.py",
     "performance_test": "scripts/performance_test.py"

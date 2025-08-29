@@ -7,15 +7,14 @@
 
 import os
 import time
-import psutil
+import psutil  # type: ignore
 import logging
 import asyncio
 import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from datetime import datetime, timedelta
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from fastapi import Response, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST  # type: ignore
+from fastapi import Response, WebSocket  # type: ignore
 import threading
 import queue
 
@@ -161,41 +160,42 @@ class SystemMonitor:
             try:
                 # システムメトリクスを取得
                 metrics = self.get_system_metrics()
-                
-                # Prometheusメトリクスを更新
-                self.cpu_usage.set(metrics.get('cpu', {}).get('percent', 0))
+
+                # Prometheusメトリクスを更新（キー整合性修正）
+                self.cpu_usage.set(metrics.get('cpu', {}).get('usage_percent', 0))
                 self.memory_usage.set(metrics.get('memory', {}).get('percent', 0))
                 self.disk_usage.set(metrics.get('disk', {}).get('percent', 0))
-                
+
                 # メトリクス履歴に追加
                 record = {
                     'timestamp': datetime.now().isoformat(),
                     'metrics': metrics
                 }
                 self.metrics_history.append(record)
-                
+
                 # パフォーマンス記録を追加
                 performance_data = {
-                    'cpu_percent': metrics.get('cpu', {}).get('percent', 0),
+                    'cpu_percent': metrics.get('cpu', {}).get('usage_percent', 0),
                     'memory_percent': metrics.get('memory', {}).get('percent', 0),
                     'disk_percent': metrics.get('disk', {}).get('percent', 0),
-                    'active_connections': metrics.get('network', {}).get('connections', 0)
+                    # 接続数は system メトリクスで提供
+                    'active_connections': metrics.get('system', {}).get('connections', 0)
                 }
                 self.add_performance_record(performance_data)
-                
+
                 # アラートチェック
                 alerts = self.check_alerts(performance_data)
                 for alert in alerts:
                     self.record_alert(alert['type'], alert['message'])
-                
-                # 古いデータのクリーンアップ（1時間に1回）
+
+                # 古いデータのクリーンアップ（60サンプル毎 ≒ 1時間）
                 if len(self.metrics_history) % 60 == 0:
                     self.cleanup_old_data()
-                
-                await asyncio.sleep(60)  # 1分間隔
-                
-                except Exception as e:
+
+            except Exception as e:
                 logger.error(f"メトリクス収集エラー: {e}")
+            finally:
+                # 失敗時も一定間隔で再試行
                 await asyncio.sleep(60)
 
     async def check_system_health(self):
@@ -204,43 +204,41 @@ class SystemMonitor:
             try:
                 # 健全性サマリーを取得
                 health_summary = self.get_health_summary()
-                
+
                 # 健全性記録を追加
                 self.add_health_record(health_summary)
-                
+
                 # 健全性ステータスをPrometheusメトリクスに反映
                 health_status = 1 if health_summary.get('status') == 'healthy' else 0
                 self.system_health.set(health_status)
-                
+
                 # 警告やクリティカルアラートを記録
                 for warning in health_summary.get('warnings', []):
                     self.record_alert('health_warning', warning)
-                
+
                 for critical in health_summary.get('critical_alerts', []):
                     self.record_alert('health_critical', critical)
-                
-                await asyncio.sleep(300)  # 5分間隔
-                
-                except Exception as e:
+            except Exception as e:
                 logger.error(f"健全性チェックエラー: {e}")
-                await asyncio.sleep(300)
+            finally:
+                await asyncio.sleep(300)  # 5分間隔
     
     def record_request(self, endpoint: str, method: str, status: int, duration: float):
         """リクエスト記録"""
         try:
             self.request_counter.labels(endpoint=endpoint, method=method, status=status).inc()
             self.request_duration.labels(endpoint=endpoint, method=method).observe(duration)
-            
+
             if status >= 400:
                 self.error_counter.labels(endpoint=endpoint, error_type=f"http_{status}").inc()
-                except Exception as e:
+        except Exception as e:
             logger.error(f"リクエスト記録エラー: {e}")
                 
     def record_error(self, endpoint: str, error_type: str):
         """エラー記録"""
-                try:
+        try:
             self.error_counter.labels(endpoint=endpoint, error_type=error_type).inc()
-                except Exception as e:
+        except Exception as e:
             logger.error(f"エラー記録エラー: {e}")
     
     def record_alert(self, alert_type: str, message: str):
@@ -359,12 +357,12 @@ class SystemMonitor:
         try:
             if not self.performance_history:
                 return {'error': 'No performance data available'}
-            
+
             # 統計計算
             cpu_values = [record['cpu_percent'] for record in self.performance_history]
             memory_values = [record['memory_percent'] for record in self.performance_history]
             disk_values = [record['disk_percent'] for record in self.performance_history]
-            
+
             analysis = {
                 'cpu': {
                     'current': cpu_values[-1] if cpu_values else 0,
@@ -390,9 +388,9 @@ class SystemMonitor:
                 'data_points': len(self.performance_history),
                 'time_range': self._get_time_range()
             }
-            
+
             return analysis
-            except Exception as e:
+        except Exception as e:
             logger.error(f"パフォーマンス分析エラー: {e}")
             return {'error': str(e)}
 
@@ -482,36 +480,37 @@ class SystemMonitor:
     def cleanup_old_data(self):
         """古いデータをクリーンアップ"""
         try:
-            current_time = datetime.now()
-            
+            retention_hours = self.monitoring_config.get('metrics_retention_hours', 24)
+            cutoff_time = datetime.now() - timedelta(hours=retention_hours)
+
             # メトリクス履歴のクリーンアップ
-            cutoff_time = current_time.replace(hour=current_time.hour - self.monitoring_config['metrics_retention_hours'])
             self.metrics_history = [
                 record for record in self.metrics_history
                 if datetime.fromisoformat(record['timestamp']) > cutoff_time
             ]
-            
+
             # パフォーマンス履歴のクリーンアップ
             self.performance_history = [
                 record for record in self.performance_history
                 if datetime.fromisoformat(record['timestamp']) > cutoff_time
             ]
-            
+
             # 健全性履歴のクリーンアップ
             self.health_history = [
                 record for record in self.health_history
                 if datetime.fromisoformat(record['timestamp']) > cutoff_time
             ]
-            
-            logger.info(f"古いデータをクリーンアップしました: {len(self.metrics_history)} メトリクス, {len(self.performance_history)} パフォーマンス, {len(self.health_history)} 健全性記録")
-            
-                except Exception as e:
+
+            logger.info(
+                f"古いデータをクリーンアップしました: {len(self.metrics_history)} メトリクス, "
+                f"{len(self.performance_history)} パフォーマンス, {len(self.health_history)} 健全性記録"
+            )
+        except Exception as e:
             logger.error(f"データクリーンアップエラー: {e}")
 
     def get_system_recommendations(self) -> List[str]:
         """システム推奨事項を取得"""
         recommendations = []
-        
         try:
             # 最新の健全性データを取得
             if self.health_history:
@@ -552,11 +551,10 @@ class SystemMonitor:
             
             if not recommendations:
                 recommendations.append("システムは良好な状態です。継続的な監視を維持してください")
-                
-                except Exception as e:
+        except Exception as e:
             logger.error(f"推奨事項取得エラー: {e}")
             recommendations.append("推奨事項の取得中にエラーが発生しました")
-        
+
         return recommendations
 
     # WebSocket接続管理
@@ -637,7 +635,7 @@ class SystemMonitor:
             # 基本メトリクス
             cpu_percent = psutil.cpu_percent()
             memory = psutil.virtual_memory()
-                    disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage('/')
             
             # ネットワーク情報
             net_io = psutil.net_io_counters()
@@ -716,8 +714,7 @@ class SystemMonitor:
                 'severity': 'warning',
                 'value': memory_percent
             })
-        
-                    if disk_percent > 95:
+        if disk_percent > 95:
             alerts.append({
                 'type': 'disk_critical',
                 'message': f'Critical disk usage: {disk_percent:.1f}%',
@@ -739,7 +736,7 @@ class SystemMonitor:
         try:
             metrics = real_time_data.get('metrics', {})
             alerts = real_time_data.get('alerts', [])
-            
+
             # クリティカルアラートの検出
             critical_alerts = [alert for alert in alerts if alert.get('severity') == 'critical']
             if critical_alerts:
@@ -771,8 +768,7 @@ class SystemMonitor:
                 # 履歴サイズ制限
                 if len(self.monitoring_events['system_changes']) > 30:
                     self.monitoring_events['system_changes'] = self.monitoring_events['system_changes'][-30:]
-                    
-                except Exception as e:
+        except Exception as e:
             logger.error(f"監視イベント検出エラー: {e}")
 
     def get_monitoring_events(self) -> Dict[str, Any]:
@@ -844,7 +840,7 @@ class SystemMonitor:
         
         if ss_tot == 0:
             r_squared = 0
-                else:
+        else:
             r_squared = 1 - (ss_res / ss_tot)
         
         # 方向と強度の判定
@@ -898,7 +894,6 @@ class SystemMonitor:
     def _detect_anomalies(self) -> List[Dict[str, Any]]:
         """異常検出"""
         anomalies = []
-        
         try:
             if len(self.performance_history) < 10:
                 return anomalies
@@ -948,10 +943,9 @@ class SystemMonitor:
                         'severity': 'high' if recent_cpu_change > 30 else 'medium',
                         'timestamp': self.performance_history[-1]['timestamp']
                     })
-                
-            except Exception as e:
+        except Exception as e:
             logger.error(f"異常検出エラー: {e}")
-        
+
         return anomalies
 
     def _calculate_confidence_level(self) -> float:
@@ -989,14 +983,14 @@ class SystemMonitor:
                 'overall_score': 100,
                 'recommendations': []
             }
-            
+
             # ファイル権限チェック
             critical_files = [
                 ('/etc/passwd', 0o644),
                 ('/etc/shadow', 0o600),
                 ('/etc/sudoers', 0o440)
             ]
-            
+
             for file_path, expected_perms in critical_files:
                 if os.path.exists(file_path):
                     try:
@@ -1019,7 +1013,7 @@ class SystemMonitor:
                                 'status': 'pass',
                                 'score_deduction': 0
                             })
-        except Exception as e:
+                    except Exception as e:
                         audit_results['checks'].append({
                             'type': 'file_permissions',
                             'file': file_path,
@@ -1028,7 +1022,7 @@ class SystemMonitor:
                             'score_deduction': 5
                         })
                         audit_results['overall_score'] -= 5
-            
+
             # 環境変数セキュリティチェック
             sensitive_vars = ['API_KEY', 'SECRET', 'PASSWORD', 'TOKEN', 'PRIVATE_KEY']
             for var in sensitive_vars:
@@ -1041,7 +1035,7 @@ class SystemMonitor:
                         'score_deduction': 5
                     })
                     audit_results['overall_score'] -= 5
-            
+
             # プロセスセキュリティチェック
             try:
                 current_process = psutil.Process()
@@ -1068,22 +1062,25 @@ class SystemMonitor:
                     'score_deduction': 5
                 })
                 audit_results['overall_score'] -= 5
-            
+
             # 推奨事項の生成
             if audit_results['overall_score'] < 80:
                 audit_results['recommendations'].append("セキュリティスコアが低いため、セキュリティ設定の見直しを推奨します")
-            
+
             for check in audit_results['checks']:
                 if check['status'] == 'warning':
-                    if check['type'] == 'file_permissions':
-                        audit_results['recommendations'].append(f"ファイル {check['file']} の権限を {check['expected']} に変更してください")
-                    elif check['type'] == 'environment_variables':
-                        audit_results['recommendations'].append(f"環境変数 {check['variable']} の使用を最小限に抑えてください")
-                    elif check['type'] == 'process_security':
+                    if check.get('type') == 'file_permissions':
+                        audit_results['recommendations'].append(
+                            f"ファイル {check['file']} の権限を {check.get('expected', '適切値')} に変更してください"
+                        )
+                    elif check.get('type') == 'environment_variables':
+                        audit_results['recommendations'].append(
+                            f"環境変数 {check['variable']} の使用を最小限に抑えてください"
+                        )
+                    elif check.get('type') == 'process_security':
                         audit_results['recommendations'].append("可能であれば、非特権ユーザーでプロセスを実行してください")
-            
+
             return audit_results
-            
         except Exception as e:
             logger.error(f"セキュリティ監査エラー: {e}")
             return {
@@ -2147,4 +2144,4 @@ def get_system_monitor():
     return _system_monitor
 
 # エクスポートするクラスと関数
-__all__ = ['SystemMonitor', 'get_system_monitor'] 
+__all__ = ['SystemMonitor', 'get_system_monitor']

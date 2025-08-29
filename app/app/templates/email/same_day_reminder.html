@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}本日中にロールプレイを完了しましょう{% endblock %}
+
+{% block header %}🔥 本日が最終日です！{% endblock %}
+
+{% block content %}
+<h2>{{ user_name }}さん、今日が最後のチャンスです！</h2>
+
+<p><strong>緊急：</strong>本日中にロールプレイを完了してください。継続的な成長のために、今すぐ行動しましょう！</p>
+
+{% if last_roleplay_date %}
+<div class="stats">
+    <h3>📊 あなたの記録</h3>
+    <p><strong>最後のロールプレイ：</strong> {{ last_roleplay_date }}</p>
+    <p><strong>連続実行記録：</strong> {{ streak_count }}回 <span style="color: #e74c3c;">（途切れる危険！）</span></p>
+</div>
+{% endif %}
+
+<p class="highlight">{{ personalized_message }}</p>
+
+<div class="stats" style="border-left: 4px solid #e74c3c;">
+    <h3>🚨 今すぐできる最短練習（10分）</h3>
+    <p><strong>クイック練習モード：</strong></p>
+    <ul>
+        <li>既存顧客への追加提案（3分設定 + 5分実行 + 2分振り返り）</li>
+        <li>電話アポイントメント獲得練習</li>
+        <li>クロージング場面の練習</li>
+    </ul>
+</div>
+
+<a href="#" class="btn" style="background: #e74c3c; font-size: 18px; padding: 15px 30px;">🔥 緊急練習スタート</a>
+
+<p style="color: #e74c3c;"><strong>注意：</strong>今日を逃すと連続記録がリセットされます。たった10分で継続できます！</p>
+{% endblock %}

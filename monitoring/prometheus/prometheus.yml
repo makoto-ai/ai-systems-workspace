@@ -1,35 +1,51 @@
+# Prometheus設定 - 音声ロールプレイシステム監視
+
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
 rule_files:
-  - "ai_systems_rules.yml"
-
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-          - alertmanager:9093
+  # - "first_rules.yml"
+  # - "second_rules.yml"
 
 scrape_configs:
-  - job_name: 'ai-systems'
-    static_configs:
-      - targets: ['ai-systems:8000']
-    metrics_path: '/metrics'
-    scrape_interval: 10s
-
+  # Prometheus自体の監視
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'grafana'
+  # FastAPI アプリケーション監視
+  - job_name: 'voice-roleplay-api'
     static_configs:
-      - targets: ['grafana:3000']
+      - targets: ['host.docker.internal:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 5s
 
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['postgres:5432']
+  # PostgreSQL監視 (postgres_exporter使用時)
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
 
-  - job_name: 'redis'
+  # Redis監視 (redis_exporter使用時)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+
+  # VOICEVOX Engine監視 (カスタムメトリクス)
+  - job_name: 'voicevox-engine'
     static_configs:
-      - targets: ['redis:6379']
+      - targets: ['voicevox-engine:50021']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Node Exporter (システム監視)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
+
+# アラートマネージャー設定 (本番用)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#           - alertmanager:9093

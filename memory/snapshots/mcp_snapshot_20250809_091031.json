@@ -1,0 +1,75 @@
+{
+  "files": [
+    {
+      "hash": "d68ffaaa719920ec6b648f1934abc487",
+      "name": "autostart.json",
+      "size": 734
+    },
+    {
+      "hash": "c2085b7dcdb9e0e994aee755bbebd16d",
+      "name": "composer.json",
+      "size": 3865
+    },
+    {
+      "hash": "c58553a915456b9bb7165a24cecb8d24",
+      "name": "mcp.json",
+      "size": 356
+    },
+    {
+      "hash": "d42968879189efeae4c76b303801b2f2",
+      "name": "mcp.optimized.json",
+      "size": 1385
+    },
+    {
+      "hash": "01206104cbfee71564fbff88a4a08f28",
+      "name": "mcp_audit.json",
+      "size": 8179
+    },
+    {
+      "hash": "1da8c16d0ab2880f0ef0d3a118bfe1e2",
+      "name": "mcp_claude_constitution.json",
+      "size": 2064
+    },
+    {
+      "hash": "c4fb72c897eda2007e34eb3bc896f194",
+      "name": "mcp_groq_constitution.json",
+      "size": 2086
+    },
+    {
+      "hash": "3ff143835fb752dc2d8fcf73ff18e1d2",
+      "name": "mcp_guardrails.json",
+      "size": 2779
+    },
+    {
+      "hash": "f439433e967cf12d2ecc6bc33f6ce5b6",
+      "name": "mcp_prompt.json",
+      "size": 3652
+    },
+    {
+      "hash": "04bc8feabbea79d0925ddacdba0c9670",
+      "name": "mcp_query.json",
+      "size": 3407
+    },
+    {
+      "hash": "243cc41da1fcae3aa8f90db8b4fbc15b",
+      "name": "mcp_security.json",
+      "size": 5130
+    },
+    {
+      "hash": "96219742f1c1a86eee18eeb460d002ba",
+      "name": "mcp_sparrow.json",
+      "size": 2251
+    },
+    {
+      "hash": "dadc1be7f3264bfb22a8a51274597f0a",
+      "name": "memory_composer.json",
+      "size": 4338
+    },
+    {
+      "hash": "170f4b3a787dd517c451631da5c35f36",
+      "name": "project-rules.json",
+      "size": 2463
+    }
+  ],
+  "timestamp": "2025-08-09T09:10:31.026883"
+}

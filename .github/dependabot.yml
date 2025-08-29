@@ -13,16 +13,16 @@ updates:
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 10
     reviewers:
-      - "@me"
+      - "araimakoto"
     assignees:
-      - "@me"
+      - "araimakoto"
     commit-message:
       prefix: "🔒 security"
       include: "scope"
     
   # Node.js依存関係の監視（フロントエンドがある場合）
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/frontend/voice-roleplay-frontend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -30,9 +30,9 @@ updates:
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 5
     reviewers:
-      - "@me"
+      - "araimakoto"
     assignees:
-      - "@me"
+      - "araimakoto"
     commit-message:
       prefix: "🔒 security"
       include: "scope"
@@ -47,9 +47,9 @@ updates:
       timezone: "Asia/Tokyo"
     open-pull-requests-limit: 5
     reviewers:
-      - "@me"
+      - "araimakoto"
     assignees:
-      - "@me"
+      - "araimakoto"
     commit-message:
       prefix: "🔒 security"
       include: "scope"

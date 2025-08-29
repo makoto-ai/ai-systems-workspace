@@ -1,0 +1,59 @@
+# Golden Test Configuration
+
+# 現在のしきい値設定
+threshold: 0.5
+
+# しきい値の段階的引き上げ設定（完成度0.9を目標）
+thresholds:
+  phase1: 0.3   # データ蓄積期
+  phase2: 0.5   # 精度向上期
+  phase3: 0.7   # 本格運用期
+  phase4: 0.85  # 高精度期
+  phase5: 0.9   # 完成ライン
+
+# 階層別昇格ルール
+upgrade_rules:
+  "0.3_to_0.5":
+    consecutive_weeks: 3
+    min_pass_rate: 90
+    condition: "基本安定性確認"
+  "0.5_to_0.7":
+    consecutive_weeks: 2
+    min_pass_rate: 90
+    condition: "不合格原因が辞書/正規化で説明可能"
+  "0.7_to_0.85":
+    consecutive_weeks: 2
+    min_pass_rate: 85
+    condition: "新規不合格の70%以上を次週までに解決可能"
+  "0.85_to_0.9":
+    consecutive_weeks: 3
+    min_pass_rate: 90
+    condition: "実質完成ライン到達"
+
+# 降格ルール
+downgrade_rules:
+  # 2週連続で基準下回りの場合は一段階戻す
+  consecutive_weeks_fail: 2
+  fail_threshold_ratio: 0.8  # しきい値の80%を下回ったら失敗扱い
+
+# 自動昇格の条件（レガシー、上記upgrade_rulesに移行）
+auto_upgrade:
+  # 連続して良好な合格率を維持する週数
+  consecutive_weeks_required: 3
+  # 良好と判定する最低合格率
+  good_rate_threshold: 90
+  # 昇格時の最低合格率
+  upgrade_rate_threshold: 80
+
+# モデル設定
+model:
+  provider: "groq"
+  temperature: 0.0
+  max_tokens: 60
+
+# 観測設定
+observation:
+  # 週次チェックの曜日 (0=月曜, 4=金曜)
+  weekly_check_day: 4
+  # ログ保持期間（日）
+  log_retention_days: 90

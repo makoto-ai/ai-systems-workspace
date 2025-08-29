@@ -1,0 +1,12 @@
+#!/bin/bash
+# Capture project state before commit
+set -euo pipefail
+
+# Python available check
+if command -v python >/dev/null 2>&1; then
+  python scripts/project_memory_system.py --capture --session "pre-commit"
+else
+  echo "python not found; skipping state capture"
+fi
+
+exit 0
