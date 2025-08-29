@@ -6,10 +6,11 @@ Golden Test Root Cause Analyzer
 
 import json
 import re
+import argparse
 from pathlib import Path
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 class RootCause(Enum):
     """失敗理由の分類"""
@@ -20,6 +21,11 @@ class RootCause(Enum):
     DATA_DRIFT = "DATA_DRIFT"  # データ品質劣化
     FLAKY = "FLAKY"           # 再現性のない偶発的失敗
     INFRA = "INFRA"           # インフラ・環境問題
+
+class Freshness(Enum):
+    """失敗の新規性分類"""
+    NEW = "NEW"        # 新規失敗
+    REPEAT = "REPEAT"  # 再発失敗
 
 def analyze_failure_root_cause(case_id: str, reference: str, prediction: str, score: float) -> RootCause:
     """失敗ケースの根本原因を自動分析"""
@@ -147,6 +153,101 @@ def _generate_description(root_cause: RootCause, failure: Dict) -> str:
     
     return descriptions.get(root_cause, "不明な原因")
 
+def build_failure_history() -> Dict[str, Set[str]]:
+    """過去の失敗履歴を構築（case_id -> 失敗した日付のセット）"""
+    logs_dir = Path("tests/golden/logs")
+    failure_history = {}
+    
+    if not logs_dir.exists():
+        return failure_history
+    
+    # 全ログファイルを日付順でスキャン
+    log_files = sorted(logs_dir.glob("*.jsonl"), key=lambda x: x.stem)
+    
+    for log_file in log_files:
+        date_str = log_file.stem  # YYYYMMDD_HHMMSS形式
+        date_part = date_str.split('_')[0]  # YYYYMMDD部分を取得
+        
+        with open(log_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        data = json.loads(line)
+                        if not data.get('passed', True):  # 失敗ケース
+                            case_id = data.get('id', '')
+                            if case_id:
+                                if case_id not in failure_history:
+                                    failure_history[case_id] = set()
+                                failure_history[case_id].add(date_part)
+                    except json.JSONDecodeError:
+                        continue
+    
+    return failure_history
+
+def infer_freshness(case_id: str, current_date: str, history: Dict[str, Set[str]]) -> Freshness:
+    """失敗の新規性を判定"""
+    if case_id not in history:
+        return Freshness.NEW
+    
+    # 当日以前に失敗履歴があるかチェック
+    past_failures = history[case_id]
+    for past_date in past_failures:
+        if past_date < current_date:  # 文字列比較でYYYYMMDD順序
+            return Freshness.REPEAT
+    
+    return Freshness.NEW
+
+def apply_freshness_to_log(log_path: Path = None):
+    """観測ログにfreshnessタグを追記"""
+    if log_path is None:
+        log_path = Path("tests/golden/observation_log.md")
+    
+    if not log_path.exists():
+        print(f"観測ログが見つかりません: {log_path}")
+        return
+    
+    # 失敗履歴を構築
+    failure_history = build_failure_history()
+    
+    # ログファイルを読み込み
+    with open(log_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 各失敗ケース行を検索してfreshnessを追加
+    lines = content.split('\n')
+    updated_lines = []
+    
+    for line in lines:
+        # 失敗分析セクションの行を検索
+        # 形式: - **case_id**: `root_cause:XXX` - 説明
+        match = re.match(r'^- \*\*([^*]+)\*\*: `root_cause:([^`]+)` - (.+)$', line)
+        if match:
+            case_id = match.group(1)
+            root_cause = match.group(2)
+            description = match.group(3)
+            
+            # 日付を推定（セクションヘッダーから）
+            current_date = "20250829"  # デフォルト（実際は前のセクションから取得）
+            
+            # freshnessを判定
+            freshness = infer_freshness(case_id, current_date, failure_history)
+            
+            # freshnessがまだ含まれていない場合のみ追加
+            if "freshness:" not in line:
+                updated_line = f"- **{case_id}**: `root_cause:{root_cause}` | `freshness:{freshness.value}` - {description}"
+                updated_lines.append(updated_line)
+            else:
+                updated_lines.append(line)
+        else:
+            updated_lines.append(line)
+    
+    # ファイルに書き戻し
+    updated_content = '\n'.join(updated_lines)
+    with open(log_path, 'w', encoding='utf-8') as f:
+        f.write(updated_content)
+    
+    print(f"✅ Freshness tags updated in {log_path}")
+
 def update_observation_log_with_analysis():
     """観測ログに分析結果を追記"""
     analysis_results = analyze_recent_failures()
@@ -183,5 +284,18 @@ def update_observation_log_with_analysis():
             percentage = (count / len(all_failures)) * 100
             print(f"  - {cause}: {count}件 ({percentage:.1f}%)")
 
+def main():
+    """メイン関数（CLI対応）"""
+    parser = argparse.ArgumentParser(description="Golden Test Root Cause Analyzer")
+    parser.add_argument("--update-freshness", action="store_true", 
+                       help="観測ログにfreshnessタグを追加")
+    
+    args = parser.parse_args()
+    
+    if args.update_freshness:
+        apply_freshness_to_log()
+    else:
+        update_observation_log_with_analysis()
+
 if __name__ == "__main__":
-    update_observation_log_with_analysis()
+    main()

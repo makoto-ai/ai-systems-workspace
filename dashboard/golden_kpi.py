@@ -65,11 +65,33 @@ def load_observation_log():
         
         for match in matches:
             date_str, passed, total, percentage = match
+            
+            # 該当セクションからfreshness情報を抽出
+            section_pattern = rf'## {re.escape(date_str)} - 週次観測(.*?)(?=## |\Z)'
+            section_match = re.search(section_pattern, content, re.DOTALL)
+            
+            new_failures = 0
+            total_failures = 0
+            
+            if section_match:
+                section_content = section_match.group(1)
+                # 失敗分析セクションを検索
+                failure_matches = re.findall(r'- \*\*([^*]+)\*\*: `root_cause:([^`]+)`(?:\s*\|\s*`freshness:([^`]+)`)?', section_content)
+                for case_id, root_cause, freshness in failure_matches:
+                    total_failures += 1
+                    if freshness == "NEW":
+                        new_failures += 1
+            
+            new_fail_ratio = new_failures / max(total_failures, 1) if total_failures > 0 else 0.0
+            
             weekly_data.append({
                 'date': datetime.strptime(date_str, "%Y-%m-%d").date(),
                 'passed': int(passed),
                 'total': int(total),
-                'percentage': int(percentage)
+                'pass_rate': int(percentage),
+                'total_failures': total_failures,
+                'new_failures': new_failures,
+                'new_fail_ratio': new_fail_ratio
             })
     
     except Exception as e:
@@ -194,7 +216,7 @@ else:
     df_filtered = df
 
 # メトリクス表示
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 if not df_filtered.empty:
     total_cases = len(df_filtered)
@@ -203,11 +225,18 @@ if not df_filtered.empty:
     avg_score = df_filtered['score'].mean()
     flaky_rate = calculate_flaky_rate(df_filtered)
     
+    # New Fail Ratio計算（週次データから）
+    if not weekly_df.empty and 'new_fail_ratio' in weekly_df.columns:
+        latest_new_fail_ratio = weekly_df.iloc[-1]['new_fail_ratio'] * 100
+    else:
+        latest_new_fail_ratio = 0.0
+    
     col1.metric("総テスト数", total_cases)
     col2.metric("合格数", passed_cases)
     col3.metric("合格率", f"{pass_rate:.1f}%")
     col4.metric("平均スコア", f"{avg_score:.3f}")
     col5.metric("Flaky率", f"{flaky_rate:.1f}%")
+    col6.metric("新規失敗率", f"{latest_new_fail_ratio:.1f}%")
 
 # 1. 週次合格率（ラインチャート）
 st.header("📈 週次合格率トレンド")
@@ -216,9 +245,9 @@ if not weekly_df.empty:
     fig_weekly = px.line(
         weekly_df, 
         x='date', 
-        y='percentage',
+        y='pass_rate',
         title='週次合格率の推移',
-        labels={'percentage': '合格率 (%)', 'date': '日付'},
+        labels={'pass_rate': '合格率 (%)', 'date': '日付'},
         markers=True
     )
     
@@ -230,6 +259,24 @@ if not weekly_df.empty:
     
     fig_weekly.update_layout(height=400)
     st.plotly_chart(fig_weekly, use_container_width=True)
+    
+    # 新規失敗率トレンド
+    if 'new_fail_ratio' in weekly_df.columns:
+        st.subheader("📊 新規失敗率トレンド")
+        fig_new_fail = px.line(
+            weekly_df,
+            x='date',
+            y='new_fail_ratio',
+            title='週次新規失敗率の推移',
+            labels={'new_fail_ratio': '新規失敗率', 'date': '日付'},
+            markers=True
+        )
+        fig_new_fail.update_traces(line_color='red')
+        fig_new_fail.update_layout(
+            height=300,
+            yaxis=dict(tickformat=".1%")
+        )
+        st.plotly_chart(fig_new_fail, use_container_width=True)
 else:
     st.info("週次データがありません。観測ログを確認してください。")
 

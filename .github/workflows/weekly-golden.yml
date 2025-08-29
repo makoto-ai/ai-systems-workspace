@@ -57,6 +57,10 @@ jobs:
           
           cat golden_output.txt
           
+          # Freshness自動タグ付け
+          echo "🏷️ Freshness自動タグ付け実行..."
+          python tests/golden/root_cause_analyzer.py --update-freshness
+          
           # 合格率を抽出
           PASS_RATE=$(grep "合格率:" golden_output.txt | grep -o '[0-9]\+/[0-9]\+' | head -1)
           PASSED=$(echo $PASS_RATE | cut -d'/' -f1)

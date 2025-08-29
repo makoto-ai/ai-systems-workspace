@@ -71,8 +71,8 @@
 - **状態**: 良好 ✅
 
 ### 失敗分析
-- **sample_006**: `root_cause:NORMALIZE` - AI→AIシステム正規化不足
-- **sample_007**: `root_cause:TOKENIZE` - 複合語「分析ダッシュボード」分割問題
+- **sample_006**: `root_cause:NORMALIZE` | `freshness:NEW` - AI→AIシステム正規化不足
+- **sample_007**: `root_cause:TOKENIZE` | `freshness:NEW` - 複合語「分析ダッシュボード」分割問題
 
 ## 2025-08-29 - 週次観測
 
@@ -82,7 +82,7 @@
 - **状態**: 良好 ✅
 
 ### 失敗分析
-- **sample_006**: `root_cause:MODEL` - モデル出力の一貫性不足（再現性低）
+- **sample_006**: `root_cause:MODEL` | `freshness:NEW` - モデル出力の一貫性不足（再現性低）
 
 
 ## 2025-08-29 - しきい値自動昇格
