@@ -1,0 +1,5 @@
+{
+  "id": "sample_002",
+  "input": "音声対話の品質を短文で要約: BlackHole設定/Whisper/Obsidian保存",
+  "reference": "BlackHole Whisper Obsidian 構成"
+}

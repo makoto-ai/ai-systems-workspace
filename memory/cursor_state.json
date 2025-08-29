@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-10T00:20:37.800009",
+  "timestamp": "2025-08-29T21:42:06.107301",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "219cc49dc9c14ebc79507991bff6b501b7a981c3",
-    "branch": "master",
-    "uncommitted_changes": 3,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250810_002036.json"
+    "commit_hash": "e093e66304083361cbd38c36541ed4e38e79b309",
+    "branch": "threshold-upgrade-clean",
+    "uncommitted_changes": 0,
+    "status_details": ""
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1560,17 +1560,17 @@
     "app": {
       "exists": true,
       "python_files": 41,
-      "total_files": 60
+      "total_files": 163
     },
     "config": {
       "exists": true,
       "python_files": 0,
-      "total_files": 6
+      "total_files": 9
     },
     "scripts": {
       "exists": true,
-      "python_files": 50,
-      "total_files": 85
+      "python_files": 51,
+      "total_files": 107
     },
     "modules": {
       "exists": true,
@@ -1579,8 +1579,8 @@
     },
     "paper_research_system": {
       "exists": true,
-      "python_files": 32,
-      "total_files": 44
+      "python_files": 33,
+      "total_files": 82
     }
   },
   "active_files": [
@@ -1592,7 +1592,7 @@
     {
       "file": "system_monitor.py",
       "size": 88299,
-      "modified": "2025-08-09T23:22:09.492223"
+      "modified": "2025-08-10T00:50:41.223087"
     },
     {
       "file": "modules/composer.py",
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 45788,
+    "python_files_count": 25600,
     "cursor_configs_count": 13
   },
-  "state_hash": "a72ebafbf857ac373e8e5ff88676fd0d"
+  "state_hash": "a6807544db001ca8f69941cd6d0940d4"
 }

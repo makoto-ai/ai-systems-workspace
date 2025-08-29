@@ -12,8 +12,8 @@
     },
     {
       "name": "mcp.json",
-      "size": 529,
-      "hash": "17b73c132e98147125881846ff0ea42b"
+      "size": 963,
+      "hash": "cea4d36db9bcc68ea7a8fbd2b76b7c1b"
     },
     {
       "name": "mcp_audit.json",
@@ -66,5 +66,5 @@
       "hash": "170f4b3a787dd517c451631da5c35f36"
     }
   ],
-  "timestamp": "2025-08-29T21:42:06.698629"
+  "timestamp": "2025-08-29T08:01:22.257169"
 }
