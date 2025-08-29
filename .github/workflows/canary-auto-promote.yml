@@ -71,12 +71,12 @@ jobs:
         PREDICTED_AT_85="${{ steps.shadow_eval.outputs.predicted_at_85 }}"
 
         # Phase4条件チェック
-        PHASE4_READY=$(python -c "print('true' if float('$PREDICTED_AT_85') >= 85 else 'false')")
+        PHASE4_READY=$(python -c "print('true' if float('${PREDICTED_AT_85}') >= 85 else 'false')")
         if [ "$PHASE4_READY" = "true" ]; then
           echo "ready_for_phase4=true" >> "$GITHUB_OUTPUT"
           echo "✅ Phase 4準備完了: Predicted@0.85=${PREDICTED_AT_85}%"
         else
-          GAP=$(python -c "print(f'{85 - float("$PREDICTED_AT_85"):.1f}')")
+          GAP=$(python -c "import sys; print(f'{85 - float(sys.argv[1]):.1f}')" "${PREDICTED_AT_85}")
           echo "ready_for_phase4=false" >> "$GITHUB_OUTPUT"
           echo "🔄 Phase 4準備中: Gap=${GAP}pp"
         fi

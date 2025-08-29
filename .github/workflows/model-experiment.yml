@@ -52,7 +52,7 @@ jobs:
           echo "Target root cause: ${{ github.event.inputs.root_cause }}"
           echo "Models: ${{ github.event.inputs.models }}"
 
-          PYTHONPATH=$PWD python experiments/model_swap.py \
+          PYTHONPATH="${PWD}" python experiments/model_swap.py \
             --cases "${{ github.event.inputs.root_cause }}" \
             --models ${{ github.event.inputs.models }} \
             --out "out/model_exp_${{ github.run_number }}.json"

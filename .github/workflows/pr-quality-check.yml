@@ -58,7 +58,8 @@ jobs:
         with open('out/shadow_pr.json', 'r') as f:
             data = json.load(f)
         thresholds = data['multi_shadow_evaluation']['thresholds']
-        rate = thresholds.get('0.70', {}).get('weighted_pass_rate', thresholds.get('0.70', {}).get('shadow_pass_rate', 0))
+        threshold_data = thresholds.get('0.70', {})
+        rate = threshold_data.get('weighted_pass_rate', threshold_data.get('shadow_pass_rate', 0))
         print(f'{rate:.1f}')
         ")
 
@@ -67,7 +68,8 @@ jobs:
         with open('out/shadow_pr.json', 'r') as f:
             data = json.load(f)
         thresholds = data['multi_shadow_evaluation']['thresholds']
-        rate = thresholds.get('0.85', {}).get('weighted_pass_rate', thresholds.get('0.85', {}).get('shadow_pass_rate', 0))
+        threshold_data_85 = thresholds.get('0.85', {})
+        rate = threshold_data_85.get('weighted_pass_rate', threshold_data_85.get('shadow_pass_rate', 0))
         print(f'{rate:.1f}')
         ")
 
@@ -116,7 +118,8 @@ jobs:
         with open('out/shadow_baseline.json', 'r') as f:
             data = json.load(f)
         thresholds = data['multi_shadow_evaluation']['thresholds']
-        rate = thresholds.get('0.70', {}).get('weighted_pass_rate', thresholds.get('0.70', {}).get('shadow_pass_rate', 0))
+        threshold_data = thresholds.get('0.70', {})
+        rate = threshold_data.get('weighted_pass_rate', threshold_data.get('shadow_pass_rate', 0))
         print(f'{rate:.1f}')
         ")
 
@@ -125,7 +128,8 @@ jobs:
         with open('out/shadow_baseline.json', 'r') as f:
             data = json.load(f)
         thresholds = data['multi_shadow_evaluation']['thresholds']
-        rate = thresholds.get('0.85', {}).get('weighted_pass_rate', thresholds.get('0.85', {}).get('shadow_pass_rate', 0))
+        threshold_data_85 = thresholds.get('0.85', {})
+        rate = threshold_data_85.get('weighted_pass_rate', threshold_data_85.get('shadow_pass_rate', 0))
         print(f'{rate:.1f}')
         ")
 
@@ -142,7 +146,10 @@ jobs:
         echo "baseline_pred_85=${BASELINE_PRED_85}" >> "$GITHUB_OUTPUT"
         echo "baseline_flaky_rate=${BASELINE_FLAKY_RATE}" >> "$GITHUB_OUTPUT"
 
-        echo "📊 ベースライン: Pred@0.70=${BASELINE_PRED_70}%, Pred@0.85=${BASELINE_PRED_85}%, Flaky=${BASELINE_FLAKY_RATE}%"
+        echo "📊 ベースライン結果:"
+        echo "  Pred@0.70: ${BASELINE_PRED_70}%"
+        echo "  Pred@0.85: ${BASELINE_PRED_85}%"
+        echo "  Flaky: ${BASELINE_FLAKY_RATE}%"
 
         # 結果をPR側にコピー
         cp out/shadow_baseline.json ../out/
@@ -177,19 +184,19 @@ jobs:
         # Pred@0.70が1.0pp以上悪化
         if [ "$(python -c "print('true' if float('${DIFF_70}') < -1.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
-          REGRESSION_REASONS+=("Pred@0.70が${DIFF_70}pp悪化（-1.0pp閾値）")
+          REGRESSION_REASONS+=("Pred@0.70が${DIFF_70}pp悪化 (-1.0pp閾値)")
         fi
 
         # Pred@0.85が1.0pp以上悪化
         if [ "$(python -c "print('true' if float('${DIFF_85}') < -1.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
-          REGRESSION_REASONS+=("Pred@0.85が${DIFF_85}pp悪化（-1.0pp閾値）")
+          REGRESSION_REASONS+=("Pred@0.85が${DIFF_85}pp悪化 (-1.0pp閾値)")
         fi
 
         # Flaky率が2.0pp以上増加
         if [ "$(python -c "print('true' if float('${DIFF_FLAKY}') > 2.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
-          REGRESSION_REASONS+=("Flaky率が${DIFF_FLAKY}pp増加（+2.0pp閾値）")
+          REGRESSION_REASONS+=("Flaky率が${DIFF_FLAKY}pp増加 (+2.0pp閾値)")
         fi
 
         # 結果出力

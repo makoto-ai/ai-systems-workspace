@@ -72,10 +72,10 @@ jobs:
           TOTAL=$(echo "$PASS_RATE" | cut -d'/' -f2)
           PERCENTAGE=$((PASSED * 100 / TOTAL))
 
-          echo "pass_rate=$PASS_RATE" >> "$GITHUB_OUTPUT"
-          echo "percentage=$PERCENTAGE" >> "$GITHUB_OUTPUT"
-          echo "passed=$PASSED" >> "$GITHUB_OUTPUT"
-          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "pass_rate=${PASS_RATE}" >> "$GITHUB_OUTPUT"
+          echo "percentage=${PERCENTAGE}" >> "$GITHUB_OUTPUT"
+          echo "passed=${PASSED}" >> "$GITHUB_OUTPUT"
+          echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
 
       - name: Shadow Evaluation (0.7 & 0.85)
         run: |
@@ -85,7 +85,7 @@ jobs:
           if [ -f out/shadow_multi.json ]; then
             echo "✅ Multi-Shadow Evaluation 完了"
             echo "📊 結果サマリー:"
-            jq '.multi_shadow_evaluation.thresholds | to_entries[] | "\(.key): \(.value.shadow_pass_rate)%"' out/shadow_multi.json
+            jq -r '.multi_shadow_evaluation.thresholds | to_entries[] | "  \(.key): \(.value.shadow_pass_rate)%"' out/shadow_multi.json
           else
             echo "⚠️ Shadow evaluation結果ファイルが見つかりません"
           fi
@@ -195,8 +195,8 @@ jobs:
             --action-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --dashboard-url "http://localhost:8501" \
             --slack-webhook "$SLACK_WEBHOOK_URL" \
-            $CANARY_FLAG \
-            $PR_URL
+            ${CANARY_FLAG} \
+            ${PR_URL}
         env:
           PYTHONPATH: ${{ github.workspace }}
 
