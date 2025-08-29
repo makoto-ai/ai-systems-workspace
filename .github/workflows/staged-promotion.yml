@@ -105,7 +105,7 @@ jobs:
         # 過去7日間の昇格準備状況をチェック
         WEEK_AGO_FILE="out/promotion_ready_${NEXT_RECOMMENDED}_$(date -d '7 days ago' +'%Y%m%d').marker"
 
-        if [-f "$WEEK_AGO_FILE"]; then
+        if [ -f "$WEEK_AGO_FILE" ]; then
           echo "✅ 7日前も同じしきい値で昇格準備完了"
           echo "consecutive_achievement=true" >> $GITHUB_OUTPUT
           echo "🎉 2連続で昇格条件達成！"
@@ -265,7 +265,7 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        if [-z "$SLACK_WEBHOOK_URL"]; then
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
           echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
           exit 0
         fi

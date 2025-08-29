@@ -94,9 +94,9 @@ jobs:
         WEEK_1_FILE="out/phase4_ready_$(date -d '7 days ago' +'%Y%m%d').marker"
         WEEK_2_FILE="out/phase4_ready_$(date -d '14 days ago' +'%Y%m%d').marker"
 
-        if [-f "$WEEK_1_FILE"]; then
+        if [ -f "$WEEK_1_FILE" ]; then
           echo "✅ 1週間前も条件達成"
-          if [-f "$WEEK_2_FILE"]; then
+          if [ -f "$WEEK_2_FILE" ]; then
             echo "consecutive_weeks=2" >> $GITHUB_OUTPUT
             echo "🎉 2週連続でPhase4条件達成！"
           else
@@ -244,7 +244,7 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        if [-z "$SLACK_WEBHOOK_URL"]; then
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
           echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
           exit 0
         fi

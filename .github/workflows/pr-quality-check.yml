@@ -2,7 +2,7 @@ name: PR Quality Check - Golden Test Regression Guard
 
 on:
   pull_request:
-    branches: [main, master]
+    branches: ["main", "master"]
     paths:
       - 'tests/golden/**'
       - 'experiments/**'
@@ -201,7 +201,7 @@ jobs:
         echo "diff_flaky=${DIFF_FLAKY}" >> $GITHUB_OUTPUT
 
         # 回帰理由をJSONで保存
-        if ["$REGRESSION_DETECTED" = true]; then
+        if [ "$REGRESSION_DETECTED" = true ]; then
           printf '%s\n' "${REGRESSION_REASONS[@]}" > regression_reasons.txt
           echo "❌ 回帰検出！理由:"
           cat regression_reasons.txt | sed 's/^/  - /'
@@ -216,7 +216,7 @@ jobs:
 
         REGRESSION=${{ steps.regression_check.outputs.regression_detected }}
 
-        if ["$REGRESSION" = "true"]; then
+        if [ "$REGRESSION" = "true" ]; then
           echo "quality_gate_passed=false" >> $GITHUB_OUTPUT
           echo "❌ 品質ゲート: FAILED"
           exit 1
@@ -424,7 +424,7 @@ jobs:
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        if [-z "$SLACK_WEBHOOK_URL"]; then
+        if [ -z "$SLACK_WEBHOOK_URL" ]; then
           echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
           exit 0
         fi
