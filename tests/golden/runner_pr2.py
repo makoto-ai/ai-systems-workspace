@@ -17,14 +17,14 @@ import os
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    # 相対インポートを試行
-    from .run_golden import predict, load_config
+    # PR2: MODEL起因失敗用の強化予測関数を使用
+    from .run_golden_pr2 import predict, load_config
     from .evaluator import score
     from .root_cause_analyzer import analyze_failure_root_cause, Freshness
 except ImportError:
     try:
         # 絶対インポートを試行
-        from run_golden import predict, load_config
+        from run_golden_pr2 import predict, load_config
         from evaluator import score
         from root_cause_analyzer import analyze_failure_root_cause, Freshness
     except ImportError as e:
@@ -79,48 +79,8 @@ def calculate_case_weight(case_id: str, weights_config: Dict[str, Any], root_cau
     
     return max(0.1, base_weight)  # 最小重み0.1を保証
 
-def calculate_next_recommended_threshold(threshold_reports: Dict[str, Any]) -> float:
-    """次の推奨しきい値を計算"""
-    # ルール: shadow_pass_rate ≥ 80% かつ new_fail_ratio ≤ 60% かつ flaky_rate < 5% を満たす最大のしきい値
-    
-    eligible_thresholds = []
-    
-    for threshold_str, report in threshold_reports.items():
-        threshold = float(threshold_str)
-        
-        # 重み付き評価を優先、なければ通常評価
-        pass_rate = report.get("weighted_pass_rate", report.get("shadow_pass_rate", 0))
-        new_fail_ratio = report.get("new_fail_ratio", 1.0) * 100  # %変換
-        flaky_rate = report.get("flaky_rate", 1.0) * 100  # %変換
-        
-        # 昇格条件チェック
-        if pass_rate >= 80.0 and new_fail_ratio <= 60.0 and flaky_rate < 5.0:
-            eligible_thresholds.append(threshold)
-    
-    if eligible_thresholds:
-        return max(eligible_thresholds)  # 条件を満たす最大のしきい値
-    else:
-        # 条件を満たすものがない場合、最も近い候補を返す
-        best_threshold = 0.5  # デフォルト
-        best_score = -1000
-        
-        for threshold_str, report in threshold_reports.items():
-            threshold = float(threshold_str)
-            pass_rate = report.get("weighted_pass_rate", report.get("shadow_pass_rate", 0))
-            new_fail_ratio = report.get("new_fail_ratio", 1.0) * 100
-            flaky_rate = report.get("flaky_rate", 1.0) * 100
-            
-            # 複合スコア計算（条件に近いほど高スコア）
-            score = pass_rate - max(0, new_fail_ratio - 60) * 2 - max(0, flaky_rate - 5) * 10
-            
-            if score > best_score:
-                best_score = score
-                best_threshold = threshold
-        
-        return best_threshold
-
 def run_shadow_evaluation(shadow_thresholds: str, report_path: str = None, weights_file: str = None) -> Dict[str, Any]:
-    """Multi-Shadow評価実行（複数しきい値での予測評価＋段階昇格対応）"""
+    """Multi-Shadow評価実行（複数しきい値での予測評価）"""
     
     # しきい値解析（カンマ区切り対応）
     if isinstance(shadow_thresholds, str):
@@ -256,19 +216,6 @@ def run_shadow_evaluation(shadow_thresholds: str, report_path: str = None, weigh
         print(f"  新規失敗率: {new_fail_ratio:.1%}")
         print(f"  Root Cause Top3: {root_cause_top3}")
     
-    # 次の推奨しきい値を計算
-    next_recommended = calculate_next_recommended_threshold(threshold_reports)
-    
-    # 段階昇格情報を生成
-    staged_promotion = {
-        "next_recommended": next_recommended,
-        "current_threshold": current_threshold,
-        "promotion_ready": next_recommended > current_threshold,
-        "promotion_step": round(next_recommended - current_threshold, 2),
-        "phase4_gap": max(0, 0.85 - threshold_reports.get("0.85", {}).get("weighted_pass_rate", threshold_reports.get("0.85", {}).get("shadow_pass_rate", 0)) / 100),
-        "eligible_thresholds": [t for t in threshold_list if threshold_reports[str(t)].get("weighted_pass_rate", threshold_reports[str(t)].get("shadow_pass_rate", 0)) >= 80]
-    }
-    
     # 統合レポート生成
     report = {
         "multi_shadow_evaluation": {
@@ -276,8 +223,7 @@ def run_shadow_evaluation(shadow_thresholds: str, report_path: str = None, weigh
             "shadow_thresholds": threshold_list,
             "timestamp": datetime.now().isoformat(),
             "total_cases": total_cases,
-            "thresholds": threshold_reports,
-            "staged_promotion": staged_promotion
+            "thresholds": threshold_reports
         }
     }
     
@@ -293,19 +239,7 @@ def run_shadow_evaluation(shadow_thresholds: str, report_path: str = None, weigh
     print(f"\n📊 Multi-Shadow Evaluation Summary:")
     for threshold in threshold_list:
         threshold_data = threshold_reports[str(threshold)]
-        weighted_rate = threshold_data.get('weighted_pass_rate', threshold_data['shadow_pass_rate'])
-        status = "✅" if weighted_rate >= 80 else "🔄" if weighted_rate >= 70 else "❌"
-        print(f"  {status} Threshold {threshold}: {threshold_data['shadow_passed']}/{total_cases} ({weighted_rate:.1f}%)")
-    
-    # 段階昇格情報表示
-    print(f"\n🚀 Staged Promotion Analysis:")
-    print(f"  Current: {current_threshold}")
-    print(f"  Next Recommended: {next_recommended}")
-    if staged_promotion["promotion_ready"]:
-        print(f"  🟢 推奨: threshold を {staged_promotion['promotion_step']:+.2f} 引き上げ (→ {next_recommended})")
-    else:
-        print(f"  🟡 待機: 現在のしきい値で安定化が必要")
-    print(f"  Phase4 Gap: {staged_promotion['phase4_gap']:.1%} (0.85まで)")
+        print(f"  Threshold {threshold}: {threshold_data['shadow_passed']}/{total_cases} ({threshold_data['shadow_pass_rate']:.1f}%)")
     
     return report
 

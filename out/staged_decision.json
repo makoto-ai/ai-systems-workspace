@@ -1,0 +1,21 @@
+{
+  "timestamp": "now",
+  "current_threshold": {
+    "config_value": 0.7,
+    "report_assumed": 0.5,
+    "actual_used": 0.7,
+    "divergence_detected": true
+  },
+  "promotion": {
+    "target_threshold": 0.72,
+    "step": 0.020000000000000018,
+    "valid": true,
+    "validation_message": "valid: 0.70 → 0.72 (+0.02)"
+  },
+  "safety_constraints": {
+    "min_step": 0.02,
+    "max_step": 0.05,
+    "clamping_applied": true
+  },
+  "next_action": "create_canary_pr"
+}

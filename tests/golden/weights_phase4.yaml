@@ -1,0 +1,47 @@
+# Golden Test Phase 4 Weighted Evaluation
+# 重み付け設定: 頻出失敗/重要ケースを優先評価
+
+# 重み付けルール
+weights:
+  # 高重要度ケース（1.5x重み）
+  high_priority:
+    - sample_006  # 営業ロープレ関連（頻出失敗）
+    - sample_007  # 分析ダッシュボード関連（重要機能）
+    - sample_001  # 基本機能テスト（品質基準）
+    - sample_010  # 統合テスト（複合機能）
+  
+  # 中重要度ケース（1.2x重み）
+  medium_priority:
+    - sample_002  # セキュリティ関連
+    - sample_003  # パフォーマンス関連
+    - sample_008  # エラーハンドリング
+  
+  # 標準ケース（1.0x重み）
+  standard:
+    - sample_004
+    - sample_005
+    - sample_009
+
+# デフォルト重み
+default_weight: 1.0
+
+# 重み係数設定
+weight_multipliers:
+  high_priority: 1.5
+  medium_priority: 1.2
+  standard: 1.0
+
+# 重み付け理由
+weight_rationale:
+  high_priority: "頻出失敗パターン、ビジネス重要機能、品質基準ケース"
+  medium_priority: "セキュリティ・パフォーマンス等の基盤機能"
+  standard: "一般機能テスト"
+
+# Phase4向け特別設定
+phase4_config:
+  # 新規失敗ケースへの追加重み
+  new_failure_bonus: 0.3
+  # Flakyケースの重み減少
+  flaky_penalty: -0.2
+  # モデル起因失敗の重点評価
+  model_failure_bonus: 0.5
