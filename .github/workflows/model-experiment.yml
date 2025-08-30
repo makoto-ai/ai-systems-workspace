@@ -67,7 +67,7 @@ jobs:
 
       - name: Create experiment summary
         run: |
-          if [ -f "out/model_exp_${{ github.run_number }}.json" ]; then
+          if [-f "out/model_exp_${{ github.run_number }}.json"]; then
             echo "📊 Experiment completed successfully"
             echo "Results saved to artifacts"
 

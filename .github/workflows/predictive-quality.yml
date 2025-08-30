@@ -33,7 +33,7 @@ env:
 jobs:
   predictive-analysis:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
@@ -55,22 +55,22 @@ jobs:
       id: predict
       run: |
         echo "🔮 Running predictive analysis..."
-        
+
         PREDICTION_DAYS="${{ github.event.inputs.prediction_days || '7' }}"
-        
+
         # 予測エンジン実行
         python scripts/quality/issue_predictor.py
-        
+
         # 予測結果の解析
-        if [ -f "out/issue_predictions.json" ]; then
+        if [-f "out/issue_predictions.json"]; then
           TOTAL_HIGH_RISK=$(jq '.risk_assessment.total_high_risk' out/issue_predictions.json)
           TOTAL_MEDIUM_RISK=$(jq '.risk_assessment.total_medium_risk' out/issue_predictions.json)
           OVERALL_RISK=$(jq -r '.risk_assessment.overall_risk_level' out/issue_predictions.json)
-          
+
           echo "high_risk_count=${TOTAL_HIGH_RISK}" >> "$GITHUB_OUTPUT"
-          echo "medium_risk_count=${TOTAL_MEDIUM_RISK}" >> "$GITHUB_OUTPUT" 
+          echo "medium_risk_count=${TOTAL_MEDIUM_RISK}" >> "$GITHUB_OUTPUT"
           echo "overall_risk=${OVERALL_RISK}" >> "$GITHUB_OUTPUT"
-          
+
           echo "📊 Prediction Results:"
           echo "  High Risk Issues: ${TOTAL_HIGH_RISK}"
           echo "  Medium Risk Issues: ${TOTAL_MEDIUM_RISK}"
@@ -85,27 +85,27 @@ jobs:
       if: ${{ github.event.inputs.apply_fixes == 'true' || steps.predict.outputs.overall_risk == 'high' }}
       run: |
         echo "🛡️ Applying preventive fixes..."
-        
+
         # バックアップディレクトリの確保
         mkdir -p backup/preventive_fixes
-        
+
         # 予防修正の実行
         python scripts/quality/preventive_fixer.py
-        
+
         # 修正結果の確認
-        if [ -f "out/preventive_fixes.json" ]; then
+        if [-f "out/preventive_fixes.json"]; then
           FIXES_APPLIED=$(jq '.fixes_applied' out/preventive_fixes.json)
           SUCCESS_RATE=$(jq '.success_rate' out/preventive_fixes.json)
-          
+
           echo "fixes_applied=${FIXES_APPLIED}" >> "$GITHUB_OUTPUT"
           echo "success_rate=${SUCCESS_RATE}" >> "$GITHUB_OUTPUT"
-          
+
           echo "🔧 Preventive Fixes Summary:"
           echo "  Fixes Applied: ${FIXES_APPLIED}"
           echo "  Success Rate: ${SUCCESS_RATE}"
-          
+
           # 修正があった場合はファイル変更をコミット対象として記録
-          if [ "${FIXES_APPLIED}" -gt 0 ]; then
+          if ["${FIXES_APPLIED}" -gt 0]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -116,16 +116,16 @@ jobs:
       if: steps.prevent.outputs.has_changes == 'true'
       run: |
         echo "🧪 Validating applied fixes..."
-        
+
         # YAML構文チェック
         if command -v yamllint >/dev/null 2>&1; then
           echo "📋 Running YAML validation..."
           yamllint .github/workflows/ || echo "⚠️ YAML validation warnings detected"
         fi
-        
+
         # 基本的な構文チェック
         echo "🔍 Running basic syntax checks..."
-        
+
         # GitHub Actions workflow validation
         for workflow in .github/workflows/*.yml; do
           echo "  Checking: $workflow"
@@ -141,28 +141,28 @@ jobs:
     - name: 📊 Generate Quality Report
       run: |
         echo "📊 Generating comprehensive quality report..."
-        
+
         # Phase 1 システムとの統合分析
         python scripts/dashboard/learning_insights.py
         python scripts/quality/health_monitor.py
-        
+
         # 統合レポートの作成
         cat > out/predictive_quality_report.md << 'EOF'
         # 🔮 Predictive Quality Assurance Report
-        
+
         ## 📅 Analysis Date
         $(date -Iseconds)
-        
+
         ## 🎯 Prediction Summary
         - **Prediction Horizon**: ${{ github.event.inputs.prediction_days || '7' }} days
         - **Overall Risk Level**: ${{ steps.predict.outputs.overall_risk }}
         - **High Risk Issues**: ${{ steps.predict.outputs.high_risk_count }}
         - **Medium Risk Issues**: ${{ steps.predict.outputs.medium_risk_count }}
-        
+
         ## 🛡️ Preventive Actions
         EOF
-        
-        if [ "${{ steps.prevent.outputs.fixes_applied || '0' }}" -gt 0 ]; then
+
+        if ["${{ steps.prevent.outputs.fixes_applied || '0' }}" -gt 0]; then
           cat >> out/predictive_quality_report.md << 'EOF'
         - **Fixes Applied**: ${{ steps.prevent.outputs.fixes_applied }}
         - **Success Rate**: ${{ steps.prevent.outputs.success_rate }}
@@ -174,24 +174,24 @@ jobs:
         - **System Health**: Stable
         EOF
         fi
-        
+
         cat >> out/predictive_quality_report.md << 'EOF'
-        
+
         ## 🚀 System Status
         - **Learning System**: Active
         - **Pattern Recognition**: Enabled
         - **Continuous Monitoring**: Operational
-        
+
         ## 📁 Generated Files
         - `out/issue_predictions.json` - Detailed predictions
         - `out/preventive_fixes.json` - Applied fixes log
         - `out/learning_insights.json` - Learning analytics
         - `out/system_health.json` - System health status
-        
+
         ---
         *Report generated by Predictive Quality Assurance System*
         EOF
-        
+
         echo "📄 Quality report generated: out/predictive_quality_report.md"
 
     - name: 💾 Archive Results
@@ -213,7 +213,7 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          
+
           // 予測結果の読み込み
           let predictionData = {};
           try {
@@ -221,37 +221,37 @@ jobs:
           } catch (error) {
             console.log('No prediction data available');
           }
-          
+
           const overallRisk = '${{ steps.predict.outputs.overall_risk }}';
           const highRiskCount = '${{ steps.predict.outputs.high_risk_count }}';
           const mediumRiskCount = '${{ steps.predict.outputs.medium_risk_count }}';
           const fixesApplied = '${{ steps.prevent.outputs.fixes_applied || '0' }}';
-          
+
           const riskEmoji = overallRisk === 'high' ? '🔴' : overallRisk === 'medium' ? '🟡' : '🟢';
-          
+
           const commentBody = `## 🔮 Predictive Quality Analysis
-          
+
           ### ${riskEmoji} Overall Risk Assessment: **${overallRisk.toUpperCase()}**
-          
+
           | Metric | Count |
           |--------|-------|
           | High Risk Issues | ${highRiskCount} |
           | Medium Risk Issues | ${mediumRiskCount} |
           | Preventive Fixes Applied | ${fixesApplied} |
-          
+
           ### 🛡️ Preventive Actions
           ${parseInt(fixesApplied) > 0 ? '✅ Preventive fixes have been applied to mitigate predicted issues.' : 'ℹ️ No preventive fixes required at this time.'}
-          
+
           ### 📊 Quality Insights
           - **Prediction Horizon**: ${{ github.event.inputs.prediction_days || '7' }} days
           - **Analysis Timestamp**: ${new Date().toISOString()}
           - **Learning System**: Active and monitoring
-          
+
           > 💡 This analysis uses historical data and pattern recognition to predict and prevent potential issues before they occur.
-          
+
           📁 **Detailed Results**: Check the workflow artifacts for comprehensive reports.
           `;
-          
+
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,

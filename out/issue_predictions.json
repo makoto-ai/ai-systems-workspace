@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-30T09:19:42.291536",
+  "timestamp": "2025-08-30T09:42:21.555620",
   "prediction_horizon_days": 7,
   "confidence_threshold": 0.7,
   "predicted_issues": [
@@ -91,6 +91,19 @@
     },
     {
       "type": "file_risk",
+      "target": ".github/workflows/realtime-quality-guard.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "complex workflow (200+ lines)",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: CASE.case_insensitive",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
       "target": ".github/workflows/weekly-golden.yml",
       "risk_score": 1.0,
       "factors": [
@@ -166,7 +179,7 @@
     }
   ],
   "risk_assessment": {
-    "total_high_risk": 14,
+    "total_high_risk": 15,
     "total_medium_risk": 2,
     "total_low_risk": 1,
     "overall_risk_level": "high"
@@ -212,6 +225,12 @@
       "priority": "high",
       "action": "Review and refactor .github/workflows/canary-auto-promote.yml",
       "reason": "secrets context usage, complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NUM.tolerance_small, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/realtime-quality-guard.yml",
+      "reason": "complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: CASE.case_insensitive, known failure pattern: NORMALIZE.kana_long_vowel",
       "estimated_effort": "30 minutes"
     },
     {

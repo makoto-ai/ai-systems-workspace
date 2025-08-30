@@ -37,23 +37,23 @@ jobs:
   realtime-quality-guard:
     runs-on: ubuntu-latest
     name: 🛡️ Realtime Quality Guard
-    
+
     steps:
       - name: 🔄 Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 2  # 変更検出のため
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      
+
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install watchdog GitPython pyyaml
-      
+
       - name: 🔍 Detect changed files
         id: changed_files
         run: |
@@ -65,54 +65,54 @@ jobs:
             git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
             CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(py|js|ts|yml|yaml|json|md)$' | head -20 || true)
           fi
-          
+
           # 手動指定ファイルがある場合は使用
           if [ -n "${{ github.event.inputs.target_files }}" ]; then
             CHANGED_FILES=$(echo "${{ github.event.inputs.target_files }}" | tr ',' '\n')
           fi
-          
+
           echo "detected_files<<EOF" >> "$GITHUB_OUTPUT"
           echo "$CHANGED_FILES" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
-          
+
           echo "🔍 Detected changed files:"
           echo "$CHANGED_FILES" | while read -r file; do
             if [ -n "$file" ] && [ -f "$file" ]; then
               echo "  📄 $file"
             fi
           done
-      
+
       - name: 📊 Run realtime quality analysis
         id: quality_analysis
         run: |
           echo "📊 Starting Realtime Quality Analysis..."
-          
+
           # 結果格納用
           RESULTS_FILE="quality_analysis_results.json"
           echo "[]" > "$RESULTS_FILE"
-          
+
           TOTAL_FILES=0
           PASSED_FILES=0
           WARNING_FILES=0
           BLOCKED_FILES=0
-          
+
           # 各ファイルを分析
           echo "${{ steps.changed_files.outputs.detected_files }}" | while read -r file; do
             if [ -n "$file" ] && [ -f "$file" ]; then
               echo ""
               echo "🔍 Analyzing: $file"
-              
+
               TOTAL_FILES=$((TOTAL_FILES + 1))
-              
+
               # Step 1: リアルタイム品質監視
               echo "  📊 Step 1: Quality monitoring..."
               python scripts/quality/realtime_monitor.py --test --path "$file" > monitor_result.txt 2>&1 || true
-              
+
               # Step 2: 品質スコア抽出（簡易実装）
               QUALITY_SCORE=$(python -c "
 import os, json, subprocess
 try:
-    result = subprocess.run(['python', 'scripts/quality/realtime_monitor.py', '--test'], 
+    result = subprocess.run(['python', 'scripts/quality/realtime_monitor.py', '--test'],
                           capture_output=True, text=True)
     # 簡単なスコア計算（実際のファイルサイズと拡張子ベース）
     file_path = '$file'
@@ -124,7 +124,7 @@ try:
         score = 0.6
     else:
         score = 0.7
-    
+
     # ファイルサイズ調整
     if os.path.exists(file_path):
         size = os.path.getsize(file_path)
@@ -132,35 +132,35 @@ try:
             score -= 0.1
         elif size < 1000:  # 1KB未満
             score += 0.1
-    
+
     print(max(0.0, min(1.0, score)))
 except:
     print(0.5)
 " 2>/dev/null || echo "0.5")
-              
+
               echo "  📈 Quality Score: $QUALITY_SCORE"
-              
+
               # Step 3: 動的品質ゲート評価
               echo "  🎛️ Step 3: Dynamic quality gate..."
               GATE_RESULT=$(python scripts/quality/dynamic_gates.py --file "$file" --score "$QUALITY_SCORE" 2>/dev/null || echo "")
-              
+
               # Step 4: 即座フィードバック
               echo "  ⚡ Step 4: Instant feedback..."
               python scripts/quality/instant_feedback.py --file "$file" --score "$QUALITY_SCORE" > feedback_result.txt 2>&1 || true
-              
+
               # 結果集約
               STATUS="unknown"
               if (( $(echo "$QUALITY_SCORE >= 0.8" | bc -l 2>/dev/null || echo "0") )); then
                 STATUS="passed"
                 PASSED_FILES=$((PASSED_FILES + 1))
               elif (( $(echo "$QUALITY_SCORE >= 0.6" | bc -l 2>/dev/null || echo "0") )); then
-                STATUS="warning"  
+                STATUS="warning"
                 WARNING_FILES=$((WARNING_FILES + 1))
               else
                 STATUS="blocked"
                 BLOCKED_FILES=$((BLOCKED_FILES + 1))
               fi
-              
+
               # 結果をJSONに追加
               python -c "
 import json, sys
@@ -178,25 +178,25 @@ try:
 except Exception as e:
     print(f'Error: {e}', file=sys.stderr)
 "
-              
+
               echo "  ✅ Result: $STATUS (Score: $QUALITY_SCORE)"
             fi
           done
-          
+
           # 最終統計
           echo ""
           echo "📊 Final Statistics:"
           echo "  Total files: $TOTAL_FILES"
           echo "  ✅ Passed: $PASSED_FILES"
-          echo "  ⚠️  Warning: $WARNING_FILES" 
+          echo "  ⚠️  Warning: $WARNING_FILES"
           echo "  🚫 Blocked: $BLOCKED_FILES"
-          
+
           # GitHub Actions outputs
           echo "total_files=$TOTAL_FILES" >> "$GITHUB_OUTPUT"
           echo "passed_files=$PASSED_FILES" >> "$GITHUB_OUTPUT"
           echo "warning_files=$WARNING_FILES" >> "$GITHUB_OUTPUT"
           echo "blocked_files=$BLOCKED_FILES" >> "$GITHUB_OUTPUT"
-          
+
           # 総合判定
           if [ "$BLOCKED_FILES" -gt 0 ]; then
             echo "overall_status=blocked" >> "$GITHUB_OUTPUT"
@@ -205,15 +205,15 @@ except Exception as e:
           else
             echo "overall_status=passed" >> "$GITHUB_OUTPUT"
           fi
-      
+
       - name: 🛡️ Auto Guard Protection
         id: auto_guard
         if: ${{ steps.quality_analysis.outputs.blocked_files > 0 }}
         run: |
           echo "🛡️ Auto Guard: Blocked files detected, initiating protection..."
-          
+
           GUARD_ACTIONS_TAKEN=0
-          
+
           # 各ブロックされたファイルに対してAuto Guardを実行
           echo "${{ steps.changed_files.outputs.detected_files }}" | while read -r file; do
             if [ -n "$file" ] && [ -f "$file" ]; then
@@ -233,24 +233,24 @@ if os.path.exists(file_path):
         score -= 0.1
 print(max(0.0, min(1.0, score)))
 ")
-              
+
               # ブロックされたファイルの場合のみ処理
               if (( $(echo "$SCORE < 0.6" | bc -l 2>/dev/null || echo "0") )); then
                 echo "🛡️ Processing blocked file: $file (Score: $SCORE)"
-                
+
                 # Auto Guard実行
                 python scripts/quality/auto_guard.py --file "$file" --current-score "$SCORE" --previous-score "0.8" > guard_result.txt 2>&1 || true
-                
+
                 GUARD_ACTIONS_TAKEN=$((GUARD_ACTIONS_TAKEN + 1))
-                
+
                 echo "  ✅ Auto Guard completed for $file"
               fi
             fi
           done
-          
+
           echo "guard_actions_taken=$GUARD_ACTIONS_TAKEN" >> "$GITHUB_OUTPUT"
           echo "🛡️ Auto Guard completed. Actions taken: $GUARD_ACTIONS_TAKEN"
-      
+
       - name: 💾 Archive quality reports
         uses: actions/upload-artifact@v4
         with:
@@ -263,14 +263,14 @@ print(max(0.0, min(1.0, score)))
             out/auto_guard_*.json
             backups/auto_guard/
           retention-days: 30
-      
+
       - name: 📝 Comment on PR
         if: ${{ github.event_name == 'pull_request' }}
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            
+
             // 結果読み込み
             let results = [];
             try {
@@ -279,59 +279,59 @@ print(max(0.0, min(1.0, score)))
             } catch (e) {
               console.log('Could not read results file');
             }
-            
+
             const totalFiles = ${{ steps.quality_analysis.outputs.total_files }};
             const passedFiles = ${{ steps.quality_analysis.outputs.passed_files }};
             const warningFiles = ${{ steps.quality_analysis.outputs.warning_files }};
             const blockedFiles = ${{ steps.quality_analysis.outputs.blocked_files }};
             const overallStatus = '${{ steps.quality_analysis.outputs.overall_status }}';
-            
+
             // ステータス絵文字
             const statusEmoji = {
               'passed': '✅',
               'warning': '⚠️',
               'blocked': '🚫'
             };
-            
-            const overallEmoji = overallStatus === 'passed' ? '🎉' : 
+
+            const overallEmoji = overallStatus === 'passed' ? '🎉' :
                                overallStatus === 'warning' ? '⚠️' : '🛡️';
-            
+
             // PR コメント作成
             const comment = `## ${overallEmoji} Phase 3 Realtime Quality Guard Report
-            
+
             **Overall Status: ${overallStatus.toUpperCase()}**
-            
+
             ### 📊 Summary
             - **Total Files Analyzed:** ${totalFiles}
             - **✅ Passed:** ${passedFiles}
             - **⚠️ Warning:** ${warningFiles}
             - **🚫 Blocked:** ${blockedFiles}
-            
+
             ### 📋 File Details
-            ${results.length > 0 ? results.map(r => 
+            ${results.length > 0 ? results.map(r =>
               `- ${statusEmoji[r.status]} **${r.file}** (Score: ${r.score.toFixed(2)})`
             ).join('\n') : '_No files analyzed_'}
-            
+
             ### 🚀 Phase 3 Features Applied
             1. **📊 Realtime Quality Monitoring** - Instant file change analysis
             2. **🛡️ Auto Guard Protection** - Automatic quality issue resolution
             3. **⚡ Instant Feedback** - Immediate developer notifications
             4. **🎛️ Dynamic Quality Gates** - Context-aware quality thresholds
-            
+
             ${blockedFiles > 0 ? `
             ### 🛡️ Auto Guard Actions
             - **Actions Taken:** ${{ steps.auto_guard.outputs.guard_actions_taken || 0 }}
             - Auto Guard system has attempted to resolve quality issues
             - Please review the changes and re-run analysis if needed
             ` : ''}
-            
+
             ### 📁 Reports
             Quality analysis reports have been archived as build artifacts.
-            
+
             ---
             *🚀 Powered by Phase 3 Realtime Quality Guard System*
             `;
-            
+
             // PR コメント投稿
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -339,11 +339,11 @@ print(max(0.0, min(1.0, score)))
               repo: context.repo.repo,
               body: comment
             });
-      
+
       - name: 🎯 Set final status
         run: |
           OVERALL_STATUS="${{ steps.quality_analysis.outputs.overall_status }}"
-          
+
           echo "🎯 Phase 3 Realtime Quality Guard Completed"
           echo "========================================="
           echo "Final Status: $OVERALL_STATUS"
@@ -351,7 +351,7 @@ print(max(0.0, min(1.0, score)))
           echo "✅ Passed: ${{ steps.quality_analysis.outputs.passed_files }}"
           echo "⚠️ Warning: ${{ steps.quality_analysis.outputs.warning_files }}"
           echo "🚫 Blocked: ${{ steps.quality_analysis.outputs.blocked_files }}"
-          
+
           if [ "$OVERALL_STATUS" = "blocked" ]; then
             echo "🛡️ Auto Guard interventions: ${{ steps.auto_guard.outputs.guard_actions_taken || 0 }}"
             echo ""
@@ -360,6 +360,6 @@ print(max(0.0, min(1.0, score)))
             echo "In production, you might want to fail the workflow on blocked status."
             # exit 1  # Uncomment to fail workflow on blocked files
           fi
-          
+
           echo ""
           echo "🚀 Phase 3 System Successfully Demonstrated!"

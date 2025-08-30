@@ -1,0 +1,54 @@
+{
+  "developer_profile": {
+    "id": "default",
+    "skill_level": "intermediate",
+    "experience_months": 1,
+    "specializations": [
+      "Python"
+    ],
+    "strengths": [
+      "高品質なコード作成"
+    ],
+    "growth_areas": [
+      "Git・バージョン管理",
+      "問題解決・デバッグスキル"
+    ]
+  },
+  "personalized_guidance": {
+    "title": "コード品質の体系的向上",
+    "description": "設計パターンとテストを取り入れた品質向上",
+    "difficulty_level": 3,
+    "estimated_time": 90,
+    "detailed_steps": [
+      "1. docstring を全てのPython関数に追加",
+      "2. type hints を使用して型安全性向上",
+      "3. 単体テストの作成",
+      "4. linter (flake8, pylint) の導入と修正"
+    ],
+    "learning_objectives": [
+      "体系的な品質向上手法の習得",
+      "ツール活用による効率化",
+      "問題解決能力の向上"
+    ],
+    "follow_up_actions": [
+      "Git操作の練習プロジェクトに参加",
+      "デバッグ技術の向上練習",
+      "1週間後の進捗確認",
+      "実践結果のレビューと改善",
+      "次のステップの計画立案"
+    ],
+    "resources": [
+      {
+        "type": "documentation",
+        "url": "Python Best Practices",
+        "description": "Pythonベストプラクティス集"
+      }
+    ]
+  },
+  "adaptation_info": {
+    "customization_applied": true,
+    "skill_level_matched": true,
+    "specialization_considered": true
+  },
+  "timestamp": "2025-08-30T10:04:28.188488"
+}
