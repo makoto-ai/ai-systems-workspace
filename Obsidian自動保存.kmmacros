@@ -1,0 +1,35 @@
+{
+  "Activate": "Normal",
+  "CreationDate": 693595200.0,
+  "Macros": [
+    {
+      "Actions": [
+        {
+          "ActionUID": 1001,
+          "MacroActionType": "ExecuteShell",
+          "Path": "/usr/bin/python3",
+          "Parameters": "cd \"/Users/araimakoto/ai-driven/ai-systems-workspace\" && python3 \"/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/km_obsidian_bridge.py\" Cursor",
+          "TimeOutAbortsMacro": true,
+          "TimeOutPeriod": 10,
+          "TrimResults": true,
+          "TrimResultsNew": true
+        }
+      ],
+      "CreationDate": 693595200.0,
+      "ModificationDate": 693595200.0,
+      "Name": "Obsidian自動保存（修復版）",
+      "Triggers": [
+        {
+          "FireType": "Pressed",
+          "KeyCode": 15,
+          "MacroTriggerType": "HotKey",
+          "Modifiers": 4352,
+          "TriggerUID": 2001
+        }
+      ],
+      "UID": "12345678-1234-1234-1234-123456789ABC"
+    }
+  ],
+  "Name": "Obsidian自動保存",
+  "UID": "87654321-4321-4321-4321-CBA987654321"
+}
