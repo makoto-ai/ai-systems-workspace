@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T22:51:14.387633",
+  "timestamp": "2025-08-30T23:21:19.427517",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "4b05f3d34c0af57fa140578bcc07f4155cbe66c3",
+    "commit_hash": "4327f72361c0a0fbe947b6f5b7373da865e32aad",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 2,
-    "status_details": "A  \"SSD_\\346\\272\\226\\345\\202\\231_KM.kmmacros\"\nA  scripts/log_router.sh"
+    "uncommitted_changes": 31,
+    "status_details": "M  .cursorrules\nM  .editorconfig\nM  .github/actionlint.yml\nM  out/phase13b_data_driven_strategy.json\nM  scripts/dashboard/learning_insights.py\nM  scripts/decide_abort.py\nM  scripts/learning/data_driven_fixer.py\nM  scripts/learning/line_length_fixer.py\nM  scripts/log_router.sh\nM  scripts/quality/adaptive_guidance.py\nM  scripts/quality/auto_guard.py\nM  scripts/quality/autonomous_decision_system.py\nM  scripts/quality/autonomous_fix_engine.py\nM  scripts/quality/dynamic_gates.py\nM  scripts/quality/health_monitor.py\nM  scripts/quality/instant_feedback.py\nM  scripts/quality/intelligence_engine.py\nM  scripts/quality/intelligent_optimizer.py\nM  scripts/quality/issue_predictor.py\nM  scripts/quality/orchestration_controller.py\nM  scripts/quality/preventive_fixer.py\nM  scripts/quality/project_optimizer.py\nM  scripts/quality/realtime_monitor.py\nM  scripts/quality/sla_management_system.py\nA  scripts/ssd_prepare.sh\nM  scripts/staged_decider.py\nA  scripts/sync_logs_to_ssd.sh\nM  tests/golden/run_golden_enhanced.py\nM  tests/golden/run_golden_pr2.py\nM  tests/golden/weights_phase4.yaml\nM  tests/golden/weights_phase4_enhanced.yaml"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 92,
-      "total_files": 164
+      "total_files": 166
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25704,
+    "python_files_count": 25709,
     "cursor_configs_count": 13
   },
-  "state_hash": "d3b56e0848b61948b73e033f6f1bc27e"
+  "state_hash": "5ac4bb3a9827f02fb38904f7b6c5bdd1"
 }
