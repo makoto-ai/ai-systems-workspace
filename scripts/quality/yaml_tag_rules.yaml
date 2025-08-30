@@ -1,0 +1,22 @@
+# YAML警告専用タグルール
+rules:
+  - tag: YAML.trailing_spaces
+    pattern: 'trailing spaces'
+  - tag: YAML.wrong_indentation
+    pattern: 'wrong indentation'
+  - tag: YAML.too_many_spaces_brackets
+    pattern: 'too many spaces inside brackets'
+  - tag: YAML.missing_document_start
+    pattern: 'missing document start'
+  - tag: YAML.line_too_long
+    pattern: 'line too long'
+  - tag: YAML.too_few_spaces_comment
+    pattern: 'too few spaces before comment'
+  - tag: YAML.new_line_end_file
+    pattern: 'no new line character at the end of file'
+  - tag: YAML.syntax_error
+    pattern: 'syntax error'
+  - tag: YAML.empty_lines
+    pattern: 'too many blank lines'
+  - tag: YAML.truthy_values
+    pattern: 'truthy value'

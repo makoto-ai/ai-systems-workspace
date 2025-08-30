@@ -14,4 +14,4 @@ jobs:
           pip install pre-commit
           pre-commit install-hooks
       - name: Run pre-commit checks
-        run: pre-commit run --all-files 
+        run: pre-commit run --all-files

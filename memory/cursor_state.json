@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T07:03:35.001211",
+  "timestamp": "2025-08-30T09:17:54.055142",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "4c34a4000dc60eacf3df79aec00548630958013d",
-    "branch": "master",
-    "uncommitted_changes": 13,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n M out/shadow_grid.json\n?? memory/snapshots/mcp_snapshot_20250830_063528.json\n?? memory/snapshots/mcp_snapshot_20250830_063858.json\n?? memory/snapshots/mcp_snapshot_20250830_064029.json\n?? memory/snapshots/mcp_snapshot_20250830_065508.json\n?? memory/snapshots/mcp_snapshot_20250830_065753.json\n?? memory/snapshots/mcp_snapshot_20250830_065914.json\n?? out/final_80_percent_attempt.json\n?? out/final_90_percent_safe.json\n?? out/final_95_percent_ultimate.json\n?? out/master_baseline_check.json"
+    "commit_hash": "4569261d757ff1ceda58f29b147db2a36ac122de",
+    "branch": "fix/ide-warnings-final-victory",
+    "uncommitted_changes": 5,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250830_090842.json\n?? out/issue_predictions.json\n?? out/preventive_fixes.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 63,
-      "total_files": 123
+      "python_files": 77,
+      "total_files": 141
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25929,
+    "python_files_count": 25510,
     "cursor_configs_count": 13
   },
-  "state_hash": "189de508aa1843055bb2429f4f0c0078"
+  "state_hash": "80934ac70e3a8c285d805154631e5a93"
 }

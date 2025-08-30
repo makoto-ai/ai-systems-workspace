@@ -1,0 +1,1 @@
+{"timestamp": "2025-08-30T09:31:41.188480", "severity": "high", "file": "scripts/quality/tag_failures.py", "message": "\ud83d\udea8 Auto Guard Alert: HIGH\n\nFile: scripts/quality/tag_failures.py\nScore Change: 0.80 \u2192 0.40\nActions Taken: \nFinal State: auto_fixed\nTime: 2025-08-30T09:31:41.188480"}

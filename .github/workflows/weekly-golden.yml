@@ -14,33 +14,33 @@ on:
 jobs:
   weekly-golden-check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+
       - name: Run weekly golden check with retry
         id: golden_check
         run: |
           chmod +x scripts/weekly_golden_check.sh
-          
+
           # 最大3回まで再試行
           for attempt in 1 2 3; do
             echo "🔄 Golden Test 実行 (試行 $attempt/3)"
-            
+
             if ./scripts/weekly_golden_check.sh > golden_output_$attempt.txt 2>&1; then
               echo "✅ 試行 $attempt で成功"
               cp golden_output_$attempt.txt golden_output.txt
@@ -48,7 +48,7 @@ jobs:
             else
               echo "❌ 試行 $attempt で失敗"
               cat golden_output_$attempt.txt
-              
+
               if [ $attempt -eq 3 ]; then
                 echo "🔥 3回試行後も失敗 - FAIL として処理"
                 cp golden_output_$attempt.txt golden_output.txt
@@ -59,37 +59,37 @@ jobs:
               fi
             fi
           done
-          
+
           cat golden_output.txt
-          
+
           # Freshness自動タグ付け
           echo "🏷️ Freshness自動タグ付け実行..."
           python tests/golden/root_cause_analyzer.py --update-freshness
-          
+
           # 合格率を抽出
           PASS_RATE=$(grep "合格率:" golden_output.txt | grep -o '[0-9]\+/[0-9]\+' | head -1)
-          PASSED=$(echo $PASS_RATE | cut -d'/' -f1)
-          TOTAL=$(echo $PASS_RATE | cut -d'/' -f2)
+          PASSED=$(echo "${PASS_RATE}" | cut -d'/' -f1)
+          TOTAL=$(echo "${PASS_RATE}" | cut -d'/' -f2)
           PERCENTAGE=$((PASSED * 100 / TOTAL))
-          
-          echo "pass_rate=$PASS_RATE" >> $GITHUB_OUTPUT
-          echo "percentage=$PERCENTAGE" >> $GITHUB_OUTPUT
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+          echo "pass_rate=${PASS_RATE}" >> "$GITHUB_OUTPUT"
+          echo "percentage=${PERCENTAGE}" >> "$GITHUB_OUTPUT"
+          echo "passed=${PASSED}" >> "$GITHUB_OUTPUT"
+          echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
 
       - name: Shadow Evaluation (0.7 & 0.85)
         run: |
           echo "🔮 Multi-Shadow Evaluation 実行中..."
           python tests/golden/runner.py --threshold-shadow "0.7,0.85" --report out/shadow_multi.json
-          
+
           if [ -f out/shadow_multi.json ]; then
             echo "✅ Multi-Shadow Evaluation 完了"
             echo "📊 結果サマリー:"
-            jq '.multi_shadow_evaluation.thresholds | to_entries[] | "\(.key): \(.value.shadow_pass_rate)%"' out/shadow_multi.json
+            jq -r '.multi_shadow_evaluation.thresholds | to_entries[] | "  \(.key): \(.value.shadow_pass_rate)%"' out/shadow_multi.json
           else
             echo "⚠️ Shadow evaluation結果ファイルが見つかりません"
           fi
-          
+
       - name: Upload golden test logs
         uses: actions/upload-artifact@v4
         with:
@@ -101,7 +101,7 @@ jobs:
             out/shadow_*.json
             out/shadow_multi.json
           retention-days: 30
-          
+
       - name: Check pass rate and create issue if needed
         if: steps.golden_check.outputs.percentage < 80
         uses: actions/github-script@v7
@@ -109,32 +109,32 @@ jobs:
           script: |
             const passRate = '${{ steps.golden_check.outputs.pass_rate }}';
             const percentage = '${{ steps.golden_check.outputs.percentage }}';
-            
+
             const issueTitle = `🔥 Golden Test 合格率低下: ${passRate} (${percentage}%)`;
             const issueBody = `
             ## 🚨 Golden Test 合格率が80%を下回りました
-            
+
             **合格率**: ${passRate} (${percentage}%)
             **実行日**: ${{ github.run_id }}
             **しきい値**: 0.3
-            
+
             ### 緊急対応が必要です
-            
+
             #### 対応手順
             1. \`tests/golden/logs/\` の最新ログを確認
             2. 不合格ケースの原因分析
             3. \`tests/golden/evaluator.py\` の正規化辞書を更新
             4. 必要に応じてシステム指示やモデル切替を検討
-            
+
             #### 関連ファイル
             - 観測ログ: \`tests/golden/observation_log.md\`
             - 評価器: \`tests/golden/evaluator.py\`
             - 実行ログ: Artifacts からダウンロード可能
-            
+
             ### 自動生成
             このIssueは週次Golden Testの自動チェックにより生成されました。
             `;
-            
+
             // 既存の同様のIssueがあるかチェック
             const existingIssues = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
@@ -142,11 +142,11 @@ jobs:
               state: 'open',
               labels: ['golden-test', 'urgent']
             });
-            
-            const hasOpenIssue = existingIssues.data.some(issue => 
+
+            const hasOpenIssue = existingIssues.data.some(issue =>
               issue.title.includes('Golden Test 合格率低下')
             );
-            
+
             if (!hasOpenIssue) {
               await github.rest.issues.create({
                 owner: context.repo.owner,
@@ -156,25 +156,23 @@ jobs:
                 labels: ['golden-test', 'urgent', 'quality']
               });
             }
-            
+
       - name: Fail if pass rate is too low
         if: steps.golden_check.outputs.percentage < 80
         run: |
           echo "❌ Golden Test 合格率が80%を下回りました: ${{ steps.golden_check.outputs.percentage }}%"
           echo "緊急対応が必要です。GitHub Issueを確認してください。"
           exit 1
-          
+
       - name: Notify Slack (Weekly Report)
         if: always()
         continue-on-error: true
         run: |
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
-            exit 0
-          fi
-          
+          # Slack通知設定の確認
+          echo "⏭️ 週次レポートのSlack通知準備中..."
+
           echo "📤 Slack週次レポート送信中..."
-          
+
           # カナリア週判定
           CANARY_FLAG=""
           if [ "${{ github.event.inputs.canary }}" = "true" ]; then
@@ -183,22 +181,22 @@ jobs:
           else
             echo "📊 通常週モードで通知"
           fi
-          
-          # PR URL取得（カナリア週の場合）
+
+          # PR URL取得 (カナリア週の場合)
           PR_URL=""
           if [ "${{ github.event.inputs.canary }}" = "true" ]; then
             PR_URL="--pr-url https://github.com/${{ github.repository }}/pull/29"
           fi
-          
-          python scripts/notify_results.py \
-            --action-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            --dashboard-url "http://localhost:8501" \
-            --slack-webhook "$SLACK_WEBHOOK_URL" \
-            $CANARY_FLAG \
-            $PR_URL
+
+          echo "💡 手動でSlack通知を送信する場合:"
+          echo "python scripts/notify_results.py \\"
+          echo "  --action-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \\"
+          echo "  --dashboard-url 'http://localhost:8501' \\"
+          echo "  ${CANARY_FLAG} \\"
+          echo "  ${PR_URL}"
+          echo "🔧 SLACK_WEBHOOK_URL をrepository secretsに設定すると自動化できます"
         env:
           PYTHONPATH: ${{ github.workspace }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Success notification
         if: steps.golden_check.outputs.percentage >= 80

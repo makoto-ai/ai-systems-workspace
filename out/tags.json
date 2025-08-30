@@ -1,0 +1,19 @@
+{
+  "total": 19,
+  "counts": {
+    "YAML.wrong_indentation": 19
+  },
+  "pareto": [
+    [
+      "YAML.wrong_indentation",
+      19,
+      100.0
+    ]
+  ],
+  "examples": {
+    "YAML.wrong_indentation": [
+      "16:5      error    wrong indentation: expected 6 but found 4  (indentation)",
+      "22:5      error    wrong indentation: expected 6 but found 4  (indentation)"
+    ]
+  }
+}

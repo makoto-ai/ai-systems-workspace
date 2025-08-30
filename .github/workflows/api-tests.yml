@@ -2,16 +2,16 @@ name: API Tests
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ main ]
+    branches: [main]
   # 手動実行も可能（メール削減のため）
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -21,7 +21,7 @@ jobs:
         echo "✅ API Tests completed!"
 
     - name: Comment on PR
-      if: github.event_name == 'pull_request'
+      if: ${{ github.event_name == 'pull_request' }}
       uses: actions/github-script@v6
       with:
         script: |
