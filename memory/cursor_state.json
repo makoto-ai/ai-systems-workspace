@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T23:21:19.427517",
+  "timestamp": "2025-08-30T23:51:24.218047",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "4327f72361c0a0fbe947b6f5b7373da865e32aad",
+    "commit_hash": "35f614fe1287867c5379caded449ed1eadfdcefa",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 31,
-    "status_details": "M  .cursorrules\nM  .editorconfig\nM  .github/actionlint.yml\nM  out/phase13b_data_driven_strategy.json\nM  scripts/dashboard/learning_insights.py\nM  scripts/decide_abort.py\nM  scripts/learning/data_driven_fixer.py\nM  scripts/learning/line_length_fixer.py\nM  scripts/log_router.sh\nM  scripts/quality/adaptive_guidance.py\nM  scripts/quality/auto_guard.py\nM  scripts/quality/autonomous_decision_system.py\nM  scripts/quality/autonomous_fix_engine.py\nM  scripts/quality/dynamic_gates.py\nM  scripts/quality/health_monitor.py\nM  scripts/quality/instant_feedback.py\nM  scripts/quality/intelligence_engine.py\nM  scripts/quality/intelligent_optimizer.py\nM  scripts/quality/issue_predictor.py\nM  scripts/quality/orchestration_controller.py\nM  scripts/quality/preventive_fixer.py\nM  scripts/quality/project_optimizer.py\nM  scripts/quality/realtime_monitor.py\nM  scripts/quality/sla_management_system.py\nA  scripts/ssd_prepare.sh\nM  scripts/staged_decider.py\nA  scripts/sync_logs_to_ssd.sh\nM  tests/golden/run_golden_enhanced.py\nM  tests/golden/run_golden_pr2.py\nM  tests/golden/weights_phase4.yaml\nM  tests/golden/weights_phase4_enhanced.yaml"
+    "uncommitted_changes": 12,
+    "status_details": "A  Outlook_Obsidian_Newsletters.kmmacros\nA  Outlook_Obsidian_Newsletters_Auto.kmmacros\nA  \"docs/obsidian-knowledge/newsletters/Palm Beach/2025/2025-08-30_234312_AllowTest.md\"\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_233031_(No Subject).md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_ChatGPT_20250830_232723.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_Claude_20250830_232723.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_Cursor_20250830_232723.md\"\nA  scripts/obsidian_newsletter_saver.py\nA  scripts/outlook_collect_allowlist.jxa.js\nA  scripts/outlook_collect_allowlist.scpt\nA  scripts/outlook_selection_export.jxa.js\nA  scripts/outlook_selection_export.scpt"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 92,
-      "total_files": 166
+      "python_files": 93,
+      "total_files": 171
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25709,
+    "python_files_count": 25716,
     "cursor_configs_count": 13
   },
-  "state_hash": "5ac4bb3a9827f02fb38904f7b6c5bdd1"
+  "state_hash": "0055c0a03c1769ff832b35327c4f1c12"
 }
