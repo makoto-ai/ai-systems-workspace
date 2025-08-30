@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T20:50:53.880340",
+  "timestamp": "2025-08-30T21:21:01.223562",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "cb9e0f0b60fd0d92a994d0835449554b10b3a5ea",
+    "commit_hash": "b277831be7300314d1336e1f61ca37c16fb361c6",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 28,
-    "status_details": "M  .cursorrules\nM  .editorconfig\nM  .github/actionlint.yml\nM  out/phase13b_data_driven_strategy.json\nM  scripts/dashboard/learning_insights.py\nM  scripts/decide_abort.py\nM  scripts/learning/data_driven_fixer.py\nM  scripts/learning/line_length_fixer.py\nM  scripts/quality/adaptive_guidance.py\nM  scripts/quality/auto_guard.py\nM  scripts/quality/autonomous_decision_system.py\nM  scripts/quality/autonomous_fix_engine.py\nM  scripts/quality/dynamic_gates.py\nM  scripts/quality/health_monitor.py\nM  scripts/quality/instant_feedback.py\nM  scripts/quality/intelligence_engine.py\nM  scripts/quality/intelligent_optimizer.py\nM  scripts/quality/issue_predictor.py\nM  scripts/quality/orchestration_controller.py\nM  scripts/quality/preventive_fixer.py\nM  scripts/quality/project_optimizer.py\nM  scripts/quality/realtime_monitor.py\nM  scripts/quality/sla_management_system.py\nM  scripts/staged_decider.py\nM  tests/golden/run_golden_enhanced.py\nM  tests/golden/run_golden_pr2.py\nM  tests/golden/weights_phase4.yaml\nM  tests/golden/weights_phase4_enhanced.yaml"
+    "uncommitted_changes": 3,
+    "status_details": "A  \"Downloads\\350\\207\\252\\345\\213\\225\\346\\214\\257\\343\\202\\212\\345\\210\\206\\343\\201\\221\\345\\276\\251\\346\\227\\247.kmmacros\"\nA  scripts/desktop_cleanup.sh\nA  scripts/restore_km_file_sorter.py"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 91,
-      "total_files": 160
+      "python_files": 92,
+      "total_files": 162
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25698,
+    "python_files_count": 25699,
     "cursor_configs_count": 13
   },
-  "state_hash": "cb24384298b4c16a6721aa7ef9d6555e"
+  "state_hash": "721442adb8c0a8755e85702c91fe7c8d"
 }
