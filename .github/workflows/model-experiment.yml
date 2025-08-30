@@ -21,7 +21,7 @@ env:
 
 jobs:
   model_exp:
-    if: ${{ github.event.inputs.run_experiment == 'true' && (secrets.GROQ_API_KEY != '' || secrets.OPENAI_API_KEY != '') }}
+    if: ${{ github.event.inputs.run_experiment == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
