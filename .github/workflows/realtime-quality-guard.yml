@@ -3,7 +3,7 @@ name: "🚀 Phase 3 - Realtime Quality Guard"
 env:
   PYTHON_VERSION: '3.11'
 
-on:
+"on":
   pull_request:
     branches: ["main", "master"]
     paths:
@@ -59,7 +59,7 @@ jobs:
     - name: "🔍 Detect changed files"
       id: changed_files
       run: |
-        if [ "${{ github.event_name }}" = "push" ]; then
+        if ["${{ github.event_name }}" = "push"]; then
             # Push イベント: 前のコミットとの差分
         CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | \
         grep -E '\.(py|js|ts|yml|yaml|json|md)$' | head -20 || true)
@@ -71,7 +71,7 @@ jobs:
         fi
 
           # 手動指定ファイルがある場合は使用
-        if [ -n "${{ github.event.inputs.target_files }}" ]; then
+        if [-n "${{ github.event.inputs.target_files }}"]; then
         CHANGED_FILES=$(echo "${{ github.event.inputs.target_files }}" | tr ',' '\n')
         fi
 
@@ -83,7 +83,7 @@ jobs:
 
         echo "🔍 Detected changed files:"
         echo "$CHANGED_FILES" | while read -r file; do
-        if [ -n "$file" ] && [ -f "$file" ]; then
+        if [-n "$file"] && [-f "$file"]; then
         echo "  📄 $file"
         fi
         done
@@ -104,7 +104,7 @@ jobs:
 
           # 各ファイルを分析
         echo "${{ steps.changed_files.outputs.detected_files }}" | while read -r file; do
-        if [ -n "$file" ] && [ -f "$file" ]; then
+        if [-n "$file"] && [-f "$file"]; then
         echo ""
         echo "🔍 Analyzing: $file"
 
@@ -116,21 +116,21 @@ jobs:
 
               # Step 2: 品質スコア抽出（簡易実装）
               # FILE_EXT=... (unused)
-        if [[ "$file" == *.py ]]; then
+        if [["$file" == *.py]]; then
         BASE_SCORE=0.8
-        elif [[ "$file" == *.yml ]] || [[ "$file" == *.yaml ]]; then
+        elif [["$file" == *.yml]] || [["$file" == *.yaml]]; then
         BASE_SCORE=0.9
-        elif [[ "$file" == *.md ]]; then
+        elif [["$file" == *.md]]; then
         BASE_SCORE=0.6
         else
         BASE_SCORE=0.7
         fi
 
-        if [ -f "$file" ]; then
+        if [-f "$file"]; then
         FILE_SIZE=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "1000")
-        if [ "$FILE_SIZE" -gt 10000 ]; then
+        if ["$FILE_SIZE" -gt 10000]; then
         QUALITY_SCORE=$(python3 -c "print(max(0.0, min(1.0, ${BASE_SCORE} - 0.1)))")
-        elif [ "$FILE_SIZE" -lt 1000 ]; then
+        elif ["$FILE_SIZE" -lt 1000]; then
         QUALITY_SCORE=$(python3 -c "print(max(0.0, min(1.0, ${BASE_SCORE} + 0.1)))")
         else
         QUALITY_SCORE="${BASE_SCORE}"
@@ -152,12 +152,12 @@ jobs:
 
               # 結果集約
         STATUS="unknown"
-        if [ "$(python3 -c "print('1' if float('$QUALITY_SCORE') >= 0.8 else '0')" \
-        2>/dev/null || echo "0")" = "1" ]; then
+        if ["$(python3 -c "print('1' if float('$QUALITY_SCORE') >= 0.8 else '0')" \
+        2>/dev/null || echo "0")" = "1"]; then
         STATUS="passed"
         PASSED_FILES=$((PASSED_FILES + 1))
-        elif [ "$(python3 -c "print('1' if float('$QUALITY_SCORE') >= 0.6 else '0')" \
-        2>/dev/null || echo "0")" = "1" ]; then
+        elif ["$(python3 -c "print('1' if float('$QUALITY_SCORE') >= 0.6 else '0')" \
+        2>/dev/null || echo "0")" = "1"]; then
         STATUS="warning"
         WARNING_FILES=$((WARNING_FILES + 1))
         else
@@ -198,9 +198,9 @@ jobs:
         } >> "$GITHUB_OUTPUT"
 
           # 総合判定
-        if [ "$BLOCKED_FILES" -gt 0 ]; then
+        if ["$BLOCKED_FILES" -gt 0]; then
         echo "overall_status=blocked" >> "$GITHUB_OUTPUT"
-        elif [ "$WARNING_FILES" -gt 0 ]; then
+        elif ["$WARNING_FILES" -gt 0]; then
         echo "overall_status=warning" >> "$GITHUB_OUTPUT"
         else
         echo "overall_status=passed" >> "$GITHUB_OUTPUT"
@@ -216,25 +216,25 @@ jobs:
 
           # 各ブロックされたファイルに対してAuto Guardを実行
         echo "${{ steps.changed_files.outputs.detected_files }}" | while read -r file; do
-        if [ -n "$file" ] && [ -f "$file" ]; then
+        if [-n "$file"] && [-f "$file"]; then
               # ファイルの品質スコアを再確認
-        if [[ "$file" == *.py ]]; then
+        if [["$file" == *.py]]; then
         SCORE=0.8
-        elif [[ "$file" == *.yml ]] || [[ "$file" == *.yaml ]]; then
+        elif [["$file" == *.yml]] || [["$file" == *.yaml]]; then
         SCORE=0.9
         else
         SCORE=0.7
         fi
 
-        if [ -f "$file" ]; then
+        if [-f "$file"]; then
         FILE_SIZE=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "1000")
-        if [ "$FILE_SIZE" -gt 10000 ]; then
+        if ["$FILE_SIZE" -gt 10000]; then
         SCORE=$(python3 -c "print(max(0.0, min(1.0, $SCORE - 0.1)))")
         fi
         fi
 
               # ブロックされたファイルの場合のみ処理
-        if [ "$(python3 -c "print('1' if float('$SCORE') < 0.6 else '0')" 2>/dev/null || echo "0")" = "1" ]; then
+        if ["$(python3 -c "print('1' if float('$SCORE') < 0.6 else '0')" 2>/dev/null || echo "0")" = "1"]; then
         echo "🛡️ Processing blocked file: $file (Score: $SCORE)"
 
                 # Auto Guard実行
@@ -352,7 +352,7 @@ jobs:
         echo "⚠️ Warning: ${{ steps.quality_analysis.outputs.warning_files }}"
         echo "🚫 Blocked: ${{ steps.quality_analysis.outputs.blocked_files }}"
 
-        if [ "$OVERALL_STATUS" = "blocked" ]; then
+        if ["$OVERALL_STATUS" = "blocked"]; then
         echo "🛡️ Auto Guard interventions: ${{ steps.auto_guard.outputs.guard_actions_taken || 0 }}"
         echo ""
         echo "⚠️ Note: Some files were blocked but Auto Guard has attempted fixes."

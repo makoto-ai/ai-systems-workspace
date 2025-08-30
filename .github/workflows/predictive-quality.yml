@@ -1,6 +1,6 @@
 name: "🔮 Predictive Quality Assurance"
 
-on:
+"on":
   push:
     paths:
     - '.github/workflows/**'
@@ -61,7 +61,7 @@ jobs:
         python scripts/quality/issue_predictor.py --prediction-days "${PREDICTION_DAYS}"
 
         # 予測結果の解析
-        if [ -f "out/issue_predictions.json" ]; then
+        if [-f "out/issue_predictions.json"]; then
           TOTAL_HIGH_RISK=$(jq '.risk_assessment.total_high_risk' out/issue_predictions.json)
           TOTAL_MEDIUM_RISK=$(jq '.risk_assessment.total_medium_risk' out/issue_predictions.json)
           OVERALL_RISK=$(jq -r '.risk_assessment.overall_risk_level' out/issue_predictions.json)
@@ -94,7 +94,7 @@ jobs:
         python scripts/quality/preventive_fixer.py
 
         # 修正結果の確認
-        if [ -f "out/preventive_fixes.json" ]; then
+        if [-f "out/preventive_fixes.json"]; then
           FIXES_APPLIED=$(jq '.fixes_applied' out/preventive_fixes.json)
           SUCCESS_RATE=$(jq '.success_rate' out/preventive_fixes.json)
 
@@ -108,7 +108,7 @@ jobs:
           echo "  Success Rate: ${SUCCESS_RATE}"
 
           # 修正があった場合はファイル変更をコミット対象として記録
-          if [ "${FIXES_APPLIED}" -gt 0 ]; then
+          if ["${FIXES_APPLIED}" -gt 0]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -166,7 +166,7 @@ jobs:
         EOF
 
         FIXES_APPLIED="${{ steps.prevent.outputs.fixes_applied || '0' }}"
-        if [ "${FIXES_APPLIED}" -gt 0 ]; then
+        if ["${FIXES_APPLIED}" -gt 0]; then
           cat >> out/predictive_quality_report.md << 'EOF'
         - **Fixes Applied**: ${{ steps.prevent.outputs.fixes_applied }}
         - **Success Rate**: ${{ steps.prevent.outputs.success_rate }}

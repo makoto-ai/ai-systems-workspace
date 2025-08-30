@@ -3,7 +3,7 @@ name: "Weekly Golden Test Check"
 env:
   PYTHON_VERSION: '3.11'
 
-on:
+"on":
   schedule:
   # 毎週金曜日 09:00 JST (00:00 UTC)
   - cron: '0 0 * * 5'
@@ -53,7 +53,7 @@ jobs:
             echo "❌ 試行 $attempt で失敗"
             cat golden_output_$attempt.txt
 
-            if [ $attempt -eq 3 ]; then
+            if [$attempt -eq 3]; then
               echo "🔥 3回試行後も失敗 - FAIL として処理"
               cp golden_output_$attempt.txt golden_output.txt
               # 最終試行の結果を使用して続行
@@ -88,7 +88,7 @@ jobs:
         echo "🔮 Multi-Shadow Evaluation 実行中..."
         python tests/golden/runner.py --threshold-shadow "0.7,0.85" --report out/shadow_multi.json
 
-        if [ -f out/shadow_multi.json ]; then
+        if [-f out/shadow_multi.json]; then
           echo "✅ Multi-Shadow Evaluation 完了"
           echo "📊 結果サマリー:"
           jq -r '.multi_shadow_evaluation.thresholds | to_entries[] |
@@ -182,7 +182,7 @@ jobs:
 
         # カナリア週判定
         CANARY_FLAG=""
-        if [ "${{ github.event.inputs.canary }}" = "true" ]; then
+        if ["${{ github.event.inputs.canary }}" = "true"]; then
           CANARY_FLAG="--canary"
           echo "🐤 カナリア週モードで通知"
         else
@@ -191,7 +191,7 @@ jobs:
 
         # PR URL取得 (カナリア週の場合)
         PR_URL=""
-        if [ "${{ github.event.inputs.canary }}" = "true" ]; then
+        if ["${{ github.event.inputs.canary }}" = "true"]; then
           PR_URL="--pr-url https://github.com/${{ github.repository }}/pull/29"
         fi
 

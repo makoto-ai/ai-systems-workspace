@@ -298,6 +298,18 @@ class LearningEngine:
             adjustments["critical"] -= 0.1
             adjustments["warning"] -= 0.1
             
+        # 影響半径（impact radius）: 重要度×変更頻度で重み付け
+        impact_radius = 0.0
+        freq = context.get("change_frequency", "unknown")
+        if freq == "high":
+            impact_radius += 0.05
+        elif freq == "medium":
+            impact_radius += 0.02
+        if context["importance_level"] >= 4:
+            impact_radius += 0.05
+        adjustments["warning"] += impact_radius
+        adjustments["target"] += impact_radius / 2
+
         # プロジェクト段階調整
         phase = context["project_phase"]
         if phase == "production":

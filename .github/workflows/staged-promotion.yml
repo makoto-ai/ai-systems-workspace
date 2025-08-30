@@ -1,6 +1,6 @@
 name: "Golden Test Staged Promotion"
 
-on:
+"on":
   schedule:
   # 毎日09:20 JSTに実行 (段階昇格チェック)
   - cron: '20 0 * * *'
@@ -107,7 +107,7 @@ jobs:
         # 過去7日間の昇格準備状況をチェック
         WEEK_AGO_FILE="out/promotion_ready_${NEXT_RECOMMENDED}_$(date -d '7 days ago' +'%Y%m%d').marker"
 
-        if [ -f "$WEEK_AGO_FILE" ]; then
+        if [-f "$WEEK_AGO_FILE"]; then
           echo "✅ 7日前も同じしきい値で昇格準備完了"
           echo "consecutive_achievement=true" >> "$GITHUB_OUTPUT"
           echo "🎉 2連続で昇格条件達成！"
@@ -129,7 +129,7 @@ jobs:
         PROMOTION_STEP="${{ steps.shadow_grid.outputs.promotion_step }}"
 
         # 昇格ステップが安全範囲内かチェック (0.02〜0.05)
-        if [ "$(python -c "print('true' if 0.02 <= float('${PROMOTION_STEP}') <= 0.05 else 'false')")" = "true" ]; then
+        if ["$(python -c "print('true' if 0.02 <= float('${PROMOTION_STEP}') <= 0.05 else 'false')")" = "true"]; then
           echo "✅ 昇格ステップが安全範囲内: ${PROMOTION_STEP}"
           echo "safe_promotion_step=true" >> "$GITHUB_OUTPUT"
         else

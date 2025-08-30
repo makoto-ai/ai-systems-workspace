@@ -12,15 +12,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-ci.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install dependencies (pinned)
         run: |
           python -m pip install --upgrade pip
-          pip install requests pyyaml numpy
+          pip install -r requirements-ci.txt
 
       - name: Run Golden Coverage Report
         run: |
@@ -30,6 +38,10 @@ jobs:
         run: |
           python scripts/quality/dynamic_gates.py --summary | tee gate_summary.txt
 
+      - name: Regression clustering report
+        run: |
+          python scripts/quality/regression_report.py | tee regression_report.txt || true
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -37,4 +49,4 @@ jobs:
           path: |
             golden_report.txt
             gate_summary.txt
-
+            regression_report.txt

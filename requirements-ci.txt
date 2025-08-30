@@ -1,0 +1,7 @@
+# Pinned deps for CI
+requests==2.32.3
+PyYAML==6.0.2
+numpy==2.1.1
+html2text==2024.2.26
+markdownify==0.13.1
+

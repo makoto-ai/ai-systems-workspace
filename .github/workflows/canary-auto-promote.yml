@@ -1,6 +1,6 @@
 name: "Golden Test Canary Auto-Promote"
 
-on:
+"on":
   schedule:
   # 毎日18:00 JSTに実行
   - cron: '0 9 * * *'
@@ -73,7 +73,7 @@ jobs:
 
         # Phase4条件チェック
         PHASE4_READY=$(python -c "print('true' if float('${PREDICTED_AT_85}') >= 85 else 'false')")
-        if [ "${PHASE4_READY}" = "true" ]; then
+        if ["${PHASE4_READY}" = "true"]; then
           echo "ready_for_phase4=true" >> "$GITHUB_OUTPUT"
           echo "✅ Phase 4準備完了: Predicted@0.85=${PREDICTED_AT_85}%"
         else
@@ -93,9 +93,9 @@ jobs:
         WEEK_1_FILE="out/phase4_ready_$(date -d '7 days ago' +'%Y%m%d').marker"
         WEEK_2_FILE="out/phase4_ready_$(date -d '14 days ago' +'%Y%m%d').marker"
 
-        if [ -f "$WEEK_1_FILE" ]; then
+        if [-f "$WEEK_1_FILE"]; then
           echo "✅ 1週間前も条件達成"
-          if [ -f "$WEEK_2_FILE" ]; then
+          if [-f "$WEEK_2_FILE"]; then
             echo "consecutive_weeks=2" >> "$GITHUB_OUTPUT"
             echo "🎉 2週連続でPhase4条件達成！"
           else

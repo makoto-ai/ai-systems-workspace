@@ -1,6 +1,6 @@
 name: "PR Quality Check - Golden Test Regression Guard"
 
-on:
+"on":
   pull_request:
     branches: ["main", "master"]
     paths:
@@ -188,19 +188,19 @@ jobs:
         REGRESSION_REASONS=()
 
         # Pred@0.70が1.0pp以上悪化
-        if [ "$(python -c "print('true' if float('${DIFF_70}') < -1.0 else 'false')")" = "true" ]; then
+        if ["$(python -c "print('true' if float('${DIFF_70}') < -1.0 else 'false')")" = "true"]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Pred@0.70が${DIFF_70}pp悪化 (-1.0pp閾値)")
         fi
 
         # Pred@0.85が1.0pp以上悪化
-        if [ "$(python -c "print('true' if float('${DIFF_85}') < -1.0 else 'false')")" = "true" ]; then
+        if ["$(python -c "print('true' if float('${DIFF_85}') < -1.0 else 'false')")" = "true"]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Pred@0.85が${DIFF_85}pp悪化 (-1.0pp閾値)")
         fi
 
         # Flaky率が2.0pp以上増加
-        if [ "$(python -c "print('true' if float('${DIFF_FLAKY}') > 2.0 else 'false')")" = "true" ]; then
+        if ["$(python -c "print('true' if float('${DIFF_FLAKY}') > 2.0 else 'false')")" = "true"]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Flaky率が${DIFF_FLAKY}pp増加 (+2.0pp閾値)")
         fi
@@ -214,7 +214,7 @@ jobs:
         } >> "$GITHUB_OUTPUT"
 
         # 回帰理由をJSONで保存
-        if [ "$REGRESSION_DETECTED" = "true" ]; then
+        if ["$REGRESSION_DETECTED" = "true"]; then
           printf '%s\n' "${REGRESSION_REASONS[@]}" > regression_reasons.txt
           echo "❌ 回帰検出！理由:"
           cat regression_reasons.txt | sed 's/^/  - /'
@@ -229,7 +229,7 @@ jobs:
 
         REGRESSION=${{ steps.regression_check.outputs.regression_detected }}
 
-        if [ "$REGRESSION" = "true" ]; then
+        if ["$REGRESSION" = "true"]; then
           echo "quality_gate_passed=false" >> "$GITHUB_OUTPUT"
           echo "❌ 品質ゲート: FAILED"
           exit 1

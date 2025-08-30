@@ -5,7 +5,7 @@ env:
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '18'
 
-on:
+"on":
   pull_request:
     branches: [main]
   push:
@@ -17,8 +17,8 @@ on:
         description: 'テストタイプを選択'
         type: choice
         options:
-        - 'basic'
-        - 'full'
+          - 'basic'
+          - 'full'
         default: 'basic'
 
 permissions:
@@ -32,57 +32,57 @@ jobs:
     name: "🗺️ API Tests Execution"
 
     steps:
-    - name: "🔄 Checkout repository"
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 1
-        # セキュリティ: 安全な checkout
+      - name: "🔄 Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          # セキュリティ: 安全な checkout
 
-    - name: "🔧 Run API tests"
-      id: api_tests
-      run: |
-        echo "🚀 API Tests Starting..."
+      - name: "🔧 Run API tests"
+        id: api_tests
+        run: |
+          echo "🚀 API Tests Starting..."
 
-        # 基本テスト実行
-        echo "🗺️ Testing API endpoints..."
+          # 基本テスト実行
+          echo "🗺️ Testing API endpoints..."
 
-        # ヘルスチェックテスト（イベントタイプに応じて分岐）
-        TEST_TYPE="${{ github.event.inputs.test_type || 'basic' }}"
-        echo "Selected test type: $TEST_TYPE"
-        if [ "$TEST_TYPE" = "full" ]; then
-          echo "🔍 Full test mode: Running comprehensive tests"
-          # ここに完全なテストコマンドを追加
-        else
-          echo "⚡ Basic test mode: Running essential tests only"
-        fi
+          # ヘルスチェックテスト（イベントタイプに応じて分岐）
+          TEST_TYPE="${{ github.event.inputs.test_type || 'basic' }}"
+          echo "Selected test type: $TEST_TYPE"
+          if [ "$TEST_TYPE" = "full" ]; then
+            echo "🔍 Full test mode: Running comprehensive tests"
+            # ここに完全なテストコマンドを追加
+          else
+            echo "⚡ Basic test mode: Running essential tests only"
+          fi
 
-        echo "✅ API Tests completed successfully!"
-        echo "test_status=success" >> "$GITHUB_OUTPUT"
+          echo "✅ API Tests completed successfully!"
+          echo "test_status=success" >> "$GITHUB_OUTPUT"
 
-    - name: "📝 Comment on PR"
-      if: ${{ github.event_name == 'pull_request' && steps.api_tests.outputs.test_status == 'success' }}
-      uses: actions/github-script@v7
-      env:
-        TEST_TYPE_INPUT: ${{ github.event.inputs.test_type || 'basic' }}
-      with:
-        script: |
-          const testType = process.env.TEST_TYPE_INPUT || 'basic';
-          const emoji = testType === 'full' ? '🔍' : '⚡';
+      - name: "📝 Comment on PR"
+        if: ${{ github.event_name == 'pull_request' && steps.api_tests.outputs.test_status == 'success' }}
+        uses: actions/github-script@v7
+        env:
+          TEST_TYPE_INPUT: ${{ github.event.inputs.test_type || 'basic' }}
+        with:
+          script: |
+            const testType = process.env.TEST_TYPE_INPUT || 'basic';
+            const emoji = testType === 'full' ? '🔍' : '⚡';
 
-          await github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `${emoji} API Tests (${testType} mode) completed successfully! ✅`
-          });
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${emoji} API Tests (${testType} mode) completed successfully! ✅`
+            });
 
-    - name: "📦 Upload test artifacts"
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: api-test-results
-        path: |
-          test-results/**/*
-          logs/**/*
-        if-no-files-found: ignore
-        retention-days: 7
+      - name: "📦 Upload test artifacts"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: |
+            test-results/**/*
+            logs/**/*
+          if-no-files-found: ignore
+          retention-days: 7

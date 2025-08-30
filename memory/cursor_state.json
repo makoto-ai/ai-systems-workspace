@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-31T00:51:35.414432",
+  "timestamp": "2025-08-31T08:05:05.887603",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "5c0b70a6ef29dc5ac3b846a5e371fbe53e57bef2",
+    "commit_hash": "4a226affc573a5b19a424c38d2ba288f25eb89b3",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 1,
-    "status_details": "A  out/learning_database.json"
+    "uncommitted_changes": 29,
+    "status_details": "A  .github/labeler.yml\nM  .github/workflows/api-tests.yml\nM  .github/workflows/auto-maintenance.yml\nM  .github/workflows/canary-auto-promote.yml\nM  .github/workflows/deploy.yml\nM  .github/workflows/hybrid-deploy.yml\nM  .github/workflows/minimal-notifications.yml\nM  .github/workflows/model-experiment.yml\nM  .github/workflows/monitoring.yml\nA  .github/workflows/pr-labeler.yml\nM  .github/workflows/pr-quality-check.yml\nM  .github/workflows/predictive-quality.yml\nM  .github/workflows/realtime-quality-guard.yml\nM  .github/workflows/security-scan.yml\nM  .github/workflows/staged-promotion.yml\nM  .github/workflows/test.yml\nM  .github/workflows/weekly-golden.yml\nM  .github/workflows/weekly-kpi.yml\nA  .github/workflows/weekly-secrets-scan.yml\nR  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_233031_(No Subject).md\" -> \"docs/obsidian-knowledge/newsletters/_unclassified/2025/2025-08-30_233031_(No Subject).md\"\nR  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_(No Subject).md\" -> \"docs/obsidian-knowledge/newsletters/_unclassified/2025/2025-08-30_235942_(No Subject).md\"\nR  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_\\343\\200\\220\\347\\204\\241\\346\\226\\231\\351\\205\\215\\344\\277\\241\\343\\200\\221\\350\\251\\261\\351\\241\\214\\343\\201\\256\\343\\202\\271\\343\\203\\206\\343\\203\\274\\343\\203\\226\\343\\203\\253\\343\\202\\263\\343\\202\\244\\343\\203\\263\\343\\200\\214JPYC\\343\\200\\215\\343\\201\\256\\346\\234\\200\\345\\274\\267\\351\\201\\213\\347\\224\\250\\350\\241\\223\\343\\202\\222\\346\\225\\231\\343\\201\\210\\343\\201\\276\\343\\201\\231\\343\\200\\202 SENDER_ \\343\\202\\244\\343\\202\\261\\343\\203\\217\\343\\203\\244\\345\\244\\247\\345\\255\\246 SENDER_EMAIL_ info@mag.ikehay.md\" -> \"docs/obsidian-knowledge/newsletters/mag.ikehay/2025/2025-08-30_235942_\\343\\200\\220\\347\\204\\241\\346\\226\\231\\351\\205\\215\\344\\277\\241\\343\\200\\221\\350\\251\\261\\351\\241\\214\\343\\201\\256\\343\\202\\271\\343\\203\\206\\343\\203\\274\\343\\203\\226\\343\\203\\253\\343\\202\\263\\343\\202\\244\\343\\203\\263\\343\\200\\214JPYC\\343\\200\\215\\343\\201\\256\\346\\234\\200\\345\\274\\267\\351\\201\\213\\347\\224\\250\\350\\241\\223\\343\\202\\222\\346\\225\\231\\343\\201\\210\\343\\201\\276\\343\\201\\231\\343\\200\\202 SENDER_ \\343\\202\\244\\343\\202\\261\\343\\203\\217\\343\\203\\244\\345\\244\\247\\345\\255\\246 SENDER_EMAIL_ info@mag.ikehay.md\"\nA  out/kpi_history.jsonl\nA  requirements-ci.txt\nM  scripts/obsidian_newsletter_saver.py\nM  scripts/quality/dynamic_gates.py\nM  scripts/quality/golden_coverage_report.py\nA  scripts/quality/regression_report.py\nA  scripts/reclassify_unknown_newsletters.py"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 94,
-      "total_files": 266
+      "python_files": 96,
+      "total_files": 270
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25731,
+    "python_files_count": 25759,
     "cursor_configs_count": 13
   },
-  "state_hash": "42557967a563c5a28281a527d1bce900"
+  "state_hash": "3d8c12f872548a232e8394ac6cd17614"
 }

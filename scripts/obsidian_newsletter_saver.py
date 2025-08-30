@@ -12,6 +12,8 @@ import re
 import os
 from pathlib import Path
 from datetime import datetime
+import html
+import re as _re
 
 
 VAULT = Path(__file__).resolve().parents[1] / "docs" / "obsidian-knowledge"
@@ -32,6 +34,27 @@ def sanitize_filename(name: str) -> str:
     return name[:80] if len(name) > 80 else name
 
 
+def convert_html_to_markdown(content: str) -> str:
+    """Best-effort HTML→Markdown conversion with graceful fallback."""
+    try:
+        # Prefer html2text if available
+        import html2text  # type: ignore
+        return html2text.html2text(content)
+    except Exception:
+        pass
+    try:
+        # Fallback to markdownify if available
+        from markdownify import markdownify as md  # type: ignore
+        return md(content)
+    except Exception:
+        pass
+    # Minimal fallback: strip tags and unescape entities
+    text = _re.sub(r"<\s*(br|p)\s*/?>", "\n", content, flags=_re.I)
+    text = _re.sub(r"<[^>]+>", "", text)
+    text = html.unescape(text)
+    return text
+
+
 def parse_export(text: str):
     items = []
     if text.strip() in ("", "NO_SELECTION"):
@@ -50,7 +73,10 @@ def parse_export(text: str):
             any_email_match = re.search(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", b)
             if any_email_match:
                 sender_email = any_email_match.group(0).lower()
-        content = content_match.group(1).rstrip() if content_match else "(No Content)"
+        raw_content = content_match.group(1).rstrip() if content_match else "(No Content)"
+        # Attempt to detect HTML content
+        is_html = ("</" in raw_content or "<div" in raw_content or "<p" in raw_content or "<br" in raw_content)
+        content = convert_html_to_markdown(raw_content) if is_html else raw_content
         items.append({"subject": subject, "sender": sender, "sender_email": sender_email, "content": content})
     return items
 
@@ -76,8 +102,9 @@ def save_item(item: dict) -> Path:
     md = (
         f"# {subject}\n\n"
         f"> 📅 受信日時: {datetime.now():%Y-%m-%d %H:%M:%S}\n"
-        f"> ✉️ 送信元: {sender}\n\n"
-        f"## 本文\n\n{item.get('content','')}\n"
+        f"> ✉️ 送信元: {sender} ({sender_email if sender_email else 'unknown'})\n"
+        f"> 🗂 フォルダ: {folder_name}\n\n"
+        f"## 本文\n\n{item.get('content','').strip()}\n"
     )
     path.write_text(md, encoding="utf-8")
     return path

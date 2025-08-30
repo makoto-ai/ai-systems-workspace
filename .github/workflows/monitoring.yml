@@ -1,6 +1,6 @@
 name: "Enhanced System Monitoring & Security Check"
 
-on:
+"on":
   schedule:
   # 毎日9:00 JST実行（安定した監視）
   - cron: '0 0 * * *'  # UTC 00:00 = JST 09:00
@@ -44,7 +44,7 @@ jobs:
     - name: "API統合テスト実行"
       run: |
         echo "🧪 API統合テスト実行..."
-        if [ -f run_accurate_test.py ]; then
+        if [-f run_accurate_test.py]; then
           python run_accurate_test.py
         else
           echo "run_accurate_test.py が見つからないためスキップ"
