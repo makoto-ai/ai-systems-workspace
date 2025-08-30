@@ -807,10 +807,16 @@ class AutonomousFixEngine:
         print("=" * 40)
         
         print(f"📊 実行統計:")
-        print(f"   検出問題数: {summary['issues_detected']}")
-        print(f"   修正試行数: {summary['fixes_attempted']}")
-        print(f"   修正成功数: {summary['fixes_successful']}")
-        print(f"   成功率: {summary['success_rate']:.1%}")
+        issues_detected = summary.get('issues_detected', 0)
+        fixes_attempted = summary.get('fixes_attempted', 0)
+        fixes_successful = summary.get('fixes_successful', 0)
+        success_rate = summary.get('success_rate')
+        if success_rate is None:
+            success_rate = (fixes_successful / fixes_attempted) if fixes_attempted else 0.0
+        print(f"   検出問題数: {issues_detected}")
+        print(f"   修正試行数: {fixes_attempted}")
+        print(f"   修正成功数: {fixes_successful}")
+        print(f"   成功率: {success_rate:.1%}")
         
         if summary.get("performance_metrics"):
             metrics = summary["performance_metrics"]

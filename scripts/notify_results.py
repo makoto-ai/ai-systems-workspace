@@ -352,7 +352,9 @@ class NotificationSender:
                     print(f"\n{block['text']['text']}")
                 elif block['type'] == 'section' and 'fields' in block:
                     for field in block['fields']:
-                        print(f"  {field['text'].replace('*', '').replace('\n', ': ')}")
+                        _t = field.get('text', '')
+                        _t = _t.replace('*', '').replace('\n', ': ')
+                        print(f"  {_t}")
             
             print("="*50)
             return True
@@ -393,17 +395,17 @@ class NotificationSender:
             
             # 改善提案生成
             suggestions = self.generate_improvement_suggestions(prompt_results, new_fails, phase4_metrics)
-            
-                    # Slackメッセージ作成
-        message = self.create_slack_message(
-            shadow_data, 
-            phase4_metrics, 
-            suggestions,
-            data_collection=args.data_collection,
-            action_url=args.action_url,
-            pr_url=args.pr_url
-        )
-            
+
+            # Slackメッセージ作成（デフォルト: 通常モード・リンクなし）
+            message = self.create_slack_message(
+                shadow_data,
+                phase4_metrics,
+                suggestions,
+                data_collection=False,
+                action_url=None,
+                pr_url=None
+            )
+
             # 通知送信
             return self.send_notification(message)
             

@@ -1,6 +1,6 @@
 name: Weekly KPI Report
 
-on:
+"on":
   schedule:
     - cron: '0 1 * * 1'  # Every Monday 10:00 JST (01:00 UTC)
   workflow_dispatch: {}
@@ -37,5 +37,4 @@ jobs:
           path: |
             golden_report.txt
             gate_summary.txt
-
 
