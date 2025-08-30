@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T22:21:09.239504",
+  "timestamp": "2025-08-30T22:51:14.387633",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "cb0e288292d2883d3f5787309450432dc5bb4013",
+    "commit_hash": "4b05f3d34c0af57fa140578bcc07f4155cbe66c3",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 5,
-    "status_details": "A  \"Obsidian\\344\\277\\235\\345\\255\\230_KMBridge.kmmacros\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_KM_20250830_220815.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_KM_20250830_220851.md\"\nA  scripts/icloud_desktop_sort.sh\nM  scripts/km_obsidian_bridge.py"
+    "uncommitted_changes": 2,
+    "status_details": "A  \"SSD_\\346\\272\\226\\345\\202\\231_KM.kmmacros\"\nA  scripts/log_router.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 92,
-      "total_files": 163
+      "total_files": 164
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25699,
+    "python_files_count": 25704,
     "cursor_configs_count": 13
   },
-  "state_hash": "fd4216eecab79194ff9e4113e5798e58"
+  "state_hash": "d3b56e0848b61948b73e033f6f1bc27e"
 }
