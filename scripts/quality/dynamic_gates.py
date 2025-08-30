@@ -268,11 +268,18 @@ class LearningEngine:
         
         # 学習データベースの調整
         learning_adjustments = self._calculate_learning_adjustments(context)
+
+        # ドリフト耐性（分位点＋EWMA）調整
+        drift_adjustments = self._calculate_drift_adjustments(context, base_thresholds)
         
         # 最終閾値計算
         final_thresholds = {}
         for key, base in base_thresholds.items():
-            adjustment = adjustments.get(key, 0) + learning_adjustments.get(key, 0)
+            adjustment = (
+                adjustments.get(key, 0)
+                + learning_adjustments.get(key, 0)
+                + drift_adjustments.get(key, 0)
+            )
             final_thresholds[key] = max(0.0, min(1.0, base + adjustment))
         
         return final_thresholds
@@ -316,6 +323,58 @@ class LearningEngine:
             adjustments["warning"] += 0.05
             
         return adjustments
+
+    def _calculate_drift_adjustments(self, context: Dict[str, Any], base_thresholds: Dict[str, float]) -> Dict[str, float]:
+        """ドリフト耐性のための分位点＋EWMAによる自動調整
+        - 類似ファイルの直近スコア分布から分位点（q10, q40, q75）を算出
+        - それをアンカーにし、(anchor - base) を調整量とする
+        - 前回調整（同タイプ）とのEWMAで平滑化
+        """
+        try:
+            similar = self._find_similar_files(context)
+            if not similar:
+                return {"critical": 0.0, "warning": 0.0, "target": 0.0}
+
+            scores = sorted([r.get("score", 0.0) for r in similar])
+            if len(scores) < 5:
+                return {"critical": 0.0, "warning": 0.0, "target": 0.0}
+
+            def quantile(arr, q):
+                idx = max(0, min(len(arr) - 1, int(q * (len(arr) - 1))))
+                return float(arr[idx])
+
+            q10 = quantile(scores, 0.10)
+            q40 = quantile(scores, 0.40)
+            q75 = quantile(scores, 0.75)
+
+            # アンカー（過去実績ベース）
+            anchors = {
+                "critical": max(0.05, min(0.7, q10 + 0.05)),
+                "warning": max(0.2, min(0.85, q40)),
+                "target": max(0.5, min(0.95, q75)),
+            }
+
+            raw_adjustments = {
+                key: anchors[key] - base_thresholds[key] for key in anchors
+            }
+
+            # EWMA平滑化（同ファイルタイプの直近調整とブレンド）
+            ft = context.get("file_type", "other")
+            recent = [rec for rec in self.learning_data.get("threshold_adjustments", [])
+                      if rec.get("context", {}).get("file_type") == ft]
+            if recent:
+                last = recent[-1].get("thresholds", {})
+                smoothed = {}
+                alpha = 0.5
+                for k in ["critical", "warning", "target"]:
+                    prev_delta = last.get(k, base_thresholds[k]) - base_thresholds[k]
+                    smoothed[k] = alpha * raw_adjustments[k] + (1 - alpha) * prev_delta
+                return smoothed
+
+            return raw_adjustments
+
+        except Exception:
+            return {"critical": 0.0, "warning": 0.0, "target": 0.0}
     
     def _calculate_learning_adjustments(self, context: Dict[str, Any]) -> Dict[str, float]:
         """学習ベース調整計算"""

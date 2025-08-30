@@ -431,7 +431,7 @@ class AutonomousFixExecutor:
         self.max_concurrent_fixes = 3
         self.safety_checks = True
         
-    def execute_fix(self, issue: QualityIssue, strategy: FixStrategy) -> FixResult:
+    def execute_fix(self, issue: QualityIssue, strategy: FixStrategy, canary: bool = False) -> FixResult:
         """修正実行"""
         fix_id = f"fix_{issue.issue_id}_{int(time.time())}"
         start_time = datetime.now()
@@ -447,6 +447,16 @@ class AutonomousFixExecutor:
             
             # 修正アクション実行
             for action in strategy.fix_actions:
+                # カナリアモードでは破壊的変更を回避（analyze/validateのみ実行）
+                if canary and action.get("type") in {"run_script", "apply_recommendations"}:
+                    changes_made.append({
+                        "action_type": action.get("type"),
+                        "success": True,
+                        "skipped": True,
+                        "note": "canary mode: skipped destructive action"
+                    })
+                    continue
+
                 change_result = self._execute_action(action, issue)
                 changes_made.append(change_result)
                 

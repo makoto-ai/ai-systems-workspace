@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T23:51:24.218047",
+  "timestamp": "2025-08-31T00:21:29.624677",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "35f614fe1287867c5379caded449ed1eadfdcefa",
+    "commit_hash": "fe29a1a2afe0fd925673936256685c6c8b864e3d",
     "branch": "autofix/yaml-warnings-mass-fix",
     "uncommitted_changes": 12,
-    "status_details": "A  Outlook_Obsidian_Newsletters.kmmacros\nA  Outlook_Obsidian_Newsletters_Auto.kmmacros\nA  \"docs/obsidian-knowledge/newsletters/Palm Beach/2025/2025-08-30_234312_AllowTest.md\"\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_233031_(No Subject).md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_ChatGPT_20250830_232723.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_Claude_20250830_232723.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_Cursor_20250830_232723.md\"\nA  scripts/obsidian_newsletter_saver.py\nA  scripts/outlook_collect_allowlist.jxa.js\nA  scripts/outlook_collect_allowlist.scpt\nA  scripts/outlook_selection_export.jxa.js\nA  scripts/outlook_selection_export.scpt"
+    "status_details": "A  .github/workflows/weekly-kpi.yml\nA  Mail_Obsidian_Newsletters.kmmacros\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_(No Subject).md\"\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_\\343\\200\\220\\347\\204\\241\\346\\226\\231\\351\\205\\215\\344\\277\\241\\343\\200\\221\\350\\251\\261\\351\\241\\214\\343\\201\\256\\343\\202\\271\\343\\203\\206\\343\\203\\274\\343\\203\\226\\343\\203\\253\\343\\202\\263\\343\\202\\244\\343\\203\\263\\343\\200\\214JPYC\\343\\200\\215\\343\\201\\256\\346\\234\\200\\345\\274\\267\\351\\201\\213\\347\\224\\250\\350\\241\\223\\343\\202\\222\\346\\225\\231\\343\\201\\210\\343\\201\\276\\343\\201\\231\\343\\200\\202 SENDER_ \\343\\202\\244\\343\\202\\261\\343\\203\\217\\343\\203\\244\\345\\244\\247\\345\\255\\246 SENDER_EMAIL_ info@mag.ikehay.md\"\nA  docs/obsidian-knowledge/newsletters/mag.ikehaya.com/2025/2025-08-31_000316_TestDomain.md\nA  scripts/mail_collect_allowlist.scpt\nA  scripts/mail_selection_export.scpt\nM  scripts/obsidian_newsletter_saver.py\nM  scripts/quality/autonomous_fix_engine.py\nM  scripts/quality/continuous_learner.py\nM  scripts/quality/dynamic_gates.py\nA  scripts/quality/golden_coverage_report.py"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 93,
-      "total_files": 171
+      "python_files": 94,
+      "total_files": 174
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25716,
+    "python_files_count": 25724,
     "cursor_configs_count": 13
   },
-  "state_hash": "0055c0a03c1769ff832b35327c4f1c12"
+  "state_hash": "e9ffd63edc3de6e9906949b08c654fad"
 }

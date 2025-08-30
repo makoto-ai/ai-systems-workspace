@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+  <dict>
+    <key>Activate</key><string>Normal</string>
+    <key>Macros</key>
+    <array>
+      <dict>
+        <key>Actions</key>
+        <array>
+          <dict>
+            <key>MacroActionType</key><string>ExecuteShellScript</string>
+            <key>Source</key><string>Nothing</string>
+            <key>Path</key><string></string>
+            <key>Text</key><string>OUT=$(osascript &quot;/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/mail_selection_export.scpt&quot;); echo &quot;$OUT&quot; | /usr/bin/python3 &quot;/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/obsidian_newsletter_saver.py&quot;</string>
+            <key>UseText</key><true/>
+            <key>TimeOutAbortsMacro</key><true/>
+            <key>TimeOutPeriod</key><integer>20</integer>
+            <key>TrimResults</key><true/>
+            <key>TrimResultsNew</key><true/>
+          </dict>
+        </array>
+        <key>Name</key><string>Mail選択→Obsidian保存（Newsletters）</string>
+        <key>Triggers</key>
+        <array>
+          <dict>
+            <key>MacroTriggerType</key><string>HotKey</string>
+            <key>Modifiers</key><integer>4352</integer>
+            <key>KeyCode</key><integer>1</integer>
+          </dict>
+        </array>
+      </dict>
+      <dict>
+        <key>Actions</key>
+        <array>
+          <dict>
+            <key>MacroActionType</key><string>ExecuteShellScript</string>
+            <key>Source</key><string>Nothing</string>
+            <key>Path</key><string></string>
+            <key>Text</key><string>OUT=$(osascript &quot;/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/mail_collect_allowlist.scpt&quot;); echo &quot;$OUT&quot; | /usr/bin/python3 &quot;/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/obsidian_newsletter_saver.py&quot;</string>
+            <key>UseText</key><true/>
+            <key>TimeOutAbortsMacro</key><true/>
+            <key>TimeOutPeriod</key><integer>30</integer>
+            <key>TrimResults</key><true/>
+            <key>TrimResultsNew</key><true/>
+          </dict>
+        </array>
+        <key>Name</key><string>Mail自動収集→Obsidian保存（Newsletters）</string>
+        <key>Triggers</key>
+        <array>
+          <dict>
+            <key>MacroTriggerType</key><string>Periodic</string>
+            <key>Period</key><string>Every 15 Minutes</string>
+          </dict>
+        </array>
+      </dict>
+    </array>
+    <key>Name</key><string>Mail→Obsidian Newsletters</string>
+  </dict>
+</array>
+</plist>
+

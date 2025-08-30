@@ -227,6 +227,22 @@ class ContinuousLearner:
             'avg_improvement': np.mean([a['improvement'] for a in successful]) if successful else 0,
             'last_updated': datetime.now().isoformat()
         }
+
+    def disagreement_samples(self, k: int = 20):
+        """不一致サンプリング（スコア分散が大きいファイルタイプ上位）"""
+        db = self._load_learning_db()
+        attempts = db.get('fix_attempts', [])[-500:]
+        by_type = {}
+        for a in attempts:
+            t = a.get('tag', 'unknown').split('.')[0]
+            by_type.setdefault(t, []).append(a.get('improvement', 0.0))
+        cand = []
+        for t, vals in by_type.items():
+            if len(vals) >= 5:
+                mu = float(np.mean(vals))
+                var = float(np.mean([(v - mu) ** 2 for v in vals]))
+                cand.append({'type': t, 'variance': var, 'count': len(vals)})
+        return sorted(cand, key=lambda x: x['variance'], reverse=True)[:k]
     
     def _get_default_strategy(self, tag):
         """デフォルト修正戦略"""

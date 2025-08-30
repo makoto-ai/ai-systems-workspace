@@ -1,0 +1,41 @@
+name: Weekly KPI Report
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'  # Every Monday 10:00 JST (01:00 UTC)
+  workflow_dispatch: {}
+
+jobs:
+  kpi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyyaml numpy
+
+      - name: Run Golden Coverage Report
+        run: |
+          python scripts/quality/golden_coverage_report.py | tee golden_report.txt
+
+      - name: Dynamic Gate Summary
+        run: |
+          python scripts/quality/dynamic_gates.py --summary | tee gate_summary.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-kpi
+          path: |
+            golden_report.txt
+            gate_summary.txt
+
+
