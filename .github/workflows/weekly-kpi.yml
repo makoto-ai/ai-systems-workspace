@@ -16,6 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore KPI history cache
+        uses: actions/cache/restore@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+          restore-keys: |
+            kpi-history-
+
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -46,6 +54,13 @@ jobs:
         run: |
           python scripts/quality/regression_report.py | tee regression_report.txt || true
 
+      - name: Save KPI history cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -54,3 +69,4 @@ jobs:
             golden_report.txt
             gate_summary.txt
             regression_report.txt
+            out/kpi_history.jsonl
