@@ -8,6 +8,10 @@ name: Auto Maintenance PR (Weekly)
 jobs:
   auto-maintenance:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: auto-maintenance
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write

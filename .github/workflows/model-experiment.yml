@@ -1,5 +1,8 @@
 name: "Model Experiment"
 
+env:
+  CI_DISABLE_EXTERNAL_APIS: 'true'
+
 "on":
   workflow_dispatch:
     inputs:
@@ -18,8 +21,12 @@ name: "Model Experiment"
 
 jobs:
   model_exp:
-    if: ${{ github.event.inputs.run_experiment == 'true' }}
+    if: ${{ github.event.inputs.run_experiment == 'true' && (secrets.GROQ_API_KEY != '' || secrets.OPENAI_API_KEY != '') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: model-experiment
+      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v4
