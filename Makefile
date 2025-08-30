@@ -59,3 +59,23 @@ regression-check:
 # 学習レポート表示
 learning-report:
 	python scripts/quality/continuous_learner.py
+
+# === Phase 1: Dashboard & Monitoring ===
+dashboard: ## 🎯 学習効果ダッシュボード表示
+	@echo "🎯 Learning Insights Dashboard Starting..."
+	@python scripts/dashboard/learning_insights.py
+
+health: ## 💚 システム健康度チェック
+	@echo "💚 System Health Check Starting..."
+	@python scripts/quality/health_monitor.py
+
+insights: dashboard health ## 🚀 総合分析（ダッシュボード + 健康度）
+	@echo ""
+	@echo "🚀 Complete System Analysis Completed!"
+	@echo "📄 詳細レポート: out/learning_insights.json, out/system_health.json"
+
+quick-check: ## ⚡ クイックシステム確認（要点のみ）
+	@echo "⚡ Quick System Status Check"
+	@python scripts/quality/health_monitor.py | head -15
+	@echo ""
+	@python scripts/dashboard/learning_insights.py | tail -8
