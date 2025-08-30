@@ -109,3 +109,4 @@ if __name__ == "__main__":
     print("使用方法: tests.golden.runner経由で実行してください")
 
 
+
