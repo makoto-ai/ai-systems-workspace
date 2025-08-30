@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T21:21:01.223562",
+  "timestamp": "2025-08-30T22:21:09.239504",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "b277831be7300314d1336e1f61ca37c16fb361c6",
+    "commit_hash": "cb0e288292d2883d3f5787309450432dc5bb4013",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 3,
-    "status_details": "A  \"Downloads\\350\\207\\252\\345\\213\\225\\346\\214\\257\\343\\202\\212\\345\\210\\206\\343\\201\\221\\345\\276\\251\\346\\227\\247.kmmacros\"\nA  scripts/desktop_cleanup.sh\nA  scripts/restore_km_file_sorter.py"
+    "uncommitted_changes": 5,
+    "status_details": "A  \"Obsidian\\344\\277\\235\\345\\255\\230_KMBridge.kmmacros\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_KM_20250830_220815.md\"\nA  \"docs/obsidian-knowledge/quick-notes/KM\\350\\207\\252\\345\\213\\225\\350\\273\\242\\351\\200\\201_KM_20250830_220851.md\"\nA  scripts/icloud_desktop_sort.sh\nM  scripts/km_obsidian_bridge.py"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 92,
-      "total_files": 162
+      "total_files": 163
     },
     "modules": {
       "exists": true,
@@ -1615,5 +1615,5 @@
     "python_files_count": 25699,
     "cursor_configs_count": 13
   },
-  "state_hash": "721442adb8c0a8755e85702c91fe7c8d"
+  "state_hash": "fd4216eecab79194ff9e4113e5798e58"
 }

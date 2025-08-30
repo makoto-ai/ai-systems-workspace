@@ -20,8 +20,9 @@ def save_from_clipboard_km(source_app="unknown"):
             print("❌ クリップボードが空です")
             return False
         
-        # Obsidianパス設定
-        vault_path = Path("docs/obsidian-knowledge")
+        # Obsidianパス設定（絶対パス: このスクリプトの親ディレクトリ基準）
+        project_root = Path(__file__).resolve().parents[1]
+        vault_path = project_root / "docs" / "obsidian-knowledge"
         quick_notes = vault_path / "quick-notes"
         quick_notes.mkdir(parents=True, exist_ok=True)
         
