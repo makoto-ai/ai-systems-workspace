@@ -1,0 +1,23 @@
+# ShellCheck設定ファイル（プロジェクト全体適用）
+# GitHub Actions環境特有の除外ルール
+
+# 情報レベルの警告を除外（VS Code警告削減）
+exclude=SC1091  # source参照エラー（仮想環境等）
+exclude=SC2012  # ls使用警告（find推奨だが一部許可）
+exclude=SC2148  # シバン行なし（GitHub Actions runブロック）
+exclude=SC2312  # 2>&1 リダイレクト警告
+
+# プロジェクト固有の除外
+exclude=SC2086  # 変数のクォート警告（意図的な場合）
+exclude=SC2034  # 未使用変数警告（デバッグ用変数等）
+
+# 有効にする重要警告
+# SC2155: export var=$(command) - セキュリティリスク
+# SC2046: $(command) のクォート漏れ
+# SC2006: `command` の代わりに $(command) 推奨
+
+# 外部コマンドチェック
+external-sources=true
+
+# シバン行チェック緩和（スクリプト用途に応じて）
+check-sourced=false

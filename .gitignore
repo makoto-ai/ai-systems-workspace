@@ -29,9 +29,11 @@ ENV/
 env.bak/
 venv.bak/
 
-# IDEs
-.vscode/
+# IDEs（設定は保持、一時ファイルのみ除外）
 .idea/
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/*.log
 *.swp
 *.swo
 *~

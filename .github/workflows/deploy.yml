@@ -1,9 +1,9 @@
-name: 🚀 Auto Deploy via Docker
+name: "🚀 Auto Deploy via Docker"
 
 on:
   push:
     branches:
-      - main
+    - main
   workflow_dispatch: # 手動実行も可能
 
 jobs:
@@ -11,40 +11,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ Checkout repository
-        uses: actions/checkout@v3
+    - name: "✅ Checkout repository"
+      uses: actions/checkout@v4
 
-      - name: 🐳 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    - name: "🐳 Set up Docker Buildx"
+      uses: docker/setup-buildx-action@v3
 
-      - name: 🔐 Load Secrets (GitHub or Vault)
-        run: |
-          # GitHub Secretsを安全にチェックして環境に設定
-          echo "🔐 Loading secrets from GitHub..."
+    - name: "🔐 Load Secrets (GitHub or Vault)"
+      run: |
+        # GitHub Secretsを安全にチェックして環境に設定
+        echo "🔐 Loading secrets from GitHub..."
 
-          # 必要に応じて secrets を環境変数として利用可能
+        # 必要に応じて secrets を環境変数として利用可能
 
-      - name: 🧪 Run Pre-Deployment Tests
-        run: |
-          docker-compose -f docker-compose.yml run --rm app pytest || true
+    - name: "🧪 Run Pre-Deployment Tests"
+      run: |
+        docker-compose -f docker-compose.yml run --rm app pytest || true
 
-      - name: 🏗️ Build and Restart Containers
-        run: |
-          docker-compose down
-          docker-compose up -d --build
+    - name: "🏗️ Build and Restart Containers"
+      run: |
+        docker-compose down
+        docker-compose up -d --build
 
-      - name: ✅ Health Check
-        run: |
-          sleep 30
-          curl -f http://localhost:8000/health || echo "⚠️ Health check failed"
+    - name: "✅ Health Check"
+      run: |
+        sleep 30
+        curl -f http://localhost:8000/health || echo "⚠️ Health check failed"
 
-      - name: 🌐 Export STT Secrets
-        run: |
-          echo "🌐 STT secrets are available in the environment when configured"
-          echo "✅ Deployment environment ready"
+    - name: "🌐 Export STT Secrets"
+      run: |
+        echo "🌐 STT secrets are available in the environment when configured"
+        echo "✅ Deployment environment ready"
 
-      - name: ✅ Notify Deployment Success
-        run: |
-          echo "🎉 Deployment completed successfully!"
-          echo "📊 System Status:"
-          docker-compose ps
+    - name: "✅ Notify Deployment Success"
+      run: |
+        echo "🎉 Deployment completed successfully!"
+        echo "📊 System Status:"
+        docker-compose ps

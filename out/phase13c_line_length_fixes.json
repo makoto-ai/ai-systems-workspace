@@ -1,0 +1,111 @@
+{
+  "timestamp": "2025-08-30T13:02:44.154421",
+  "total_files": 15,
+  "files_modified": 1,
+  "total_lines_fixed": 2,
+  "files": [
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/model-experiment.yml",
+      "timestamp": "2025-08-30T13:02:44.154847",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/api-tests.yml",
+      "timestamp": "2025-08-30T13:02:44.154947",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/predictive-quality.yml",
+      "timestamp": "2025-08-30T13:02:44.154984",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/hybrid-deploy.yml",
+      "timestamp": "2025-08-30T13:02:44.155090",
+      "fixes_applied": 2,
+      "lines_processed": [
+        {
+          "line_num": 129,
+          "original_length": 129,
+          "new_length": 171,
+          "pattern": "url_ignore"
+        },
+        {
+          "line_num": 130,
+          "original_length": 189,
+          "new_length": 202,
+          "pattern": "echo_splitting"
+        }
+      ]
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/test.yml",
+      "timestamp": "2025-08-30T13:02:44.155872",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/minimal-notifications.yml",
+      "timestamp": "2025-08-30T13:02:44.155914",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/pre-commit.yml",
+      "timestamp": "2025-08-30T13:02:44.155940",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/canary-auto-promote.yml",
+      "timestamp": "2025-08-30T13:02:44.155968",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/realtime-quality-guard.yml",
+      "timestamp": "2025-08-30T13:02:44.156042",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/deploy.yml",
+      "timestamp": "2025-08-30T13:02:44.156145",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/weekly-golden.yml",
+      "timestamp": "2025-08-30T13:02:44.156171",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/monitoring.yml",
+      "timestamp": "2025-08-30T13:02:44.156237",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/security-scan.yml",
+      "timestamp": "2025-08-30T13:02:44.156275",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/pr-quality-check.yml",
+      "timestamp": "2025-08-30T13:02:44.156322",
+      "fixes_applied": 0,
+      "lines_processed": []
+    },
+    {
+      "file": "/Users/araimakoto/ai-driven/ai-systems-workspace/.github/workflows/staged-promotion.yml",
+      "timestamp": "2025-08-30T13:02:44.156434",
+      "fixes_applied": 0,
+      "lines_processed": []
+    }
+  ]
+}

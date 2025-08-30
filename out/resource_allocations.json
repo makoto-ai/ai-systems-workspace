@@ -1,0 +1,185 @@
+[
+  {
+    "allocation_id": "alloc_sla_monitoring_1756518867_0",
+    "workload_id": "sla_monitoring_1756518867_0",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051445",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756519467_1",
+    "workload_id": "sla_monitoring_1756519467_1",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051478",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756520067_2",
+    "workload_id": "sla_monitoring_1756520067_2",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051492",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756520667_3",
+    "workload_id": "sla_monitoring_1756520667_3",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051503",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756521267_4",
+    "workload_id": "sla_monitoring_1756521267_4",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051513",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756521867_5",
+    "workload_id": "sla_monitoring_1756521867_5",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 15.0,
+      "network_io": 7.5
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051523",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756522467_6",
+    "workload_id": "sla_monitoring_1756522467_6",
+    "allocated_resources": {
+      "cpu": 0.075,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 10.0,
+      "network_io": 5.0
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051534",
+    "cost_estimate": 3.5319010416666666e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": [
+      "disk_io_limited",
+      "network_io_limited"
+    ]
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756523067_7",
+    "workload_id": "sla_monitoring_1756523067_7",
+    "allocated_resources": {
+      "cpu": 0.05,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 0,
+      "network_io": 0
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051546",
+    "cost_estimate": 2.4902343750000002e-05,
+    "allocation_strategy": "priority_based",
+    "constraints": [
+      "cpu_limited"
+    ]
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756523967_8",
+    "workload_id": "sla_monitoring_1756523967_8",
+    "allocated_resources": {
+      "cpu": 0.00820000000000004,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 0,
+      "network_io": 0
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051558",
+    "cost_estimate": 7.48567708333335e-06,
+    "allocation_strategy": "priority_based",
+    "constraints": [
+      "cpu_limited"
+    ]
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756524867_9",
+    "workload_id": "sla_monitoring_1756524867_9",
+    "allocated_resources": {
+      "cpu": 0,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 0,
+      "network_io": 0
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051568",
+    "cost_estimate": 4.069010416666667e-06,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  },
+  {
+    "allocation_id": "alloc_sla_monitoring_1756525767_10",
+    "workload_id": "sla_monitoring_1756525767_10",
+    "allocated_resources": {
+      "cpu": 0,
+      "memory": 50,
+      "process_slots": 0,
+      "disk_io": 0,
+      "network_io": 0
+    },
+    "allocation_efficiency": 0.1,
+    "estimated_completion_time": "2025-08-30T10:59:27.051579",
+    "cost_estimate": 4.069010416666667e-06,
+    "allocation_strategy": "priority_based",
+    "constraints": []
+  }
+]

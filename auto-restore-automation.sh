@@ -32,7 +32,7 @@ python scripts/data-integrity-check.py --check > /dev/null 2>&1 && echo "✅ デ
 
 # システム4: GitHub Actions統合確認
 echo "🔄 【システム4】GitHub Actions統合確認中..."
-WORKFLOW_COUNT=$(ls .github/workflows/*.yml 2>/dev/null | wc -l)
+WORKFLOW_COUNT=$(find .github/workflows -name "*.yml" -type f 2>/dev/null | wc -l)
 echo "📋 ワークフロー数: $WORKFLOW_COUNT個"
 
 # Git接続確認

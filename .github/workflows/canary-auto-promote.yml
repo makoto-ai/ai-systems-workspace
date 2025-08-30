@@ -1,9 +1,9 @@
-name: Golden Test Canary Auto-Promote
+name: "Golden Test Canary Auto-Promote"
 
 on:
   schedule:
-    # 毎日18:00 JSTに実行
-    - cron: '0 9 * * *'
+  # 毎日18:00 JSTに実行
+  - cron: '0 9 * * *'
   workflow_dispatch:
     inputs:
       force_check:
@@ -19,26 +19,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: "Checkout code"
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
 
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml  # Phase4 weighted evaluation用
 
-    - name: Setup environment
+    - name: "Setup environment"
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
-        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> "$GITHUB_ENV"
+        # API Keys設定用
+        # 使用方法: GROQ_API_KEY, OPENAI_API_KEY をrepository secretsに設定してください
+        echo "API Keys setup required" >&2
 
-    - name: Run Shadow Evaluation (Phase4準備チェック)
+    - name: "Run Shadow Evaluation (Phase4準備チェック)"
       id: shadow_eval
       run: |
         echo "🔍 Running Phase 4 Shadow Evaluation..."
@@ -65,14 +66,14 @@ jobs:
         echo "predicted_at_85=${PREDICTED_AT_85}" >> "\$GITHUB_OUTPUT"
         echo "📊 Predicted@0.85: ${PREDICTED_AT_85}%"
 
-    - name: Check Phase4 準備状況
+    - name: "Check Phase4 準備状況"
       id: phase4_check
       run: |
         PREDICTED_AT_85="${{ steps.shadow_eval.outputs.predicted_at_85 }}"
 
         # Phase4条件チェック
         PHASE4_READY=$(python -c "print('true' if float('${PREDICTED_AT_85}') >= 85 else 'false')")
-        if ["\${PHASE4_READY}" = "true"]; then
+        if [ "${PHASE4_READY}" = "true" ]; then
           echo "ready_for_phase4=true" >> "$GITHUB_OUTPUT"
           echo "✅ Phase 4準備完了: Predicted@0.85=${PREDICTED_AT_85}%"
         else
@@ -81,9 +82,9 @@ jobs:
           echo "🔄 Phase 4準備中: Gap=${GAP}pp"
         fi
 
-    - name: Check 履歴 (2週連続チェック)
+    - name: "Check 履歴 (2週連続チェック)"
       id: history_check
-      if: steps.phase4_check.outputs.ready_for_phase4 == 'true'
+      if: ${{ steps.phase4_check.outputs.ready_for_phase4 == 'true' }}
       run: |
         echo "📅 Checking 2-week consecutive achievement..."
 
@@ -92,9 +93,9 @@ jobs:
         WEEK_1_FILE="out/phase4_ready_$(date -d '7 days ago' +'%Y%m%d').marker"
         WEEK_2_FILE="out/phase4_ready_$(date -d '14 days ago' +'%Y%m%d').marker"
 
-        if [-f "$WEEK_1_FILE"]; then
+        if [ -f "$WEEK_1_FILE" ]; then
           echo "✅ 1週間前も条件達成"
-          if [-f "$WEEK_2_FILE"]; then
+          if [ -f "$WEEK_2_FILE" ]; then
             echo "consecutive_weeks=2" >> "$GITHUB_OUTPUT"
             echo "🎉 2週連続でPhase4条件達成！"
           else
@@ -110,26 +111,26 @@ jobs:
         mkdir -p out
         touch "out/phase4_ready_$(date +'%Y%m%d').marker"
 
-    - name: Phase4自動昇格判定
+    - name: "Phase4自動昇格判定"
       id: auto_promote
-      if: steps.phase4_check.outputs.ready_for_phase4 == 'true' && steps.history_check.outputs.consecutive_weeks == '2'
+      if: >-
+        ${{ steps.phase4_check.outputs.ready_for_phase4 == 'true' &&
+            steps.history_check.outputs.consecutive_weeks == '2' }}
       run: |
         echo "🚀 Phase 4自動昇格条件達成！"
         echo "auto_promote=true" >> "$GITHUB_OUTPUT"
 
         # 昇格通知データを準備
-        echo '{
-          "phase": "phase4",
-          "timestamp": "'$(date -Iseconds)'",
-          "predicted_at_85": '${{ steps.shadow_eval.outputs.predicted_at_85 }}',
-          "consecutive_weeks": 2,
-          "auto_promoted": true
-        }' > out/phase4_promotion.json
+        TIMESTAMP=$(date -Iseconds)
+                  printf '{\n  "phase": "phase4",\n  "timestamp": "%s",\n  "predicted_at_85": %s,\n' \
+            "${TIMESTAMP}" "${{ steps.shadow_eval.outputs.predicted_at_85 }}"
+        printf '  "consecutive_weeks": 2,\n  "auto_promoted": true\n}\n' \
+          > out/phase4_promotion.json
 
         echo "📄 昇格データ準備完了"
 
-    - name: ready-for-phase4 ラベル自動付与
-      if: steps.auto_promote.outputs.auto_promote == 'true'
+    - name: "ready-for-phase4 ラベル自動付与"
+      if: ${{ steps.auto_promote.outputs.auto_promote == 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -174,8 +175,8 @@ jobs:
             labels: ['ready-for-phase4', 'golden-test', 'enhancement']
           });
 
-    - name: Phase4準備未完了の場合の改善提案Issue作成
-      if: steps.phase4_check.outputs.ready_for_phase4 == 'false'
+    - name: "Phase4準備未完了の場合の改善提案Issue作成"
+      if: ${{ steps.phase4_check.outputs.ready_for_phase4 == 'false' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -207,7 +208,8 @@ jobs:
           python -m tests.golden.root_cause_analyzer --export-new-fails out/new_fails.json
 
           # 正規化ルール候補生成
-          python -m tests.golden.tools.suggest_norm_rules --in out/new_fails.json --out out/norm_rule_candidates_phase4.yaml
+          python -m tests.golden.tools.suggest_norm_rules \
+            --in out/new_fails.json --out out/norm_rule_candidates_phase4.yaml
 
           # プロンプト最適化実験
           python experiments/prompt_optimization.py --budget 20 --metric jaccard --out out/prompt_opt_phase4.json
@@ -236,7 +238,7 @@ jobs:
             });
           }
 
-    - name: 通知送信
+    - name: "通知送信"
       if: always()
       continue-on-error: true
       run: |
@@ -245,11 +247,11 @@ jobs:
         echo "💡 使用方法: python scripts/notify_results.py"
         echo "🔧 SLACK_WEBHOOK_URL をrepository secretsに設定すると自動化できます"
 
-    - name: アーティファクト保存
+    - name: "アーティファクト保存"
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: phase4-evaluation-results
+        name: "phase4-evaluation-results"
         path: |
           out/shadow_multi.json
           out/phase4_*.json

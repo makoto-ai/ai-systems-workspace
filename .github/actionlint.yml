@@ -1,0 +1,73 @@
+# actionlint configuration for IDE extensions
+# GitHub Actions拡張機能向け最適化設定
+
+# shellcheckの設定
+shellcheck:
+  # バージョン指定
+  version: latest
+  
+  # 除外ルール（GitHub Actions固有の書式）
+  exclude:
+    - SC1091  # ファイル読み込みエラー（GitHub Actions環境固有）
+    - SC2148  # シバン行なし（GitHub Actions runブロック）
+    - SC2312  # 2>&1 リダイレクト警告
+
+# pyflakesの設定（Python使用時）
+pyflakes:
+  version: latest
+
+# 設定の詳細
+config:
+  # 厳密度レベル
+  strict-mode: false
+  
+  # ワークフロー構文チェック
+  workflow-syntax-check: true
+  
+  # アクションの存在チェック
+  action-existence-check: true
+  
+  # 非推奨機能の警告
+  deprecation-check: true
+  
+  # セキュリティチェック
+  security-check: true
+
+# 除外パターン
+ignore:
+  # テンプレートファイル
+  - "*.template.yml"
+  - "*.backup.yml"
+  - "*.disabled"
+  
+  # 一時ファイル
+  - "**/temp_*.yml"
+  - "**/tmp_*.yml"
+
+# カスタムルール
+custom-rules:
+  # GitHub環境変数の許可
+  allowed-github-vars:
+    - GITHUB_TOKEN
+    - GITHUB_REPOSITORY
+    - GITHUB_WORKSPACE
+    - GITHUB_SHA
+    - GITHUB_REF
+    - GITHUB_EVENT_NAME
+    - GITHUB_RUN_ID
+    - GITHUB_RUN_NUMBER
+    
+  # カスタムアクションの許可
+  allowed-custom-actions:
+    - "actions/*"
+    - "github/*"
+    - "docker/*"
+
+# フォーマット設定
+format:
+  # エラー表示形式
+  error-format: "{{.Filepath}}:{{.Line}}:{{.Column}}: {{.Message}}"
+  
+  # カラー出力
+  color: auto
+

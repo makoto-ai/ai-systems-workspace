@@ -1,11 +1,10 @@
 {
-  "timestamp": "2025-08-30T09:19:32.653769",
+  "timestamp": "2025-08-30T11:00:52.879385",
   "learning_effectiveness": {
-    "total_output_files": 40,
-    "recent_files": 40,
+    "total_output_files": 59,
+    "recent_files": 59,
     "performance_trends": {
       "pass_rates": [
-        60.0,
         60.0,
         0.0,
         60.0
@@ -15,10 +14,10 @@
     "active_learning": true
   },
   "fix_success_rates": {
-    "yaml_fixes": 3,
-    "context_warnings": 10,
+    "yaml_fixes": 4,
+    "context_warnings": 11,
     "bash_syntax": 3,
-    "total_attempts": 15
+    "total_attempts": 16
   },
   "pattern_recognition": {
     "recognized_patterns": 8,
@@ -30,11 +29,11 @@
     "components": {
       "learning_scripts": {
         "status": "ok",
-        "last_modified": "2025-08-30T09:09:28.739397"
+        "last_modified": "2025-08-30T10:50:44.820020"
       },
       "output_directory": {
         "status": "ok",
-        "last_modified": "2025-08-30T09:13:14.186826"
+        "last_modified": "2025-08-30T10:50:58.714094"
       },
       "continuous_learner": {
         "status": "ok",
@@ -45,7 +44,7 @@
         "last_modified": "2025-08-30T07:47:57.399095"
       }
     },
-    "last_activity": "2025-08-30T09:19:32.540921",
+    "last_activity": "2025-08-30T10:54:29.592290",
     "warnings": []
   }
 }

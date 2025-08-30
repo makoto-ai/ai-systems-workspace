@@ -1,9 +1,9 @@
-name: Golden Test Staged Promotion
+name: "Golden Test Staged Promotion"
 
 on:
   schedule:
-    # 毎日09:20 JSTに実行 (段階昇格チェック)
-    - cron: '20 0 * * *'
+  # 毎日09:20 JSTに実行 (段階昇格チェック)
+  - cron: '20 0 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -19,25 +19,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: "Checkout code"
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
 
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml
 
-    - name: Setup environment
+    - name: "Setup environment"
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
+        # GROQ_API_KEY設定用
+        # 使用方法: GROQ_API_KEY をrepository secretsに設定してください
+        echo "GROQ_API_KEY setup required" >&2
 
-    - name: Run Multi-Shadow Grid Evaluation
+    - name: "Run Multi-Shadow Grid Evaluation"
       id: shadow_grid
       run: |
         echo "🔍 Running Multi-Shadow Grid Evaluation..."
@@ -83,18 +85,20 @@ jobs:
         print(f'{promotion[\"promotion_step\"]:.2f}')
         ")
 
-        echo "next_recommended=${NEXT_RECOMMENDED}" >> "$GITHUB_OUTPUT"
-        echo "current_threshold=${CURRENT_THRESHOLD}" >> "$GITHUB_OUTPUT"
-        echo "promotion_ready=${PROMOTION_READY}" >> "$GITHUB_OUTPUT"
-        echo "promotion_step=${PROMOTION_STEP}" >> "$GITHUB_OUTPUT"
+        {
+          echo "next_recommended=${NEXT_RECOMMENDED}"
+          echo "current_threshold=${CURRENT_THRESHOLD}"
+          echo "promotion_ready=${PROMOTION_READY}"
+          echo "promotion_step=${PROMOTION_STEP}"
+        } >> "$GITHUB_OUTPUT"
 
         echo "📊 Current: ${CURRENT_THRESHOLD}"
         echo "🎯 Next Recommended: ${NEXT_RECOMMENDED}"
         echo "🚀 Promotion Ready: ${PROMOTION_READY}"
 
-    - name: Check Promotion History (2連続チェック)
+    - name: "Check Promotion History (2連続チェック)"
       id: history_check
-      if: steps.shadow_grid.outputs.promotion_ready == 'true'
+      if: ${{ steps.shadow_grid.outputs.promotion_ready == 'true' }}
       run: |
         echo "📅 Checking promotion history for consecutive achievement..."
 
@@ -103,7 +107,7 @@ jobs:
         # 過去7日間の昇格準備状況をチェック
         WEEK_AGO_FILE="out/promotion_ready_${NEXT_RECOMMENDED}_$(date -d '7 days ago' +'%Y%m%d').marker"
 
-        if [-f "$WEEK_AGO_FILE"]; then
+        if [ -f "$WEEK_AGO_FILE" ]; then
           echo "✅ 7日前も同じしきい値で昇格準備完了"
           echo "consecutive_achievement=true" >> "$GITHUB_OUTPUT"
           echo "🎉 2連続で昇格条件達成！"
@@ -116,14 +120,16 @@ jobs:
         mkdir -p out
         touch "out/promotion_ready_${NEXT_RECOMMENDED}_$(date +'%Y%m%d').marker"
 
-    - name: Validate Promotion Step (安全範囲チェック)
+    - name: "Validate Promotion Step (安全範囲チェック)"
       id: validate_step
-      if: steps.shadow_grid.outputs.promotion_ready == 'true' && steps.history_check.outputs.consecutive_achievement == 'true'
+      if: >-
+        ${{ steps.shadow_grid.outputs.promotion_ready == 'true' &&
+            steps.history_check.outputs.consecutive_achievement == 'true' }}
       run: |
         PROMOTION_STEP="${{ steps.shadow_grid.outputs.promotion_step }}"
 
         # 昇格ステップが安全範囲内かチェック (0.02〜0.05)
-        if ["$(python -c "print('true' if 0.02 <= float('${PROMOTION_STEP}') <= 0.05 else 'false')")" = "true"]; then
+        if [ "$(python -c "print('true' if 0.02 <= float('${PROMOTION_STEP}') <= 0.05 else 'false')")" = "true" ]; then
           echo "✅ 昇格ステップが安全範囲内: ${PROMOTION_STEP}"
           echo "safe_promotion_step=true" >> "$GITHUB_OUTPUT"
         else
@@ -131,8 +137,12 @@ jobs:
           echo "safe_promotion_step=false" >> "$GITHUB_OUTPUT"
         fi
 
-    - name: Create Staged Promotion PR
-      if: ${{ steps.shadow_grid.outputs.promotion_ready == 'true' && steps.history_check.outputs.consecutive_achievement == 'true' && steps.validate_step.outputs.safe_promotion_step == 'true' && github.event.inputs.dry_run != 'true' }}
+    - name: "Create Staged Promotion PR"
+      if: >-
+        ${{ steps.shadow_grid.outputs.promotion_ready == 'true' &&
+            steps.history_check.outputs.consecutive_achievement == 'true' &&
+            steps.validate_step.outputs.safe_promotion_step == 'true' &&
+            github.event.inputs.dry_run != 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -170,7 +180,7 @@ jobs:
 
           ### 昇格条件達成
           - ✅ 2連続で昇格条件を満たしました
-          - ✅ 昇格ステップ ${promotionStep:+.2f} が安全範囲内
+          - ✅ 昇格ステップ ${promotionStep.toFixed(2)} が安全範囲内
           - ✅ shadow_pass_rate ≥ 80% かつ new_fail_ratio ≤ 60% かつ flaky_rate < 5%
 
           ### 変更内容
@@ -185,7 +195,7 @@ jobs:
           ### 自動生成情報
           - 生成日時: ${new Date().toISOString()}
           - ワークフロー: staged-promotion.yml
-          - 実行ID: ${process.env.GITHUB_RUN_ID}
+          - 実行ID: ${{ github.run_id }}
 
           **⚠️ このPRは7日間のカナリア監視後、自動で本採用判定されます**
           `;
@@ -242,7 +252,7 @@ jobs:
             throw error;
           }
 
-    - name: ドライラン結果表示
+    - name: "ドライラン結果表示"
       if: ${{ github.event.inputs.dry_run == 'true' }}
       run: |
         echo "🧪 ドライラン実行完了"
@@ -253,7 +263,7 @@ jobs:
         echo "  Promotion Ready: ${{ steps.shadow_grid.outputs.promotion_ready }}"
         echo "  Consecutive: ${{ steps.history_check.outputs.consecutive_achievement }}"
 
-    - name: 通知送信
+    - name: "通知送信"
       if: always()
       continue-on-error: true
       run: |
@@ -262,11 +272,11 @@ jobs:
         echo "💡 使用方法: python scripts/notify_results.py --staged-promotion"
         echo "🔧 SLACK_WEBHOOK_URL をrepository secretsに設定すると自動化できます"
 
-    - name: アーティファクト保存
+    - name: "アーティファクト保存"
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: staged-promotion-results
+        name: "staged-promotion-results"
         path: |
           out/shadow_grid.json
           out/promotion_ready_*.marker

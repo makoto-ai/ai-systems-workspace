@@ -45,3 +45,4 @@ phase4_config:
   flaky_penalty: -0.2
   # モデル起因失敗の重点評価
   model_failure_bonus: 0.5
+

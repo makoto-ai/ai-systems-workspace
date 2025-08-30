@@ -107,3 +107,4 @@ def predict(input_text: str) -> str:
 if __name__ == "__main__":
     print("🎯 PR2: MODEL起因失敗ケース用template_explicit適用版")
     print("使用方法: tests.golden.runner経由で実行してください")
+

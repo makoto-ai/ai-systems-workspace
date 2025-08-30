@@ -1,4 +1,7 @@
-name: Security Scanning & Vulnerability Management
+name: "Security Scanning & Vulnerability Management"
+
+env:
+  PYTHON_VERSION: '3.11'
 
 on:
   # push時の自動実行を完全停止（メール大量発生防止）
@@ -7,13 +10,13 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # 週1回のみ実行（月曜日18:00 JST）
-    - cron: '0 18 * * 1'
+  # 週1回のみ実行（月曜日18:00 JST）
+  - cron: '0 18 * * 1'
   workflow_dispatch:
 
 jobs:
   codeql-analysis:
-    name: CodeQL Security Analysis
+    name: "CodeQL Security Analysis"
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,94 +29,94 @@ jobs:
         language: ['python', 'javascript']
 
     steps:
-    - name: Checkout repository
+    - name: "Checkout repository"
       uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
+    - name: "Initialize CodeQL"
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
 
-    - name: Set up Python (for Python analysis)
-      if: matrix.language == 'python'
+    - name: "Set up Python (for Python analysis)"
+      if: ${{ matrix.language == 'python' }}
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    - name: Install Python dependencies (for analysis)
-      if: matrix.language == 'python'
+    - name: "Install Python dependencies (for analysis)"
+      if: ${{ matrix.language == 'python' }}
       run: |
         python -m pip install --upgrade pip
-        if [-f requirements.txt]; then pip install -r requirements.txt; fi
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Perform CodeQL Analysis
+    - name: "Perform CodeQL Analysis"
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
 
   dependency-review:
-    name: Dependency Security Review
+    name: "Dependency Security Review"
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' }}
 
     steps:
-    - name: Checkout repository
+    - name: "Checkout repository"
       uses: actions/checkout@v4
 
-    - name: Dependency Review
+    - name: "Dependency Review"
       uses: actions/dependency-review-action@v4
       with:
         fail-on-severity: moderate
         allow-licenses: MIT, Apache-2.0, BSD-3-Clause, ISC
 
   security-audit:
-    name: Security Audit
+    name: "Security Audit"
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: "Checkout repository"
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: "Set up Python"
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    - name: Install security audit tools
+    - name: "Install security audit tools"
       run: |
         python -m pip install --upgrade pip
         pip install safety bandit semgrep
 
-    - name: Python Security Audit with Safety
+    - name: "Python Security Audit with Safety"
       run: |
         echo "🔍 Pythonパッケージの既知の脆弱性をチェック..."
         safety check --json --output safety-report.json || true
-        if [-f safety-report.json]; then
-          echo "📊 Safety レポート生成完了"
-          cat safety-report.json
+        if [ -f safety-report.json ]; then
+        echo "📊 Safety レポート生成完了"
+        cat safety-report.json
         fi
 
-    - name: Python Code Security Analysis with Bandit
+    - name: "Python Code Security Analysis with Bandit"
       run: |
         echo "🔍 Pythonコードのセキュリティ問題をチェック..."
         bandit -r app/ -f json -o bandit-report.json || true
-        if [-f bandit-report.json]; then
-          echo "📊 Bandit レポート生成完了"
-          cat bandit-report.json
+        if [ -f bandit-report.json ]; then
+        echo "📊 Bandit レポート生成完了"
+        cat bandit-report.json
         fi
 
-    - name: Upload Security Reports
+    - name: "Upload Security Reports"
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: security-reports-${{ github.run_id }}
+        name: "security-reports-${{ github.run_id }}"
         path: |
           safety-report.json
           bandit-report.json
         retention-days: 30
 
-    - name: Security Summary
+    - name: "Security Summary"
       run: |
         echo "🛡️ === セキュリティ監査完了 ==="
         echo "実行時刻: $(date '+%Y-%m-%d %H:%M:%S JST')"
@@ -123,48 +126,49 @@ jobs:
         echo "📋 詳細レポート: GitHub Actions Artifacts"
 
         # 重大な脆弱性があれば警告
-        if [-f safety-report.json] && [ "$(cat safety-report.json)" != "[]" ]; then
-          echo "⚠️ 依存関係に既知の脆弱性が検出されました"
+        if [ -f safety-report.json ] && [ "$(cat safety-report.json)" != "[]" ]; then
+        echo "⚠️ 依存関係に既知の脆弱性が検出されました"
         fi
 
-        if [-f bandit-report.json]; then
-          HIGH_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH")) | length' bandit-report.json 2>/dev/null || echo "0")
-          if ["$HIGH_ISSUES" -gt 0]; then
-            echo "⚠️ コードに高リスクのセキュリティ問題が ${HIGH_ISSUES} 件検出されました"
-          fi
+        if [ -f bandit-report.json ]; then
+        HIGH_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH")) | length' \
+        bandit-report.json 2>/dev/null || echo "0")
+        if [ "$HIGH_ISSUES" -gt 0 ]; then
+        echo "⚠️ コードに高リスクのセキュリティ問題が ${HIGH_ISSUES} 件検出されました"
+        fi
         fi
 
   gitleaks:
-    name: Git Secrets Scan
+    name: "Git Secrets Scan"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: always()
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: "Gitleaks Scan"
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      if: always()
 
   detect-secrets:
-    name: Detect Secrets Scan
+    name: "Detect Secrets Scan"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install detect-secrets
-        run: |
-          python -m pip install --upgrade pip
-          pip install detect-secrets
-      - name: Run detect-secrets scan
-        run: |
-          detect-secrets scan --baseline .secrets.baseline
-          if [$? -eq 1]; then
-            echo "🚨 New secrets detected!"
-            echo "Run 'detect-secrets scan --update .secrets.baseline' to update baseline"
-            exit 1
-          fi
+    - uses: actions/checkout@v4
+    - name: "Set up Python"
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: "Install detect-secrets"
+      run: |
+        python -m pip install --upgrade pip
+        pip install detect-secrets
+    - name: "Run detect-secrets scan"
+      run: |
+        detect-secrets scan --baseline .secrets.baseline
+        if [ $? -eq 1 ]; then
+        echo "🚨 New secrets detected!"
+        echo "Run 'detect-secrets scan --update .secrets.baseline' to update baseline"
+        exit 1
+        fi

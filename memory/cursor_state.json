@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T09:46:49.545688",
-  "session_purpose": "post-commit",
+  "timestamp": "2025-08-30T19:16:35.224605",
+  "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "622e368f7d538d186c6ce76053dd124eba807774",
-    "branch": "fix/ide-warnings-final-victory",
-    "uncommitted_changes": 9,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n M out/auto_guard_learning.json\n M out/feedback_history.json\n M out/gate_learning.json\n M out/issue_predictions.json\n M out/realtime_quality.json\n M out/system_health.json\n?? memory/snapshots/mcp_snapshot_20250830_093848.json"
+    "commit_hash": "63cbb59fbb2dc46e66b6a2936317ce6fd090e9c6",
+    "branch": "autofix/yaml-warnings-mass-fix",
+    "uncommitted_changes": 66,
+    "status_details": "A  .cursorrules\nA  .editorconfig\nA  .github/actionlint.yml\nM  .github/workflows/api-tests.yml\nM  .github/workflows/canary-auto-promote.yml\nM  .github/workflows/deploy.yml\nM  .github/workflows/hybrid-deploy.yml\nM  .github/workflows/minimal-notifications.yml\nM  .github/workflows/model-experiment.yml\nM  .github/workflows/monitoring.yml\nM  .github/workflows/pr-quality-check.yml\nM  .github/workflows/pre-commit.yml\nM  .github/workflows/predictive-quality.yml\nM  .github/workflows/realtime-quality-guard.yml\nM  .github/workflows/security-scan.yml\nM  .github/workflows/staged-promotion.yml\nM  .github/workflows/test.yml\nM  .github/workflows/weekly-golden.yml\nM  .yamllint\nM  Makefile\nA  fix_remaining_steps.py\nA  fix_shellcheck_issues.py\nA  fix_step_names.py\nM  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250830_100853.json\nA  memory/snapshots/mcp_snapshot_20250830_102000.json\nA  memory/snapshots/mcp_snapshot_20250830_103859.json\nA  memory/snapshots/mcp_snapshot_20250830_110904.json\nA  memory/snapshots/mcp_snapshot_20250830_113910.json\nA  memory/snapshots/mcp_snapshot_20250830_120916.json\nA  memory/snapshots/mcp_snapshot_20250830_123922.json\nA  memory/snapshots/mcp_snapshot_20250830_130927.json\nA  memory/snapshots/mcp_snapshot_20250830_175706.json\nA  memory/snapshots/mcp_snapshot_20250830_184629.json\nM  out/adaptive_guidance.json\nM  out/auto_guard_learning.json\nA  out/autonomous_decision_history.json\nA  out/autonomous_decision_results.json\nA  out/autonomous_fix_learning.json\nA  out/autonomous_fix_results.json\nA  out/decision_detail.json\nA  out/dynamic_allocation_summary.json\nM  out/feedback_history.json\nM  out/gate_learning.json\nA  out/intelligence_analysis.json\nM  out/issue_predictions.json\nM  out/learning_insights.json\nA  out/orchestration_state.json\nA  out/phase13b_data_driven_strategy.json\nA  out/phase13b_learning_report.json\nA  out/phase13c_line_length_fixes.json\nM  out/preventive_fixes.json\nM  out/realtime_quality.json\nA  out/resource_allocations.json\nA  out/sla_monitoring_results.json\nA  out/sla_violations.json\nM  out/system_health.json\nA  scripts/learning/data_driven_fixer.py\nA  scripts/learning/line_length_fixer.py\nA  scripts/quality/autonomous_decision_system.py\nA  scripts/quality/autonomous_fix_engine.py\nA  scripts/quality/dynamic_resource_allocator.py\nA  scripts/quality/intelligence_engine.py\nA  scripts/quality/orchestration_controller.py\nA  scripts/quality/sla_management_system.py"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 81,
-      "total_files": 147
+      "python_files": 92,
+      "total_files": 159
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25377,
+    "python_files_count": 25704,
     "cursor_configs_count": 13
   },
-  "state_hash": "c7c525789f466e52bf804ff53e592daa"
+  "state_hash": "e0ea65c6017a6679b34b831b51d3cf07"
 }

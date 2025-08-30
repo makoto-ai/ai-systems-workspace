@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-08-30T10:48:02.122806",
+    "decision_type": "immediate_action",
+    "trigger_event": "manual_execution",
+    "outcome_success": true,
+    "actions_count": 1,
+    "confidence": 0.7
+  },
+  {
+    "timestamp": "2025-08-30T10:54:29.591503",
+    "decision_type": "immediate_action",
+    "trigger_event": "manual_execution",
+    "outcome_success": true,
+    "actions_count": 1,
+    "confidence": 0.95
+  },
+  {
+    "timestamp": "2025-08-30T11:01:06.556483",
+    "decision_type": "immediate_action",
+    "trigger_event": "manual_execution",
+    "outcome_success": true,
+    "actions_count": 1,
+    "confidence": 0.95
+  },
+  {
+    "timestamp": "2025-08-30T11:07:32.998739",
+    "decision_type": "immediate_action",
+    "trigger_event": "manual_execution",
+    "outcome_success": true,
+    "actions_count": 1,
+    "confidence": 0.95
+  },
+  {
+    "timestamp": "2025-08-30T11:19:31.904762",
+    "decision_type": "immediate_action",
+    "trigger_event": "manual_execution",
+    "outcome_success": false,
+    "actions_count": 1,
+    "confidence": 0.95
+  }
+]

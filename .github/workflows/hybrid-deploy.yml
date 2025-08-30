@@ -1,4 +1,4 @@
-name: Hybrid AI Systems Deployment
+name: "Hybrid AI Systems Deployment"
 
 on:
   push:
@@ -20,17 +20,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python
+    - name: "Set up Python"
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    - name: Run Bandit security scan
+    - name: "Run Bandit security scan"
       run: |
         pip install bandit
         bandit -r . -f json -o bandit-report.json || true
 
-    - name: Run Trivy vulnerability scan
+    - name: "Run Trivy vulnerability scan"
       uses: aquasecurity/trivy-action@0.20.0
       with:
         scan-type: 'fs'
@@ -38,7 +38,7 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
 
-    - name: Upload Trivy scan results
+    - name: "Upload Trivy scan results"
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: 'trivy-results.sarif'
@@ -50,28 +50,29 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: "Set up Python"
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-asyncio httpx
 
-    - name: Run unit tests
+    - name: "Run unit tests"
       run: |
         python -m pytest tests/ -v --cov=modules --cov=main_hybrid
 
-    - name: Composer smoke test (skip if missing)
+    - name: "Composer smoke test (skip if missing)"
       run: |
         python -c "from modules.composer import ScriptComposer; ScriptComposer(); print('Composer test: OK')" \
           || echo "Composer test skipped or failed"
-    - name: MCP smoke test (skip if missing)
+    - name: "MCP smoke test (skip if missing)"
       run: |
-        python -c "from youtube_script_generation_system import YouTubeScriptGenerator; YouTubeScriptGenerator(); print('MCP test: OK')" \
+        python -c "from youtube_script_generation_system import YouTubeScriptGenerator; \
+          YouTubeScriptGenerator(); print('MCP test: OK')" \
           || echo "MCP test skipped or failed"
 
   # Dockerビルド
@@ -84,17 +85,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
+    - name: "Set up Docker Buildx"
       uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Container Registry
+    - name: "Log in to Container Registry"
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Extract metadata
+    - name: "Extract metadata"
       id: meta
       uses: docker/metadata-action@v5
       with:
@@ -106,7 +107,7 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=sha
 
-    - name: Build and push hybrid image
+    - name: "Build and push hybrid image"
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -124,13 +125,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Vault
+    - name: "Setup Vault"
       run: |
-        wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        wget -O- https://apt.releases.hashicorp.com/gpg | \
+          sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+          sudo tee /etc/apt/sources.list.d/hashicorp.list
         sudo apt update && sudo apt install vault
 
-    - name: Configure Vault secrets
+    - name: "Configure Vault secrets"
       run: |
         # Vault設定スクリプト
         echo "Vault secrets configured"
@@ -140,12 +144,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build, vault-setup]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
     # environment指定はCIリンターで拒否されるため一旦外す
     steps:
     - uses: actions/checkout@v4
 
-    - name: Deploy to production
+    - name: "Deploy to production"
       run: |
         # Docker Compose デプロイ
         docker compose -f docker-compose.hybrid.yml pull
@@ -157,12 +161,12 @@ jobs:
 
         echo "🚀 Hybrid AI Systems deployed successfully!"
 
-    - name: Run AI Pipeline
+    - name: "Run AI Pipeline"
       run: |
         chmod +x scripts/run_ai_pipeline.sh
         ./scripts/run_ai_pipeline.sh
 
-    - name: Notify deployment
+    - name: "Notify deployment"
       run: |
         echo "Deployment completed for ${{ github.ref_name }}"
         echo "Services:"
@@ -177,11 +181,11 @@ jobs:
   monitoring-setup:
     runs-on: ubuntu-latest
     needs: deploy
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup monitoring
+    - name: "Setup monitoring"
       run: |
         # Prometheus設定
         echo "Prometheus configured"
@@ -198,19 +202,21 @@ jobs:
   performance-test:
     runs-on: ubuntu-latest
     needs: deploy
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v4
 
-    - name: Run performance tests
+    - name: "Run performance tests"
       run: |
         # 負荷テスト
         echo "Running performance tests..."
 
         # Composer API テスト
+        TEST_DATA='{"metadata":{"title":"Test","authors":["Test"],"abstract":"Test"},'
+        TEST_DATA+='"abstract":"Test abstract","style":"popular"}'
         curl -X POST http://localhost:8000/composer/generate \
           -H "Content-Type: application/json" \
-          -d '{"metadata":{"title":"Test","authors":["Test"],"abstract":"Test"},"abstract":"Test abstract","style":"popular"}' || echo "Composer test failed"
+          -d "$TEST_DATA" || echo "Composer test failed"
 
         # MCP API テスト
         curl -X POST http://localhost:8000/mcp/generate \
@@ -218,9 +224,11 @@ jobs:
           -d '{"test":"data"}' || echo "MCP test failed"
 
         # ハイブリッド API テスト
+        HYBRID_DATA='{"metadata":{"title":"Test","authors":["Test"],"abstract":"Test"},'
+        HYBRID_DATA+='"abstract":"Test abstract","style":"popular"}'
         curl -X POST http://localhost:8000/hybrid/generate \
           -H "Content-Type: application/json" \
-          -d '{"metadata":{"title":"Test","authors":["Test"],"abstract":"Test"},"abstract":"Test abstract","style":"popular"}' || echo "Hybrid test failed"
+          -d "$HYBRID_DATA" || echo "Hybrid test failed"
 
         echo "✅ Performance tests completed!"
 
@@ -228,11 +236,11 @@ jobs:
   automation-scripts:
     runs-on: ubuntu-latest
     needs: performance-test
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup automation
+    - name: "Setup automation"
       run: |
         # 自動化スクリプトの設定
         chmod +x scripts/*.sh

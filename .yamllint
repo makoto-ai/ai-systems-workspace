@@ -1,16 +1,81 @@
-extends: relaxed
+# yamllint configuration for GitHub Actions workflows
+# IDE拡張機能向けの最適化設定
+
+extends: default
 
 rules:
-  # 基本品質は維持
+  # 行長制限を緩和（GitHub Actionsでは長い行が必要）
   line-length:
-    max: 200
-  # 問題が多いルールを無効化
-  document-start: disable
+    max: 120
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # インデント設定
+  indentation:
+    spaces: 2
+    indent-sequences: false
+    check-multi-line-strings: false
+
+  # コメント設定
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: false
+
+  # 引用符設定（GitHub Actionsに最適化）
+  quoted-strings:
+    quote-type: any
+    required: false
+
+  # 空行設定
+  empty-lines:
+    max: 2
+    max-start: 1
+    max-end: 1
+
+  # ドキュメント区切り設定
+  document-start:
+    present: false
+
+  # キー重複チェック
+  key-duplicates: enable
+
+  # インデントスタイル統一（タブ文字禁止はindentationで処理）
+
+  # 末尾空白
+  trailing-spaces: enable
+
+  # 真偽値設定（GitHub Actions用）
   truthy:
-    allowed-values: ["true", "false", "on", "off"]
-  brackets: disable
-  comments: disable
-  indentation: disable  # GitHub Actions特有の複雑なインデンテーションを許容
-  trailing-spaces: disable  # 既に修正済み
-  new-line-at-end-of-file: disable  # 既に修正済み
-  empty-lines: disable
+    allowed-values: ['true', 'false', 'yes', 'no', 'on', 'off']
+    check-keys: false
+
+  # ブラケット設定
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  # コロン設定
+  colons:
+    max-spaces-before: 0
+
+  # コンマ設定
+  commas:
+    max-spaces-before: 0
+
+  # ハイフン設定
+  hyphens: enable
+
+  # GitHub Actions特有の設定
+  float-values: disable
+
+# ファイル除外設定
+ignore: |
+  .github/workflows/*.disabled
+  .github/workflows/*.backup
+  node_modules/
+  .venv/
+  .git/
+  out/
+  logs/

@@ -1,13 +1,13 @@
-name: PR Quality Check - Golden Test Regression Guard
+name: "PR Quality Check - Golden Test Regression Guard"
 
 on:
   pull_request:
     branches: ["main", "master"]
     paths:
-      - 'tests/golden/**'
-      - 'experiments/**'
-      - 'dashboard/**'
-      - 'scripts/**'
+    - 'tests/golden/**'
+    - 'experiments/**'
+    - 'dashboard/**'
+    - 'scripts/**'
 
 env:
   PYTHON_VERSION: '3.11'
@@ -19,27 +19,29 @@ jobs:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'data-collection') }}
 
     steps:
-    - name: Checkout PR branch
+    - name: "Checkout PR branch"
       uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.ref }}
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
 
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml
 
-    - name: Setup environment
+    - name: "Setup environment"
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
+        # GROQ_API_KEY設定用
+        # 使用方法: GROQ_API_KEY をrepository secretsに設定してください
+        echo "GROQ_API_KEY setup required" >&2
 
-    - name: Run PR Branch Shadow Evaluation
+    - name: "Run PR Branch Shadow Evaluation"
       id: pr_eval
       run: |
         echo "🔍 PR Branch: Shadow evaluation実行中..."
@@ -82,19 +84,21 @@ jobs:
         print(f'{rate:.1f}')
         ")
 
-        echo "pr_pred_70=${PR_PRED_70}" >> "$GITHUB_OUTPUT"
-        echo "pr_pred_85=${PR_PRED_85}" >> "$GITHUB_OUTPUT"
-        echo "pr_flaky_rate=${PR_FLAKY_RATE}" >> "$GITHUB_OUTPUT"
+        {
+          echo "pr_pred_70=${PR_PRED_70}"
+          echo "pr_pred_85=${PR_PRED_85}"
+          echo "pr_flaky_rate=${PR_FLAKY_RATE}"
+        } >> "$GITHUB_OUTPUT"
 
         echo "📊 PR結果: Pred@0.70=${PR_PRED_70}%, Pred@0.85=${PR_PRED_85}%, Flaky=${PR_FLAKY_RATE}%"
 
-    - name: Checkout base branch (main) for baseline
+    - name: "Checkout base branch (main) for baseline"
       uses: actions/checkout@v4
       with:
         ref: main
         path: baseline
 
-    - name: Run Baseline Shadow Evaluation
+    - name: "Run Baseline Shadow Evaluation"
       id: baseline_eval
       working-directory: baseline
       run: |
@@ -142,9 +146,11 @@ jobs:
         print(f'{rate:.1f}')
         ")
 
-        echo "baseline_pred_70=${BASELINE_PRED_70}" >> "$GITHUB_OUTPUT"
-        echo "baseline_pred_85=${BASELINE_PRED_85}" >> "$GITHUB_OUTPUT"
-        echo "baseline_flaky_rate=${BASELINE_FLAKY_RATE}" >> "$GITHUB_OUTPUT"
+        {
+          echo "baseline_pred_70=${BASELINE_PRED_70}"
+          echo "baseline_pred_85=${BASELINE_PRED_85}"
+          echo "baseline_flaky_rate=${BASELINE_FLAKY_RATE}"
+        } >> "$GITHUB_OUTPUT"
 
         echo "📊 ベースライン結果:"
         echo "  Pred@0.70: ${BASELINE_PRED_70}%"
@@ -154,7 +160,7 @@ jobs:
         # 結果をPR側にコピー
         cp out/shadow_baseline.json ../out/
 
-    - name: Regression Analysis
+    - name: "Regression Analysis"
       id: regression_check
       run: |
         echo "🔍 回帰分析実行中..."
@@ -182,31 +188,33 @@ jobs:
         REGRESSION_REASONS=()
 
         # Pred@0.70が1.0pp以上悪化
-        if ["$(python -c "print('true' if float('${DIFF_70}') < -1.0 else 'false')")" = "true"]; then
+        if [ "$(python -c "print('true' if float('${DIFF_70}') < -1.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Pred@0.70が${DIFF_70}pp悪化 (-1.0pp閾値)")
         fi
 
         # Pred@0.85が1.0pp以上悪化
-        if ["$(python -c "print('true' if float('${DIFF_85}') < -1.0 else 'false')")" = "true"]; then
+        if [ "$(python -c "print('true' if float('${DIFF_85}') < -1.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Pred@0.85が${DIFF_85}pp悪化 (-1.0pp閾値)")
         fi
 
         # Flaky率が2.0pp以上増加
-        if ["$(python -c "print('true' if float('${DIFF_FLAKY}') > 2.0 else 'false')")" = "true"]; then
+        if [ "$(python -c "print('true' if float('${DIFF_FLAKY}') > 2.0 else 'false')")" = "true" ]; then
           REGRESSION_DETECTED=true
           REGRESSION_REASONS+=("Flaky率が${DIFF_FLAKY}pp増加 (+2.0pp閾値)")
         fi
 
         # 結果出力
-        echo "regression_detected=${REGRESSION_DETECTED}" >> "$GITHUB_OUTPUT"
-        echo "diff_70=${DIFF_70}" >> "$GITHUB_OUTPUT"
-        echo "diff_85=${DIFF_85}" >> "$GITHUB_OUTPUT"
-        echo "diff_flaky=${DIFF_FLAKY}" >> "$GITHUB_OUTPUT"
+        {
+          echo "regression_detected=${REGRESSION_DETECTED}"
+          echo "diff_70=${DIFF_70}"
+          echo "diff_85=${DIFF_85}"
+          echo "diff_flaky=${DIFF_FLAKY}"
+        } >> "$GITHUB_OUTPUT"
 
         # 回帰理由をJSONで保存
-        if ["$REGRESSION_DETECTED" = "true"]; then
+        if [ "$REGRESSION_DETECTED" = "true" ]; then
           printf '%s\n' "${REGRESSION_REASONS[@]}" > regression_reasons.txt
           echo "❌ 回帰検出！理由:"
           cat regression_reasons.txt | sed 's/^/  - /'
@@ -214,14 +222,14 @@ jobs:
           echo "✅ 回帰なし - PR承認可能"
         fi
 
-    - name: Quality Gate Check
+    - name: "Quality Gate Check"
       id: quality_gate
       run: |
         echo "🔍 品質ゲートチェック中..."
 
         REGRESSION=${{ steps.regression_check.outputs.regression_detected }}
 
-        if ["$REGRESSION" = "true"]; then
+        if [ "$REGRESSION" = "true" ]; then
           echo "quality_gate_passed=false" >> "$GITHUB_OUTPUT"
           echo "❌ 品質ゲート: FAILED"
           exit 1
@@ -230,7 +238,7 @@ jobs:
           echo "✅ 品質ゲート: PASSED"
         fi
 
-    - name: Update PR with Regression Analysis
+    - name: "Update PR with Regression Analysis"
       if: always()
       uses: actions/github-script@v7
       with:
@@ -290,7 +298,7 @@ jobs:
           ### 🔍 詳細データ
           - PR評価レポート: \`out/shadow_pr.json\`
           - ベースライン評価: \`out/shadow_baseline.json\`
-          - 実行ID: \`${process.env.GITHUB_RUN_ID}\`
+          - 実行ID: \`${{ github.run_id }}\`
           `;
 
           // PR にコメントを追加/更新
@@ -326,19 +334,19 @@ jobs:
             console.log('❌ 回帰検出によりCI失敗');
           }
 
-    - name: Archive Quality Check Results
+    - name: "Archive Quality Check Results"
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: pr-quality-check-results
+        name: "pr-quality-check-results"
         path: |
           out/shadow_pr.json
           out/shadow_baseline.json
           regression_reasons.txt
         retention-days: 30
 
-    - name: Fail CI on Regression
-      if: steps.regression_check.outputs.regression_detected == 'true'
+    - name: "Fail CI on Regression"
+      if: ${{ steps.regression_check.outputs.regression_detected == 'true' }}
       run: |
         echo "❌ CI失敗: 品質ゲートでの回帰検出により、このPRはマージできません"
         exit 1
@@ -349,25 +357,27 @@ jobs:
     if: always()
 
     steps:
-    - name: Checkout code
+    - name: "Checkout code"
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
 
-    - name: Install dependencies
+    - name: "Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml
 
-    - name: Setup environment
+    - name: "Setup environment  "
       run: |
-        echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> "$GITHUB_ENV"
+        # GROQ_API_KEY設定用
+        # 使用方法: GROQ_API_KEY をrepository secretsに設定してください
+        echo "GROQ_API_KEY setup required" >&2
 
-    - name: Run Shadow Grid Evaluation
+    - name: "Run Shadow Grid Evaluation"
       run: |
         echo "📊 Shadow Grid評価実行 (データ収集用)"
         python tests/golden/runner.py \
@@ -375,14 +385,14 @@ jobs:
           --weights tests/golden/weights_phase4.yaml \
           --report out/shadow_grid.json
 
-    - name: Archive Shadow Results
+    - name: "Archive Shadow Results"
       uses: actions/upload-artifact@v4
       with:
-        name: shadow-grid-data-collection
+        name: "shadow-grid-data-collection"
         path: out/shadow_grid.json
         retention-days: 30
 
-    - name: Early Abort Check
+    - name: "Early Abort Check"
       if: ${{ contains(github.event.pull_request.labels.*.name, 'data-collection') }}
       id: abort_check
       run: |
@@ -394,16 +404,20 @@ jobs:
           --hard-max-new 0.70
 
         # 結果を出力に保存
-        echo "abort=$ABORT" >> "$GITHUB_OUTPUT"
-        echo "reason=$ABORT_REASON" >> "$GITHUB_OUTPUT"
+        {
+          echo "abort=$ABORT"
+          echo "reason=$ABORT_REASON"
+        } >> "$GITHUB_OUTPUT"
 
-    - name: Close PR if Abort
-      if: ${{ contains(github.event.pull_request.labels.*.name, 'data-collection') && steps.abort_check.outputs.abort == 'true' }}
+    - name: "Close PR if Abort"
+      if: >-
+        ${{ contains(github.event.pull_request.labels.*.name, 'data-collection') &&
+            steps.abort_check.outputs.abort == 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
           const prNumber = context.payload.pull_request.number;
-          const reason = process.env.ABORT_REASON || '早期Abort条件に該当';
+          const reason = '${{ steps.abort_check.outputs.reason }}' || '早期Abort条件に該当';
 
           // コメント追加
           await github.rest.issues.createComment({
@@ -425,7 +439,7 @@ jobs:
 
           console.log(`✅ PR #${prNumber} を早期Abortによりクローズしました`);
 
-    - name: Notify Slack (Data Collection)
+    - name: "Notify Slack (Data Collection)"
       if: always()
       continue-on-error: true
       run: |
@@ -434,5 +448,7 @@ jobs:
         echo "📢 使用方法:"
         echo "  python scripts/notify_results.py \\"
         echo "    --data-collection \\"
-        echo "    --action-url '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \\"
-        echo "    --pr-url '${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}'"
+        echo "    --action-url '${{ github.server_url }}/${{ github.repository }}" \
+          "/actions/runs/${{ github.run_id }}' \\"
+        echo "    --pr-url '${{ github.server_url }}/${{ github.repository }}" \
+          "/pull/${{ github.event.pull_request.number }}'"

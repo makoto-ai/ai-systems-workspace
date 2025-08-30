@@ -1,21 +1,20 @@
----
-name: 🔮 Predictive Quality Assurance
+name: "🔮 Predictive Quality Assurance"
 
 on:
   push:
     paths:
-      - '.github/workflows/**'
-      - 'scripts/**'
-      - '**/*.py'
-      - '**/*.yml'
+    - '.github/workflows/**'
+    - 'scripts/**'
+    - '**/*.py'
+    - '**/*.yml'
   pull_request:
     branches: ["main", "master"]
     paths:
-      - '.github/workflows/**'
-      - 'scripts/**'
+    - '.github/workflows/**'
+    - 'scripts/**'
   schedule:
-    # 毎日朝9時(JST)に予防チェック実行
-    - cron: '0 0 * * *'
+  # 毎日朝9時(JST)に予防チェック実行
+  - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       prediction_days:
@@ -35,23 +34,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout code
+    - name: "📥 Checkout code"
       uses: actions/checkout@v4
       with:
         fetch-depth: 50  # 予測分析のため履歴を取得
 
-    - name: 🐍 Setup Python
-      uses: actions/setup-python@v4
+    - name: "🐍 Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
 
-    - name: 📦 Install dependencies
+    - name: "📦 Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml
 
-    - name: 🔮 Run Issue Prediction
+    - name: "🔮 Run Issue Prediction"
       id: predict
       run: |
         echo "🔮 Running predictive analysis..."
@@ -59,17 +58,19 @@ jobs:
         PREDICTION_DAYS="${{ github.event.inputs.prediction_days || '7' }}"
 
         # 予測エンジン実行
-        python scripts/quality/issue_predictor.py
+        python scripts/quality/issue_predictor.py --prediction-days "${PREDICTION_DAYS}"
 
         # 予測結果の解析
-        if [-f "out/issue_predictions.json"]; then
+        if [ -f "out/issue_predictions.json" ]; then
           TOTAL_HIGH_RISK=$(jq '.risk_assessment.total_high_risk' out/issue_predictions.json)
           TOTAL_MEDIUM_RISK=$(jq '.risk_assessment.total_medium_risk' out/issue_predictions.json)
           OVERALL_RISK=$(jq -r '.risk_assessment.overall_risk_level' out/issue_predictions.json)
 
-          echo "high_risk_count=${TOTAL_HIGH_RISK}" >> "$GITHUB_OUTPUT"
-          echo "medium_risk_count=${TOTAL_MEDIUM_RISK}" >> "$GITHUB_OUTPUT"
-          echo "overall_risk=${OVERALL_RISK}" >> "$GITHUB_OUTPUT"
+          {
+            echo "high_risk_count=${TOTAL_HIGH_RISK}"
+            echo "medium_risk_count=${TOTAL_MEDIUM_RISK}"
+            echo "overall_risk=${OVERALL_RISK}"
+          } >> "$GITHUB_OUTPUT"
 
           echo "📊 Prediction Results:"
           echo "  High Risk Issues: ${TOTAL_HIGH_RISK}"
@@ -80,7 +81,7 @@ jobs:
           exit 1
         fi
 
-    - name: 🛡️ Apply Preventive Fixes
+    - name: "🛡️ Apply Preventive Fixes"
       id: prevent
       if: ${{ github.event.inputs.apply_fixes == 'true' || steps.predict.outputs.overall_risk == 'high' }}
       run: |
@@ -93,27 +94,29 @@ jobs:
         python scripts/quality/preventive_fixer.py
 
         # 修正結果の確認
-        if [-f "out/preventive_fixes.json"]; then
+        if [ -f "out/preventive_fixes.json" ]; then
           FIXES_APPLIED=$(jq '.fixes_applied' out/preventive_fixes.json)
           SUCCESS_RATE=$(jq '.success_rate' out/preventive_fixes.json)
 
-          echo "fixes_applied=${FIXES_APPLIED}" >> "$GITHUB_OUTPUT"
-          echo "success_rate=${SUCCESS_RATE}" >> "$GITHUB_OUTPUT"
+          {
+            echo "fixes_applied=${FIXES_APPLIED}"
+            echo "success_rate=${SUCCESS_RATE}"
+          } >> "$GITHUB_OUTPUT"
 
           echo "🔧 Preventive Fixes Summary:"
           echo "  Fixes Applied: ${FIXES_APPLIED}"
           echo "  Success Rate: ${SUCCESS_RATE}"
 
           # 修正があった場合はファイル変更をコミット対象として記録
-          if ["${FIXES_APPLIED}" -gt 0]; then
+          if [ "${FIXES_APPLIED}" -gt 0 ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
         fi
 
-    - name: 🧪 Validate Applied Fixes
-      if: steps.prevent.outputs.has_changes == 'true'
+    - name: "🧪 Validate Applied Fixes"
+      if: ${{ steps.prevent.outputs.has_changes == 'true' }}
       run: |
         echo "🧪 Validating applied fixes..."
 
@@ -138,7 +141,7 @@ jobs:
           fi
         done
 
-    - name: 📊 Generate Quality Report
+    - name: "📊 Generate Quality Report"
       run: |
         echo "📊 Generating comprehensive quality report..."
 
@@ -162,7 +165,8 @@ jobs:
         ## 🛡️ Preventive Actions
         EOF
 
-        if ["${{ steps.prevent.outputs.fixes_applied || '0' }}" -gt 0]; then
+        FIXES_APPLIED="${{ steps.prevent.outputs.fixes_applied || '0' }}"
+        if [ "${FIXES_APPLIED}" -gt 0 ]; then
           cat >> out/predictive_quality_report.md << 'EOF'
         - **Fixes Applied**: ${{ steps.prevent.outputs.fixes_applied }}
         - **Success Rate**: ${{ steps.prevent.outputs.success_rate }}
@@ -194,10 +198,10 @@ jobs:
 
         echo "📄 Quality report generated: out/predictive_quality_report.md"
 
-    - name: 💾 Archive Results
+    - name: "💾 Archive Results"
       uses: actions/upload-artifact@v4
       with:
-        name: predictive-quality-results-${{ github.run_number }}
+        name: "predictive-quality-results-${{ github.run_number }}"
         path: |
           out/issue_predictions.json
           out/preventive_fixes.json
@@ -207,8 +211,8 @@ jobs:
           backup/preventive_fixes/
         retention-days: 30
 
-    - name: 📝 Comment on PR (if applicable)
-      if: github.event_name == 'pull_request'
+    - name: "📝 Comment on PR (if applicable)"
+      if: ${{ github.event_name == 'pull_request' }}
       uses: actions/github-script@v7
       with:
         script: |
@@ -240,14 +244,17 @@ jobs:
           | Preventive Fixes Applied | ${fixesApplied} |
 
           ### 🛡️ Preventive Actions
-          ${parseInt(fixesApplied) > 0 ? '✅ Preventive fixes have been applied to mitigate predicted issues.' : 'ℹ️ No preventive fixes required at this time.'}
+          ${parseInt(fixesApplied) > 0 ?
+            '✅ Preventive fixes have been applied to mitigate predicted issues.' :
+            'ℹ️ No preventive fixes required at this time.'}
 
           ### 📊 Quality Insights
           - **Prediction Horizon**: ${{ github.event.inputs.prediction_days || '7' }} days
           - **Analysis Timestamp**: ${new Date().toISOString()}
           - **Learning System**: Active and monitoring
 
-          > 💡 This analysis uses historical data and pattern recognition to predict and prevent potential issues before they occur.
+          > 💡 This analysis uses historical data and pattern recognition
+          > to predict and prevent potential issues before they occur.
 
           📁 **Detailed Results**: Check the workflow artifacts for comprehensive reports.
           `;
@@ -259,8 +266,8 @@ jobs:
             body: commentBody
           });
 
-    - name: 🚨 High Risk Alert
-      if: steps.predict.outputs.overall_risk == 'high'
+    - name: "🚨 High Risk Alert"
+      if: ${{ steps.predict.outputs.overall_risk == 'high' }}
       run: |
         echo "🚨 HIGH RISK DETECTED!"
         echo "=============================="
@@ -274,7 +281,7 @@ jobs:
         echo ""
         echo "📄 Full analysis: out/issue_predictions.json"
 
-    - name: ✅ Success Summary
+    - name: "✅ Success Summary"
       if: always()
       run: |
         echo "🎯 Predictive Quality Assurance Complete"
