@@ -1,0 +1,260 @@
+{
+  "timestamp": "2025-08-30T09:19:42.291536",
+  "prediction_horizon_days": 7,
+  "confidence_threshold": 0.7,
+  "predicted_issues": [
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/model-experiment.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/api-tests.yml",
+      "risk_score": 0.8,
+      "factors": [
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/predictive-quality.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "complex workflow (200+ lines)",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: CASE.case_insensitive",
+        "known failure pattern: NORMALIZE.kana_long_vowel",
+        "known failure pattern: YAML.syntax_error"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/hybrid-deploy.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "complex workflow (200+ lines)",
+        "many run steps",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: PUNCT.brackets_mismatch",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/test.yml",
+      "risk_score": 0.9,
+      "factors": [
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/minimal-notifications.yml",
+      "risk_score": 0.8,
+      "factors": [
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/canary-auto-promote.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "complex workflow (200+ lines)",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NUM.tolerance_small",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/weekly-golden.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "complex workflow (200+ lines)",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/monitoring.yml",
+      "risk_score": 0.9,
+      "factors": [
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/security-scan.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/pr-quality-check.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "complex workflow (200+ lines)",
+        "many run steps",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "file_risk",
+      "target": ".github/workflows/staged-promotion.yml",
+      "risk_score": 1.0,
+      "factors": [
+        "secrets context usage",
+        "complex workflow (200+ lines)",
+        "dependency management",
+        "known failure pattern: TOKENIZE.hyphen_longdash",
+        "known failure pattern: NORMALIZE.kana_long_vowel"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "type": "pattern_risk",
+      "description": "Frequent YAML fixes indicate ongoing syntax challenges",
+      "probability": 0.75,
+      "impact": "medium"
+    },
+    {
+      "type": "pattern_risk",
+      "description": "High context warning frequency suggests template issues",
+      "probability": 0.85,
+      "impact": "low"
+    }
+  ],
+  "risk_assessment": {
+    "total_high_risk": 14,
+    "total_medium_risk": 2,
+    "total_low_risk": 1,
+    "overall_risk_level": "high"
+  },
+  "preventive_actions": [
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/model-experiment.yml",
+      "reason": "secrets context usage, dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/api-tests.yml",
+      "reason": "known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/predictive-quality.yml",
+      "reason": "complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: CASE.case_insensitive, known failure pattern: NORMALIZE.kana_long_vowel, known failure pattern: YAML.syntax_error",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/hybrid-deploy.yml",
+      "reason": "secrets context usage, complex workflow (200+ lines), many run steps, dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: PUNCT.brackets_mismatch, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/test.yml",
+      "reason": "dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/minimal-notifications.yml",
+      "reason": "known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/canary-auto-promote.yml",
+      "reason": "secrets context usage, complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NUM.tolerance_small, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/weekly-golden.yml",
+      "reason": "secrets context usage, complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/monitoring.yml",
+      "reason": "dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/security-scan.yml",
+      "reason": "secrets context usage, dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/pr-quality-check.yml",
+      "reason": "secrets context usage, complex workflow (200+ lines), many run steps, dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Review and refactor .github/workflows/staged-promotion.yml",
+      "reason": "secrets context usage, complex workflow (200+ lines), dependency management, known failure pattern: TOKENIZE.hyphen_longdash, known failure pattern: NORMALIZE.kana_long_vowel",
+      "estimated_effort": "30 minutes"
+    },
+    {
+      "priority": "high",
+      "action": "Implement YAML validation in pre-commit hooks",
+      "reason": "Frequent YAML fixes indicate ongoing syntax challenges",
+      "estimated_effort": "45 minutes"
+    },
+    {
+      "priority": "medium",
+      "action": "Create GitHub Actions context usage guidelines",
+      "reason": "High context warning frequency suggests template issues",
+      "estimated_effort": "20 minutes"
+    }
+  ]
+}

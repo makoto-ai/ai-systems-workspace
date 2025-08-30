@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-08-30T09:02:28.417403",
+  "timestamp": "2025-08-30T09:19:32.653769",
   "learning_effectiveness": {
-    "total_output_files": 38,
-    "recent_files": 38,
+    "total_output_files": 40,
+    "recent_files": 40,
     "performance_trends": {
       "pass_rates": [
         60.0,
@@ -18,7 +18,7 @@
     "yaml_fixes": 3,
     "context_warnings": 10,
     "bash_syntax": 3,
-    "total_attempts": 14
+    "total_attempts": 15
   },
   "pattern_recognition": {
     "recognized_patterns": 8,
@@ -30,11 +30,11 @@
     "components": {
       "learning_scripts": {
         "status": "ok",
-        "last_modified": "2025-08-30T08:55:30.298298"
+        "last_modified": "2025-08-30T09:09:28.739397"
       },
       "output_directory": {
         "status": "ok",
-        "last_modified": "2025-08-30T08:58:16.628913"
+        "last_modified": "2025-08-30T09:13:14.186826"
       },
       "continuous_learner": {
         "status": "ok",
@@ -45,7 +45,7 @@
         "last_modified": "2025-08-30T07:47:57.399095"
       }
     },
-    "last_activity": "2025-08-30T09:02:21.731974",
+    "last_activity": "2025-08-30T09:19:32.540921",
     "warnings": []
   }
 }

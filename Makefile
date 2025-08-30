@@ -119,3 +119,90 @@ phase2-status: ## 📊 Phase 2システム状態確認
 	@echo ""
 	@echo "📄 Recent Predictions:"
 	@test -f out/issue_predictions.json && echo "  ✅ Available ($(stat -f%Sm -t%Y-%m-%d out/issue_predictions.json 2>/dev/null || echo 'unknown date'))" || echo "  ℹ️ Run 'make predict' to generate"
+
+# === Phase 3: Realtime Quality Guard System ===
+realtime-monitor: ## 📊 リアルタイム品質監視開始
+	@echo "📊 Starting Realtime Quality Monitor..."
+	@echo "⚠️ Press Ctrl+C to stop monitoring"
+	@python scripts/quality/realtime_monitor.py
+
+realtime-test: ## 🧪 リアルタイム監視テスト実行
+	@echo "🧪 Realtime Monitor Test Mode"
+	@python scripts/quality/realtime_monitor.py --test
+
+auto-guard: ## 🛡️ 自動品質ガード実行
+	@echo "🛡️ Auto Guard System Starting..."
+	@python scripts/quality/auto_guard.py --test
+
+instant-feedback: ## ⚡ 即座フィードバックシステムテスト
+	@echo "⚡ Instant Feedback System Test"
+	@python scripts/quality/instant_feedback.py --test
+
+feedback-summary: ## 📊 フィードバック統計表示
+	@echo "📊 Feedback Statistics Summary"
+	@python scripts/quality/instant_feedback.py --summary
+
+dynamic-gates: ## 🎛️ 動的品質ゲートテスト
+	@echo "🎛️ Dynamic Quality Gates Test"
+	@python scripts/quality/dynamic_gates.py --test
+
+gates-summary: ## 📋 品質ゲート状態確認
+	@echo "📋 Quality Gates Summary"
+	@python scripts/quality/dynamic_gates.py --summary
+
+# Phase 3 統合コマンド
+phase3-full: realtime-test auto-guard instant-feedback dynamic-gates ## 🚀 Phase 3 全システムテスト
+	@echo ""
+	@echo "🚀 Phase 3: Realtime Quality Guard - All Systems Test Completed!"
+	@echo "============================================================="
+	@echo "✅ Realtime Monitor: Active"
+	@echo "✅ Auto Guard: Active"  
+	@echo "✅ Instant Feedback: Active"
+	@echo "✅ Dynamic Gates: Active"
+	@echo ""
+	@echo "📄 Reports generated in out/ directory"
+	@echo "🔧 Use 'make realtime-monitor' to start live monitoring"
+
+phase3-status: ## 📊 Phase 3システム状態確認
+	@echo "📊 Phase 3: Realtime Quality Guard System Status"
+	@echo "================================================"
+	@echo ""
+	@echo "📊 Realtime Monitor:"
+	@test -f scripts/quality/realtime_monitor.py && echo "  ✅ Active" || echo "  ❌ Missing"
+	@echo ""
+	@echo "🛡️ Auto Guard:"
+	@test -f scripts/quality/auto_guard.py && echo "  ✅ Active" || echo "  ❌ Missing"
+	@echo ""
+	@echo "⚡ Instant Feedback:"
+	@test -f scripts/quality/instant_feedback.py && echo "  ✅ Active" || echo "  ❌ Missing"
+	@echo ""
+	@echo "🎛️ Dynamic Gates:"
+	@test -f scripts/quality/dynamic_gates.py && echo "  ✅ Active" || echo "  ❌ Missing"
+	@echo ""
+	@echo "⚡ GitHub Actions Integration:"
+	@test -f .github/workflows/realtime-quality-guard.yml && echo "  ✅ Configured" || echo "  ❌ Missing"
+	@echo ""
+	@echo "📄 Quality Data:"
+	@test -f out/realtime_quality.json && echo "  ✅ Monitor Data Available" || echo "  ℹ️ Run 'make realtime-test' to generate"
+	@test -f out/feedback_history.json && echo "  ✅ Feedback History Available" || echo "  ℹ️ Run 'make instant-feedback' to generate"
+	@test -f out/gate_learning.json && echo "  ✅ Gate Learning Data Available" || echo "  ℹ️ Run 'make dynamic-gates' to generate"
+
+# 究極統合コマンド - 全フェーズ実行
+ultimate-system: insights future-safe phase3-full ## 🌟 究極システム - Phase 1+2+3 統合実行
+	@echo ""
+	@echo "🌟 ULTIMATE AI-DRIVEN SYSTEM EXECUTION COMPLETE!"
+	@echo "=================================================="
+	@echo ""
+	@echo "🎯 Phase 1: 可視化・監視 ✅"
+	@echo "🔮 Phase 2: 予測・予防 ✅"  
+	@echo "🚀 Phase 3: リアルタイム品質ガード ✅"
+	@echo ""
+	@echo "📊 System Capabilities:"
+	@echo "  • Real-time quality monitoring"
+	@echo "  • Predictive issue analysis"
+	@echo "  • Automatic quality protection"
+	@echo "  • Instant developer feedback"
+	@echo "  • Dynamic adaptive thresholds"
+	@echo "  • Continuous learning & improvement"
+	@echo ""
+	@echo "🎊 The most advanced AI-driven quality system is now active!"

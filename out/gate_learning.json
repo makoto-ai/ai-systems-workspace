@@ -1,0 +1,213 @@
+{
+  "file_type_stats": {
+    "yaml": {
+      "count": 1,
+      "total_score": 0.9,
+      "avg_score": 0.9
+    },
+    "python": {
+      "count": 2,
+      "total_score": 0.8999999999999999,
+      "avg_score": 0.44999999999999996
+    },
+    "markdown": {
+      "count": 1,
+      "total_score": 0.4,
+      "avg_score": 0.4
+    }
+  },
+  "importance_stats": {},
+  "size_stats": {},
+  "phase_stats": {},
+  "threshold_adjustments": [
+    {
+      "timestamp": "2025-08-30T09:36:07.603911",
+      "context": {
+        "file_path": ".github/workflows/pr-quality-check.yml",
+        "importance_level": 5,
+        "file_type": "yaml",
+        "project_phase": "production",
+        "change_frequency": "high",
+        "size_category": "medium",
+        "complexity_hints": [
+          "many_conditions"
+        ]
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.9,
+      "gate_result": {
+        "file": ".github/workflows/pr-quality-check.yml",
+        "score": 0.9,
+        "context": {
+          "file_path": ".github/workflows/pr-quality-check.yml",
+          "importance_level": 5,
+          "file_type": "yaml",
+          "project_phase": "production",
+          "change_frequency": "high",
+          "size_category": "medium",
+          "complexity_hints": [
+            "many_conditions"
+          ]
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:36:07.603886",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.90 < target: 1.00)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.634149",
+      "context": {
+        "file_path": "scripts/quality/tag_failures.py",
+        "importance_level": 5,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "small",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.6,
+      "gate_result": {
+        "file": "scripts/quality/tag_failures.py",
+        "score": 0.6,
+        "context": {
+          "file_path": "scripts/quality/tag_failures.py",
+          "importance_level": 5,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "small",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:36:07.634124",
+        "status": "warning",
+        "level": "warning",
+        "message": "Quality warning (score: 0.60 < 0.85)",
+        "action": "improvement_recommended",
+        "recommendations": [
+          "\u26a0\ufe0f Quality improvement needed",
+          "Consider adding docstrings and comments"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.651716",
+      "context": {
+        "file_path": "README.md",
+        "importance_level": 3,
+        "file_type": "markdown",
+        "project_phase": "production",
+        "change_frequency": "medium",
+        "size_category": "medium",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.4,
+      "gate_result": {
+        "file": "README.md",
+        "score": 0.4,
+        "context": {
+          "file_path": "README.md",
+          "importance_level": 3,
+          "file_type": "markdown",
+          "project_phase": "production",
+          "change_frequency": "medium",
+          "size_category": "medium",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "documentation",
+        "timestamp": "2025-08-30T09:36:07.651695",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.40 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.667922",
+      "context": {
+        "file_path": "experimental/test.py",
+        "importance_level": 4,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "unknown",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.3,
+      "gate_result": {
+        "file": "experimental/test.py",
+        "score": 0.3,
+        "context": {
+          "file_path": "experimental/test.py",
+          "importance_level": 4,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "unknown",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "source_code",
+        "timestamp": "2025-08-30T09:36:07.667896",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.30 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression",
+          "This is a critical file - review carefully"
+        ]
+      }
+    }
+  ],
+  "performance_metrics": []
+}
