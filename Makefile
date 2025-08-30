@@ -79,3 +79,43 @@ quick-check: ## ⚡ クイックシステム確認（要点のみ）
 	@python scripts/quality/health_monitor.py | head -15
 	@echo ""
 	@python scripts/dashboard/learning_insights.py | tail -8
+
+# === Phase 2: Predictive & Preventive System ===
+predict: ## 🔮 問題予測分析実行
+	@echo "🔮 Issue Prediction Analysis Starting..."
+	@python scripts/quality/issue_predictor.py
+
+prevent: predict ## 🛡️ 予防的修正適用
+	@echo "🛡️ Applying Preventive Fixes..."
+	@python scripts/quality/preventive_fixer.py
+
+predict-test: ## 🧪 予測システムテスト（7日間予測）
+	@echo "🧪 Testing Prediction System (7-day horizon)"
+	@python scripts/quality/issue_predictor.py
+	@echo ""
+	@echo "📊 Prediction Results:"
+	@test -f out/issue_predictions.json && jq '.risk_assessment' out/issue_predictions.json || echo "No predictions generated"
+
+future-safe: predict prevent ## 🚀 完全予防実行（予測→修正→検証）
+	@echo ""
+	@echo "🚀 Complete Preventive Cycle Executed!"
+	@echo "📊 Summary:"
+	@test -f out/issue_predictions.json && echo "  Predictions: Generated" || echo "  Predictions: Failed"
+	@test -f out/preventive_fixes.json && echo "  Preventive Fixes: Applied" || echo "  Preventive Fixes: No fixes needed"
+	@echo "📄 Reports: out/issue_predictions.json, out/preventive_fixes.json"
+
+phase2-status: ## 📊 Phase 2システム状態確認
+	@echo "📊 Phase 2: Predictive & Preventive System Status"
+	@echo "============================================="
+	@echo ""
+	@echo "🔮 Prediction Engine:"
+	@test -f scripts/quality/issue_predictor.py && echo "  ✅ Active" || echo "  ❌ Missing"
+	@echo ""
+	@echo "🛡️ Preventive Fixer:"
+	@test -f scripts/quality/preventive_fixer.py && echo "  ✅ Active" || echo "  ❌ Missing" 
+	@echo ""
+	@echo "⚡ GitHub Actions Integration:"
+	@test -f .github/workflows/predictive-quality.yml && echo "  ✅ Configured" || echo "  ❌ Missing"
+	@echo ""
+	@echo "📄 Recent Predictions:"
+	@test -f out/issue_predictions.json && echo "  ✅ Available ($(stat -f%Sm -t%Y-%m-%d out/issue_predictions.json 2>/dev/null || echo 'unknown date'))" || echo "  ℹ️ Run 'make predict' to generate"

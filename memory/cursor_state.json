@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-30T08:35:57.783783",
+  "timestamp": "2025-08-30T09:00:27.252143",
   "session_purpose": "post-commit",
   "git_status": {
-    "commit_hash": "66d8a205f685f93bf1f56756d4bf59e4e0182d75",
+    "commit_hash": "cdc70d639351911eda1a4e0a03349958dabf014e",
     "branch": "fix/ide-warnings-final-victory",
-    "uncommitted_changes": 5,
-    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250830_081041.json\n?? memory/snapshots/mcp_snapshot_20250830_081739.json\n?? memory/snapshots/mcp_snapshot_20250830_082652.json"
+    "uncommitted_changes": 7,
+    "status_details": "M memory/cursor_state.json\n M memory/mcp_snapshot.json\n?? memory/snapshots/mcp_snapshot_20250830_083837.json\n?? memory/snapshots/mcp_snapshot_20250830_084122.json\n?? memory/snapshots/mcp_snapshot_20250830_084415.json\n?? out/learning_insights.json\n?? out/system_health.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1569,8 +1569,8 @@
     },
     "scripts": {
       "exists": true,
-      "python_files": 73,
-      "total_files": 136
+      "python_files": 75,
+      "total_files": 139
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25901,
+    "python_files_count": 25797,
     "cursor_configs_count": 13
   },
-  "state_hash": "a5d24fd3c00d66a2c5c814ffd197df6f"
+  "state_hash": "01ff10f3b950b698e50e3f35e3452655"
 }

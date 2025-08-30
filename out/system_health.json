@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-30T09:02:21.731695",
+  "overall_health": "healthy",
+  "alerts_count": 0,
+  "alerts": [],
+  "thresholds": {
+    "max_age_days": 7,
+    "min_success_rate": 70,
+    "max_warnings": 5,
+    "min_activity_files": 3
+  }
+}
