@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-31T00:21:29.624677",
+  "timestamp": "2025-08-31T00:51:35.414432",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "fe29a1a2afe0fd925673936256685c6c8b864e3d",
+    "commit_hash": "5c0b70a6ef29dc5ac3b846a5e371fbe53e57bef2",
     "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 12,
-    "status_details": "A  .github/workflows/weekly-kpi.yml\nA  Mail_Obsidian_Newsletters.kmmacros\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_(No Subject).md\"\nA  \"docs/obsidian-knowledge/newsletters/Unknown/2025/2025-08-30_235942_\\343\\200\\220\\347\\204\\241\\346\\226\\231\\351\\205\\215\\344\\277\\241\\343\\200\\221\\350\\251\\261\\351\\241\\214\\343\\201\\256\\343\\202\\271\\343\\203\\206\\343\\203\\274\\343\\203\\226\\343\\203\\253\\343\\202\\263\\343\\202\\244\\343\\203\\263\\343\\200\\214JPYC\\343\\200\\215\\343\\201\\256\\346\\234\\200\\345\\274\\267\\351\\201\\213\\347\\224\\250\\350\\241\\223\\343\\202\\222\\346\\225\\231\\343\\201\\210\\343\\201\\276\\343\\201\\231\\343\\200\\202 SENDER_ \\343\\202\\244\\343\\202\\261\\343\\203\\217\\343\\203\\244\\345\\244\\247\\345\\255\\246 SENDER_EMAIL_ info@mag.ikehay.md\"\nA  docs/obsidian-knowledge/newsletters/mag.ikehaya.com/2025/2025-08-31_000316_TestDomain.md\nA  scripts/mail_collect_allowlist.scpt\nA  scripts/mail_selection_export.scpt\nM  scripts/obsidian_newsletter_saver.py\nM  scripts/quality/autonomous_fix_engine.py\nM  scripts/quality/continuous_learner.py\nM  scripts/quality/dynamic_gates.py\nA  scripts/quality/golden_coverage_report.py"
+    "uncommitted_changes": 1,
+    "status_details": "A  out/learning_database.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 94,
-      "total_files": 174
+      "total_files": 266
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25724,
+    "python_files_count": 25731,
     "cursor_configs_count": 13
   },
-  "state_hash": "e9ffd63edc3de6e9906949b08c654fad"
+  "state_hash": "42557967a563c5a28281a527d1bce900"
 }
