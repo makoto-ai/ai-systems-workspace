@@ -17,6 +17,10 @@
   const micSelect = document.getElementById('micSelect');
   const modelSelect = document.getElementById('modelSelect');
   const scenarioSelect = document.getElementById('scenarioSelect');
+  // Speaker locking & scenario tracking
+  let userSelectedSpeaker = false;
+  let lastScenarioId = '';
+  let scenarioRecommendedSpeakerId = null;
 
   // Load voices (first sales list, fallback to raw voicevox speakers)
   (async () => {
@@ -59,6 +63,23 @@
   let audioCtx; let analyser; let sourceNode; let rafId;
   // Simple VAD counters per turn
   let vad = { activeFrames: 0, totalFrames: 0 };
+  const VAD_THRESH = 0.02; // amplitude threshold (more sensitive)
+  let vadStartAt = 0;
+  let vadLastActiveAt = 0;
+
+  // Helper: fetch with timeout
+  async function fetchWithTimeout(url, opts = {}, timeoutMs = 3000) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      clearTimeout(t);
+      return res;
+    } catch (e) {
+      clearTimeout(t);
+      return null;
+    }
+  }
 
   function pickMime() {
     const candidates = [
@@ -78,7 +99,7 @@
       // prepare deviceId if selected
       let constraints = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
       const deviceId = micSelect && micSelect.value ? micSelect.value : null;
-      if (deviceId) constraints = { audio: { deviceId: { exact: deviceId } } };
+      if (deviceId) constraints = { audio: { deviceId: { exact: deviceId }, echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       micState && (micState.textContent = 'mic: granted');
       if (micState) micState.style.background = '#e8f5e9';
@@ -95,6 +116,8 @@
         sourceNode.connect(analyser);
         // reset VAD counters at the beginning of each turn
         vad.activeFrames = 0; vad.totalFrames = 0;
+        vadStartAt = Date.now();
+        vadLastActiveAt = Date.now();
         drawWave();
         // populate input devices after permission (labels可視化)
         if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices && (!micSelect || micSelect.options.length <= 1)) {
@@ -139,7 +162,10 @@
     for (let i = 0; i < buf.length; i++) sum += Math.abs(buf[i] - 128);
     const amp = sum / (buf.length * 128);
     vad.totalFrames += 1;
-    if (amp > 0.05) vad.activeFrames += 1; // threshold tuned for on-device mic
+    if (amp > VAD_THRESH) {
+      vad.activeFrames += 1; // threshold tuned for on-device mic
+      vadLastActiveAt = Date.now();
+    }
     rafId = requestAnimationFrame(drawWave);
   }
 
@@ -174,12 +200,24 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
+  async function waitEndOfSpeech(maxMs = 10000, minMs = 1200, silenceMs = 600) {
+    const start = Date.now();
+    while (true) {
+      const now = Date.now();
+      const elapsed = now - start;
+      const sinceActive = now - vadLastActiveAt;
+      if (elapsed >= minMs && sinceActive >= silenceMs) return;
+      if (elapsed >= maxMs) return;
+      await new Promise(r => setTimeout(r, 80));
+    }
+  }
+
   async function oneTurn() {
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // 7秒録音→停止（拾い向上）
-    await new Promise(r => setTimeout(r, 7000));
+    // End-of-speech detection: wait for trailing silence or max cap
+    await waitEndOfSpeech(20000, 2000, 1500);
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
@@ -198,42 +236,77 @@
         if (rafId) cancelAnimationFrame(rafId);
         return;
       }
-      // 1) フィードバックはテキストのみ（音声は生成しない）
-      const fbBody = { transcript: tr.text };
-      const fb = await fetch('/api/sales/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fbBody) }).then(r => r.json()).catch(() => ({}));
-      if (fb && fb.metrics) {
-        metricsEl.textContent = `rapport:${fb.metrics.rapport} needs:${fb.metrics.needs} value:${fb.metrics.value} objection:${fb.metrics.objection}`;
-      }
-      if (fb && fb.advice) {
-        adviceEl.textContent = fb.advice;
-      }
-      // 2) お客様役の応答を生成（音声で返す）
+      // Build speaker once per conversation unless user changes
       try {
-        let spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : 2;
-        // If scenario selected and no manual speaker, ask backend for recommended speaker
-        if (scenarioSelect && scenarioSelect.value) {
-          try {
-            const rec = await fetch(`/api/sales/scenarios/${encodeURIComponent(scenarioSelect.value)}/speaker?gender=random`).then(r => r.json());
-            const rs = rec && rec.recommended_speaker && rec.recommended_speaker.id;
-            if (rs) {
-              spk = rs;
-              // reflect to selector for visibility
-              const opt = Array.from(voiceSelect.options).find(o => Number(o.value) === Number(rs));
-              if (opt) voiceSelect.value = String(rs);
-            }
-          } catch (_) {}
+        let spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : null;
+        const scenarioId = (scenarioSelect && scenarioSelect.value) ? scenarioSelect.value : '';
+        if (scenarioId !== lastScenarioId) {
+          // scenario changed -> reset scenario-based recommendation cache
+          lastScenarioId = scenarioId;
+          scenarioRecommendedSpeakerId = null;
         }
+        if (!spk) {
+          if (!userSelectedSpeaker && scenarioId && !scenarioRecommendedSpeakerId) {
+            try {
+              const rec = await fetch(`/api/sales/scenarios/${encodeURIComponent(scenarioId)}/speaker?gender=random`).then(r => r.json());
+              const rs = rec && rec.recommended_speaker && rec.recommended_speaker.id;
+              if (rs) {
+                scenarioRecommendedSpeakerId = rs;
+                spk = rs;
+                // reflect once for visibility
+                const opt = Array.from(voiceSelect.options).find(o => Number(o.value) === Number(rs));
+                if (opt) voiceSelect.value = String(rs);
+              }
+            } catch (_) {}
+          }
+          if (!spk) spk = 2; // fallback default
+        }
+
+        // Parallelize feedback and simulate
+        const fbBody = { transcript: tr.text };
+        const fbPromise = fetch('/api/sales/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fbBody) })
+          .then(r => r.json()).catch(() => ({}));
+
         const url = `/api/voice/simulate?text_input=${encodeURIComponent(tr.text)}&speaker_id=${encodeURIComponent(spk)}`;
-        const sim = await fetch(url, { method: 'POST' }).then(r => r.json());
+        statusEl.textContent = 'replying...';
+        const simRes = await fetchWithTimeout(url, { method: 'POST' }, 3500);
+        let sim = null;
+        if (simRes && simRes.ok) {
+          try { sim = await simRes.json(); } catch (_) { sim = null; }
+        }
+
         if (sim && sim.output && sim.output.audio_data) {
           aiAudio.src = 'data:audio/wav;base64,' + sim.output.audio_data;
           aiAudio.style.display = '';
           aiAudio.play().catch(() => {});
+          httpInfo && (httpInfo.textContent = 'http: reply=200');
+          statusEl.textContent = 'replied';
         } else if (sim && sim.output && sim.output.text && 'speechSynthesis' in window) {
           // 音声がなければブラウザTTSで補完
           const uttr = new SpeechSynthesisUtterance(sim.output.text);
           uttr.lang = 'ja-JP';
           window.speechSynthesis.speak(uttr);
+          httpInfo && (httpInfo.textContent = 'http: reply=text-only');
+          statusEl.textContent = 'replied (tts)';
+        } else {
+          // Timeout/失敗時の必須フォールバック
+          if ('speechSynthesis' in window) {
+            const fallback = new SpeechSynthesisUtterance('少々お待ちください。只今処理中です。');
+            fallback.lang = 'ja-JP';
+            window.speechSynthesis.speak(fallback);
+            statusEl.textContent = 'replied (fallback)';
+          } else {
+            statusEl.textContent = 'reply failed';
+          }
+          httpInfo && (httpInfo.textContent = 'http: reply=timeout/error');
+        }
+
+        const fb = await fbPromise;
+        if (fb && fb.metrics) {
+          metricsEl.textContent = `rapport:${fb.metrics.rapport} needs:${fb.metrics.needs} value:${fb.metrics.value} objection:${fb.metrics.objection}`;
+        }
+        if (fb && fb.advice) {
+          adviceEl.textContent = fb.advice;
         }
       } catch (_) {
         // 失敗時は無音で継続
@@ -256,6 +329,11 @@
       await new Promise(r => setTimeout(r, 500));
     }
   });
+
+  // Lock speaker once user chooses explicitly
+  if (voiceSelect) {
+    voiceSelect.addEventListener('change', () => { userSelectedSpeaker = !!voiceSelect.value; });
+  }
 
   // 初回に権限リクエストしてデバイス一覧を先に表示
   (async () => {
