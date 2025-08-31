@@ -15,6 +15,8 @@
   const wctx = wave.getContext ? wave.getContext('2d') : null;
   wave.width = wave.clientWidth; wave.height = wave.clientHeight;
   const micSelect = document.getElementById('micSelect');
+  const modelSelect = document.getElementById('modelSelect');
+  const scenarioSelect = document.getElementById('scenarioSelect');
 
   // Load voices (first sales list, fallback to raw voicevox speakers)
   (async () => {
@@ -55,6 +57,8 @@
   let audioChunks = [];
   let running = false;
   let audioCtx; let analyser; let sourceNode; let rafId;
+  // Simple VAD counters per turn
+  let vad = { activeFrames: 0, totalFrames: 0 };
 
   function pickMime() {
     const candidates = [
@@ -72,7 +76,7 @@
   async function startRecording() {
     try {
       // prepare deviceId if selected
-      let constraints = { audio: true };
+      let constraints = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
       const deviceId = micSelect && micSelect.value ? micSelect.value : null;
       if (deviceId) constraints = { audio: { deviceId: { exact: deviceId } } };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -89,6 +93,8 @@
         sourceNode && sourceNode.disconnect();
         sourceNode = audioCtx.createMediaStreamSource(stream);
         sourceNode.connect(analyser);
+        // reset VAD counters at the beginning of each turn
+        vad.activeFrames = 0; vad.totalFrames = 0;
         drawWave();
         // populate input devices after permission (labels可視化)
         if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices && (!micSelect || micSelect.options.length <= 1)) {
@@ -128,6 +134,12 @@
     wctx.strokeStyle = '#2e7d32';
     wctx.lineWidth = 2;
     wctx.stroke();
+    // naive VAD: average absolute amplitude in this frame
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += Math.abs(buf[i] - 128);
+    const amp = sum / (buf.length * 128);
+    vad.totalFrames += 1;
+    if (amp > 0.05) vad.activeFrames += 1; // threshold tuned for on-device mic
     rafId = requestAnimationFrame(drawWave);
   }
 
@@ -139,7 +151,8 @@
         const form = new FormData();
         form.append('file', new File([blob], 'input.webm', { type: 'audio/webm' }));
         try {
-          const res = await fetch('/api/speech/transcribe?language=ja', { method: 'POST', body: form });
+          const model = modelSelect && modelSelect.value ? modelSelect.value : 'base';
+          const res = await fetch(`/api/speech/transcribe?language=ja&model_size=${encodeURIComponent(model)}` , { method: 'POST', body: form });
           let payload;
           try { payload = await res.json(); } catch (_) { payload = { raw: await res.text() }; }
           if (httpInfo) httpInfo.textContent = 'http: ' + res.status;
@@ -165,13 +178,26 @@
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // 5秒録音→停止（拾い向上）
-    await new Promise(r => setTimeout(r, 5000));
+    // 7秒録音→停止（拾い向上）
+    await new Promise(r => setTimeout(r, 7000));
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
+    // VAD gating: if speech ratio is too low, skip downstream
+    const speechRatio = vad.totalFrames ? (vad.activeFrames / vad.totalFrames) : 0;
+    if (speechRatio < 0.1) {
+      transcriptEl.value = '[無音検知] 話し始めてから「開始」を押す/声量を上げてください';
+      if (rafId) cancelAnimationFrame(rafId);
+      return;
+    }
     if (tr && tr.text) {
       transcriptEl.value = tr.text;
+      const textLen = tr.text.trim().length;
+      if (textLen < 2) {
+        // very short/uncertain -> skip simulate to avoid誤発話
+        if (rafId) cancelAnimationFrame(rafId);
+        return;
+      }
       // 1) フィードバックはテキストのみ（音声は生成しない）
       const fbBody = { transcript: tr.text };
       const fb = await fetch('/api/sales/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fbBody) }).then(r => r.json()).catch(() => ({}));
@@ -183,7 +209,20 @@
       }
       // 2) お客様役の応答を生成（音声で返す）
       try {
-        const spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : 2;
+        let spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : 2;
+        // If scenario selected and no manual speaker, ask backend for recommended speaker
+        if (scenarioSelect && scenarioSelect.value) {
+          try {
+            const rec = await fetch(`/api/sales/scenarios/${encodeURIComponent(scenarioSelect.value)}/speaker?gender=random`).then(r => r.json());
+            const rs = rec && rec.recommended_speaker && rec.recommended_speaker.id;
+            if (rs) {
+              spk = rs;
+              // reflect to selector for visibility
+              const opt = Array.from(voiceSelect.options).find(o => Number(o.value) === Number(rs));
+              if (opt) voiceSelect.value = String(rs);
+            }
+          } catch (_) {}
+        }
         const url = `/api/voice/simulate?text_input=${encodeURIComponent(tr.text)}&speaker_id=${encodeURIComponent(spk)}`;
         const sim = await fetch(url, { method: 'POST' }).then(r => r.json());
         if (sim && sim.output && sim.output.audio_data) {
@@ -241,6 +280,22 @@
       micState.textContent = 'mic: denied';
       micState.style.background = '#ffebee';
     }
+  })();
+
+  // Load scenarios for customer persona selection
+  (async () => {
+    try {
+      const r = await fetch('/api/sales/scenarios');
+      if (r.ok) {
+        const js = await r.json();
+        const list = Array.isArray(js.scenarios) ? js.scenarios : [];
+        for (const s of list) {
+          const opt = document.createElement('option');
+          opt.value = s.id; opt.textContent = `${s.name}（${s.focus}）`;
+          scenarioSelect.appendChild(opt);
+        }
+      }
+    } catch (_) {}
   })();
 })();
 

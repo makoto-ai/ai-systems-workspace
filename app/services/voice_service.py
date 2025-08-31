@@ -112,9 +112,8 @@ class VoiceService:
                 voicevox_params = VOICEVOX_SPEAKER_MAPPING[speaker_id]
                 speaker_id = voicevox_params["speaker"]
 
-            # EXTREME SPEED: Truncate text to 30 characters for fastest synthesis
-            if len(text) > 30:
-                text = text[:30]
+            # Do not truncate: synthesize full text to avoid early cut-off
+            # (VOICEVOX handles sentence-length inputs; allow full reply)
 
             # EXTREME SPEED: Skip emotion parameters completely
             # Create audio query with absolute minimum settings

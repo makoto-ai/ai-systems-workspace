@@ -59,10 +59,10 @@ class SpeechService:
         self.align_model = None
         self.diarize_model = None
 
-        # Performance settings
-        self.extreme_speed = True
-        self.minimal_processing = True
-        self.skip_all_extras = True
+        # Performance settings (prefer accuracy over extreme speed)
+        self.extreme_speed = False
+        self.minimal_processing = False
+        self.skip_all_extras = False
 
         self._load_models()
 
@@ -180,34 +180,46 @@ class SpeechService:
             temp_file_path = raw_path
 
         try:
-            logger.info(f"EXTREME SPEED: Transcribing audio")
+            logger.info("Transcribing audio")
 
             # Load audio with WhisperX
             audio = whisperx.load_audio(temp_file_path)
 
-            # EXTREME SPEED: Skip duration checks for maximum speed
-            # Only pad if absolutely necessary
-            if len(audio) < 8000:  # Less than 0.5 seconds at 16kHz
-                padding = 8000 - len(audio)
+            # Basic gain + padding for better VAD/ASR pickup
+            # 1) Normalize quiet audio up to target RMS (~-26 dB)
+            try:
+                rms = float(np.sqrt(np.mean(np.square(audio)))) if len(audio) else 0.0
+            except Exception:
+                rms = 0.0
+            target_rms = 0.05
+            if rms > 0.0 and rms < target_rms:
+                gain = min(10.0, target_rms / max(rms, 1e-8))
+                audio = np.clip(audio * gain, -1.0, 1.0)
+
+            # 2) Ensure minimum duration (2.0s) for stable recognition
+            min_len = 32000  # 2.0s at 16kHz
+            if len(audio) < min_len:
+                padding = min_len - len(audio)
                 audio = np.pad(audio, (0, padding), "constant")
 
-            # 1. Transcribe with WhisperX (EXTREME SPEED MODE)
-            # Absolute minimum settings for sub-second processing
+            # 1. Transcribe with WhisperX (accuracy biased)
             result = self.model.transcribe(
                 audio,
-                batch_size=1,  # Minimum batch for maximum speed
+                batch_size=8,
                 language=use_language,
             )
 
-            # 2. EXTREME SPEED: Skip ALL extra processing
+            # 2. Minimal extra processing disabled when accuracy is preferred
             diarization_successful = False
-            logger.info("EXTREME SPEED: Minimal processing only")
 
-            # Process and format results with minimal overhead
-            transcription_result = self._format_result_fast(result, use_language)
+            # Prefer richer formatting when segments are available
+            transcription_result = (
+                self._format_result(result, use_language, has_diarization=False)
+                if (isinstance(result, dict) and result.get("segments"))
+                else self._format_result_fast(result, use_language)
+            )
 
-            # EXTREME SPEED: Skip GPU cleanup for speed
-            logger.info(f"EXTREME SPEED: Transcription completed")
+            logger.info("Transcription completed")
             return transcription_result
 
         except Exception as e:
@@ -425,8 +437,8 @@ class SpeechService:
         }
 
 
-# Global speech service instance
-_speech_service_instance: Optional[SpeechService] = None
+# Global speech service cache by model size
+_speech_service_cache: dict[str, SpeechService] = {}
 
 
 def get_speech_service(
@@ -443,11 +455,10 @@ def get_speech_service(
     Returns:
         SpeechService instance
     """
-    global _speech_service_instance
-
-    if _speech_service_instance is None:
-        _speech_service_instance = SpeechService(
-            model_size=model_size, language=language, hf_token=hf_token
-        )
-
-    return _speech_service_instance
+    global _speech_service_cache
+    key = f"{model_size}:{language}"
+    svc = _speech_service_cache.get(key)
+    if svc is None:
+        svc = SpeechService(model_size=model_size, language=language, hf_token=hf_token)
+        _speech_service_cache[key] = svc
+    return svc
