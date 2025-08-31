@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: "Checkout PR branch"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: ${{ github.event.pull_request.head.ref }}
 
@@ -93,7 +93,7 @@ jobs:
         echo "📊 PR結果: Pred@0.70=${PR_PRED_70}%, Pred@0.85=${PR_PRED_85}%, Flaky=${PR_FLAKY_RATE}%"
 
     - name: "Checkout base branch (main) for baseline"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         ref: main
         path: baseline
@@ -358,7 +358,7 @@ jobs:
 
     steps:
     - name: "Checkout code"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: "Setup Python"
       uses: actions/setup-python@v5

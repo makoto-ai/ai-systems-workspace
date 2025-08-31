@@ -30,7 +30,7 @@ jobs:
 
     steps:
     - name: "Checkout repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: "Initialize CodeQL"
       uses: github/codeql-action/init@v3
@@ -62,7 +62,7 @@ jobs:
 
     steps:
     - name: "Checkout repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: "Dependency Review"
       uses: actions/dependency-review-action@v4
@@ -76,7 +76,7 @@ jobs:
 
     steps:
     - name: "Checkout repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: "Set up Python"
       uses: actions/setup-python@v5
@@ -142,7 +142,7 @@ jobs:
     name: "Git Secrets Scan"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
     - name: "Gitleaks Scan"
@@ -155,7 +155,7 @@ jobs:
     name: "Detect Secrets Scan"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: "Set up Python"
       uses: actions/setup-python@v5
       with:
