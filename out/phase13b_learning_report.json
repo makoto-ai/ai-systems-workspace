@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-08-30T12:43:23.497149",
+  "phase": "13-B",
+  "title": "学習データ駆動品質改善レポート",
+  "success_patterns": {
+    "yaml_fixes": {
+      "count": 4,
+      "approach": "段階的修正",
+      "priority": "high"
+    },
+    "context_warnings": {
+      "count": 11,
+      "approach": "コンテキスト修正",
+      "priority": "high"
+    },
+    "bash_syntax": {
+      "count": 3,
+      "approach": "構文チェック後修正",
+      "priority": "medium"
+    }
+  },
+  "ide_analysis": {
+    "timestamp": "2025-08-30T12:43:23.497199",
+    "method": "ide_warning_analysis",
+    "phase13a_effect": "significant_improvement",
+    "yamllint_errors": 0,
+    "actionlint_errors": 0,
+    "shellcheck_errors": 0,
+    "total_linter_errors": 0
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "action": "YAML修正の継続強化",
+      "reason": "過去4件の成功実績",
+      "method": "段階的修正アプローチの活用"
+    },
+    {
+      "priority": "high",
+      "action": "コンテキスト警告の体系的解消",
+      "reason": "過去11件の成功実績",
+      "method": "コンテキスト修正パターンの適用"
+    },
+    {
+      "priority": "medium",
+      "action": "autonomous_fix 検証プロセス強化",
+      "reason": "現在の成功率: 0.0%",
+      "method": "より安全な段階的検証の実装"
+    }
+  ]
+}

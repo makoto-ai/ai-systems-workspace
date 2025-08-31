@@ -1,13 +1,13 @@
-name: Golden Test Staged Promotion
+name: "Golden Test Staged Promotion"
 
-on:
+"on":
   schedule:
-    # 毎日09:20 JSTに実行（段階昇格チェック）
-    - cron: '20 0 * * *'
+  # 毎日09:20 JSTに実行 (段階昇格チェック)
+  - cron: '20 0 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'ドライラン（PRを作成しない）'
+        description: 'ドライラン (PRを作成しない)'
         required: false
         default: 'false'
 
@@ -17,41 +17,41 @@ env:
 jobs:
   staged-promotion-check:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
+    - name: "Checkout code"
       uses: actions/checkout@v4
-      
-    - name: Setup Python
-      uses: actions/setup-python@v4
+
+    - name: "Setup Python"
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         cache: 'pip'
-    
-    - name: Install dependencies
+
+    - name: "Install dependencies"
       run: |
         pip install -r requirements.txt
         pip install pyyaml
-        
-    - name: Setup environment
-      env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+    - name: "Setup environment"
       run: |
-        echo "GROQ_API_KEY=${GROQ_API_KEY}" >> $GITHUB_ENV
-    
-    - name: Run Multi-Shadow Grid Evaluation
+        # GROQ_API_KEY設定用
+        # 使用方法: GROQ_API_KEY をrepository secretsに設定してください
+        echo "GROQ_API_KEY setup required" >&2
+
+    - name: "Run Multi-Shadow Grid Evaluation"
       id: shadow_grid
       run: |
         echo "🔍 Running Multi-Shadow Grid Evaluation..."
-        
+
         # 段階昇格用グリッド評価実行
         python tests/golden/runner.py \
           --threshold-shadow "0.60,0.65,0.70,0.72,0.75,0.78,0.80,0.85" \
           --weights tests/golden/weights_phase4.yaml \
           --report out/shadow_grid.json
-        
+
         echo "✅ Grid evaluation completed"
-        
+
         # 結果解析
         NEXT_RECOMMENDED=$(python -c "
         import json
@@ -60,7 +60,7 @@ jobs:
         promotion = data['multi_shadow_evaluation']['staged_promotion']
         print(f'{promotion[\"next_recommended\"]:.2f}')
         ")
-        
+
         CURRENT_THRESHOLD=$(python -c "
         import json
         with open('out/shadow_grid.json', 'r') as f:
@@ -68,7 +68,7 @@ jobs:
         promotion = data['multi_shadow_evaluation']['staged_promotion']
         print(f'{promotion[\"current_threshold\"]:.2f}')
         ")
-        
+
         PROMOTION_READY=$(python -c "
         import json
         with open('out/shadow_grid.json', 'r') as f:
@@ -76,7 +76,7 @@ jobs:
         promotion = data['multi_shadow_evaluation']['staged_promotion']
         print('true' if promotion['promotion_ready'] else 'false')
         ")
-        
+
         PROMOTION_STEP=$(python -c "
         import json
         with open('out/shadow_grid.json', 'r') as f:
@@ -84,79 +84,83 @@ jobs:
         promotion = data['multi_shadow_evaluation']['staged_promotion']
         print(f'{promotion[\"promotion_step\"]:.2f}')
         ")
-        
-        echo "next_recommended=${NEXT_RECOMMENDED}" >> $GITHUB_OUTPUT
-        echo "current_threshold=${CURRENT_THRESHOLD}" >> $GITHUB_OUTPUT
-        echo "promotion_ready=${PROMOTION_READY}" >> $GITHUB_OUTPUT
-        echo "promotion_step=${PROMOTION_STEP}" >> $GITHUB_OUTPUT
-        
+
+        {
+          echo "next_recommended=${NEXT_RECOMMENDED}"
+          echo "current_threshold=${CURRENT_THRESHOLD}"
+          echo "promotion_ready=${PROMOTION_READY}"
+          echo "promotion_step=${PROMOTION_STEP}"
+        } >> "$GITHUB_OUTPUT"
+
         echo "📊 Current: ${CURRENT_THRESHOLD}"
         echo "🎯 Next Recommended: ${NEXT_RECOMMENDED}"
         echo "🚀 Promotion Ready: ${PROMOTION_READY}"
-    
-    - name: Check Promotion History（2連続チェック）
+
+    - name: "Check Promotion History (2連続チェック)"
       id: history_check
-      if: steps.shadow_grid.outputs.promotion_ready == 'true'
+      if: ${{ steps.shadow_grid.outputs.promotion_ready == 'true' }}
       run: |
         echo "📅 Checking promotion history for consecutive achievement..."
-        
+
         NEXT_RECOMMENDED="${{ steps.shadow_grid.outputs.next_recommended }}"
-        
+
         # 過去7日間の昇格準備状況をチェック
         WEEK_AGO_FILE="out/promotion_ready_${NEXT_RECOMMENDED}_$(date -d '7 days ago' +'%Y%m%d').marker"
-        
-        if [ -f "$WEEK_AGO_FILE" ]; then
+
+        if [-f "$WEEK_AGO_FILE"]; then
           echo "✅ 7日前も同じしきい値で昇格準備完了"
-          echo "consecutive_achievement=true" >> $GITHUB_OUTPUT
+          echo "consecutive_achievement=true" >> "$GITHUB_OUTPUT"
           echo "🎉 2連続で昇格条件達成！"
         else
           echo "🔄 今回が初回準備完了"
-          echo "consecutive_achievement=false" >> $GITHUB_OUTPUT
+          echo "consecutive_achievement=false" >> "$GITHUB_OUTPUT"
         fi
-        
+
         # 今回の達成をマーカーファイルに記録
         mkdir -p out
         touch "out/promotion_ready_${NEXT_RECOMMENDED}_$(date +'%Y%m%d').marker"
-    
-    - name: Validate Promotion Step (安全範囲チェック)
+
+    - name: "Validate Promotion Step (安全範囲チェック)"
       id: validate_step
-      if: steps.shadow_grid.outputs.promotion_ready == 'true' && steps.history_check.outputs.consecutive_achievement == 'true'
+      if: >-
+        ${{ steps.shadow_grid.outputs.promotion_ready == 'true' &&
+            steps.history_check.outputs.consecutive_achievement == 'true' }}
       run: |
         PROMOTION_STEP="${{ steps.shadow_grid.outputs.promotion_step }}"
-        
-        # 昇格ステップが安全範囲内かチェック（0.02〜0.05）
-        if (( $(echo "$PROMOTION_STEP >= 0.02 && $PROMOTION_STEP <= 0.05" | bc -l) )); then
+
+        # 昇格ステップが安全範囲内かチェック (0.02〜0.05)
+        if ["$(python -c "print('true' if 0.02 <= float('${PROMOTION_STEP}') <= 0.05 else 'false')")" = "true"]; then
           echo "✅ 昇格ステップが安全範囲内: ${PROMOTION_STEP}"
-          echo "safe_promotion_step=true" >> $GITHUB_OUTPUT
+          echo "safe_promotion_step=true" >> "$GITHUB_OUTPUT"
         else
           echo "⚠️ 昇格ステップが範囲外: ${PROMOTION_STEP} (0.02-0.05 推奨)"
-          echo "safe_promotion_step=false" >> $GITHUB_OUTPUT
+          echo "safe_promotion_step=false" >> "$GITHUB_OUTPUT"
         fi
-    
-    - name: Create Staged Promotion PR
-      if: |
-        steps.shadow_grid.outputs.promotion_ready == 'true' && 
-        steps.history_check.outputs.consecutive_achievement == 'true' && 
-        steps.validate_step.outputs.safe_promotion_step == 'true' &&
-        github.event.inputs.dry_run != 'true'
+
+    - name: "Create Staged Promotion PR"
+      if: >-
+        ${{ steps.shadow_grid.outputs.promotion_ready == 'true' &&
+            steps.history_check.outputs.consecutive_achievement == 'true' &&
+            steps.validate_step.outputs.safe_promotion_step == 'true' &&
+            github.event.inputs.dry_run != 'true' }}
       uses: actions/github-script@v7
       with:
         script: |
           const currentThreshold = parseFloat('${{ steps.shadow_grid.outputs.current_threshold }}');
           const nextRecommended = parseFloat('${{ steps.shadow_grid.outputs.next_recommended }}');
           const promotionStep = parseFloat('${{ steps.shadow_grid.outputs.promotion_step }}');
-          
+
           // 新しいconfig.ymlの内容を生成
           const fs = require('fs');
           const yaml = require('js-yaml');
-          
+
           // 現在のconfig.ymlを読み込み
           const configContent = fs.readFileSync('tests/golden/config.yml', 'utf8');
           const config = yaml.load(configContent);
-          
+
           // しきい値を更新
           config.threshold = nextRecommended;
-          
+
           // カナリア設定を追加
           config.canary = {
             enabled: true,
@@ -164,38 +168,38 @@ jobs:
             previous_threshold: currentThreshold,
             monitoring_duration_days: 7
           };
-          
+
           const newConfigContent = yaml.dump(config);
-          
+
           // ブランチ名生成
           const branchName = `staged-promotion/threshold-${nextRecommended}`;
           const timestamp = new Date().toISOString().split('T')[0];
-          
+
           // PR本文生成
           const prBody = `## 🚀 段階昇格: Threshold ${currentThreshold} → ${nextRecommended}
-          
+
           ### 昇格条件達成
           - ✅ 2連続で昇格条件を満たしました
-          - ✅ 昇格ステップ ${promotionStep:+.2f} が安全範囲内
+          - ✅ 昇格ステップ ${promotionStep.toFixed(2)} が安全範囲内
           - ✅ shadow_pass_rate ≥ 80% かつ new_fail_ratio ≤ 60% かつ flaky_rate < 5%
-          
+
           ### 変更内容
           - \`tests/golden/config.yml\` の threshold を ${nextRecommended} に更新
           - 7日間のカナリア監視を開始
-          
+
           ### カナリア監視項目
           - 合格率の安定性
           - flaky_rate の変動
           - new_fail_ratio の推移
-          
+
           ### 自動生成情報
           - 生成日時: ${new Date().toISOString()}
           - ワークフロー: staged-promotion.yml
-          - 実行ID: ${process.env.GITHUB_RUN_ID}
-          
+          - 実行ID: ${{ github.run_id }}
+
           **⚠️ このPRは7日間のカナリア監視後、自動で本採用判定されます**
           `;
-          
+
           // PRを作成
           try {
             // ブランチを作成
@@ -204,14 +208,14 @@ jobs:
               repo: context.repo.repo,
               ref: 'heads/main'
             });
-            
+
             await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/heads/${branchName}`,
               sha: ref.object.sha
             });
-            
+
             // ファイルを更新
             const { data: currentFile } = await github.rest.repos.getContent({
               owner: context.repo.owner,
@@ -219,7 +223,7 @@ jobs:
               path: 'tests/golden/config.yml',
               ref: branchName
             });
-            
+
             await github.rest.repos.createOrUpdateFileContents({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -229,7 +233,7 @@ jobs:
               sha: currentFile.sha,
               branch: branchName
             });
-            
+
             // PRを作成
             const { data: pr } = await github.rest.pulls.create({
               owner: context.repo.owner,
@@ -240,16 +244,16 @@ jobs:
               body: prBody,
               labels: ['staged-promotion', 'golden-test', 'canary']
             });
-            
+
             console.log(`✅ 段階昇格PR作成完了: #${pr.number}`);
-            
+
           } catch (error) {
             console.error('❌ PR作成エラー:', error);
             throw error;
           }
-    
-    - name: ドライラン結果表示
-      if: github.event.inputs.dry_run == 'true'
+
+    - name: "ドライラン結果表示"
+      if: ${{ github.event.inputs.dry_run == 'true' }}
       run: |
         echo "🧪 ドライラン実行完了"
         echo "実際の実行では以下のPRが作成されます:"
@@ -258,25 +262,21 @@ jobs:
         echo "  Step: ${{ steps.shadow_grid.outputs.promotion_step }}"
         echo "  Promotion Ready: ${{ steps.shadow_grid.outputs.promotion_ready }}"
         echo "  Consecutive: ${{ steps.history_check.outputs.consecutive_achievement }}"
-    
-    - name: 通知送信
+
+    - name: "通知送信"
       if: always()
       continue-on-error: true
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        if [ -z "$SLACK_WEBHOOK_URL" ]; then
-          echo "⏭️ Slack通知スキップ（SLACK_WEBHOOK_URL未設定）"
-          exit 0
-        fi
-        echo "📢 段階昇格チェック結果を通知中..."
-        python scripts/notify_results.py --staged-promotion
-    
-    - name: アーティファクト保存
+        # Slack通知は手動実行をガイド
+        echo "⏭️ 段階昇格チェック結果のSlack通知は手動で実行してください"
+        echo "💡 使用方法: python scripts/notify_results.py --staged-promotion"
+        echo "🔧 SLACK_WEBHOOK_URL をrepository secretsに設定すると自動化できます"
+
+    - name: "アーティファクト保存"
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: staged-promotion-results
+        name: "staged-promotion-results"
         path: |
           out/shadow_grid.json
           out/promotion_ready_*.marker

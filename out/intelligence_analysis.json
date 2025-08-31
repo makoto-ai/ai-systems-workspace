@@ -1,0 +1,33 @@
+{
+  "analysis_metadata": {
+    "execution_timestamp": "2025-08-30T10:54:23.079990",
+    "data_quality_score": 0.19999999999999998,
+    "total_data_sources": 11,
+    "successful_loads": 9
+  },
+  "pattern_analysis": {
+    "total_patterns": 0,
+    "pattern_types": [],
+    "high_confidence_patterns": 0,
+    "patterns_summary": []
+  },
+  "predictive_insights": {
+    "total_insights": 0,
+    "insight_types": [],
+    "immediate_actions": 0,
+    "insights_summary": []
+  },
+  "learning_updates": {
+    "model_updates": 2,
+    "new_patterns": 0,
+    "insight_accuracy": 0.0,
+    "learning_effectiveness": 0.5,
+    "next_learning_goals": [
+      "データ品質の継続向上",
+      "新しいパターン発見の促進",
+      "予測モデルの精度向上"
+    ]
+  },
+  "intelligence_score": 0.15,
+  "next_recommendations": []
+}

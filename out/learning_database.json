@@ -1,0 +1,59 @@
+{
+  "fix_attempts": [
+    {
+      "timestamp": "2025-08-31T00:25:30.063517",
+      "tag": "YAML.style",
+      "fix_strategy": {
+        "name": "auto_test"
+      },
+      "before_metrics": {
+        "pass_rate": 0.6
+      },
+      "after_metrics": {
+        "pass_rate": 0.85
+      },
+      "success": true,
+      "improvement": 0.25,
+      "git_commit": "4cb1e32"
+    },
+    {
+      "timestamp": "2025-08-31T00:25:30.078782",
+      "tag": "DOCS.readability",
+      "fix_strategy": {
+        "name": "auto_test"
+      },
+      "before_metrics": {
+        "pass_rate": 0.7
+      },
+      "after_metrics": {
+        "pass_rate": 0.82
+      },
+      "success": true,
+      "improvement": 0.12,
+      "git_commit": "4cb1e32"
+    },
+    {
+      "timestamp": "2025-08-31T00:25:30.091485",
+      "tag": "PY.lint",
+      "fix_strategy": {
+        "name": "auto_test"
+      },
+      "before_metrics": {
+        "pass_rate": 0.55
+      },
+      "after_metrics": {
+        "pass_rate": 0.75
+      },
+      "success": true,
+      "improvement": 0.19999999999999996,
+      "git_commit": "4cb1e32"
+    }
+  ],
+  "learning_stats": {
+    "total_attempts": 3,
+    "successful_attempts": 3,
+    "success_rate": 1.0,
+    "avg_improvement": 0.18999999999999997,
+    "last_updated": "2025-08-31T00:25:30.104712"
+  }
+}

@@ -6,6 +6,7 @@ echo "🚀 完全自動復旧システム開始..."
 # Python仮想環境の確認・起動
 if [ -d ".venv" ]; then
     echo "🐍 Python仮想環境起動中..."
+    # shellcheck source=/dev/null
     source .venv/bin/activate
     echo "✅ Python仮想環境: アクティブ"
 else

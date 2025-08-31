@@ -1,0 +1,70 @@
+# EditorConfig helps maintain consistent coding styles
+# IDE拡張機能向け統一設定
+
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# YAML files (GitHub Actions, etc.)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# Python files
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 88
+
+# JavaScript/TypeScript files
+[*.{js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 80
+
+# Shell scripts
+[*.sh]
+indent_style = space
+indent_size = 2
+
+# Makefiles
+[Makefile]
+indent_style = tab
+
+# Configuration files
+[*.{toml,ini,cfg}]
+indent_style = space
+indent_size = 2
+
+# GitHub specific
+[.github/**/*.yml]
+indent_style = space
+indent_size = 2
+max_line_length = 120
+
+# VS Code specific
+[.vscode/*.json]
+indent_style = space
+indent_size = 2
+
+
+
+

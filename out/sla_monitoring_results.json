@@ -1,0 +1,40 @@
+{
+  "execution_timestamp": "2025-08-30T11:19:46.876031",
+  "project_id": "ai-systems-workspace",
+  "sla_level": "medium",
+  "current_metrics": {
+    "overall_score": 1.532,
+    "uptime_status": true,
+    "metrics_count": 2
+  },
+  "sla_compliance": {
+    "violations_detected": 5,
+    "compliance_status": "violated",
+    "violation_types": [
+      "quality_threshold",
+      "quality_threshold",
+      "quality_threshold",
+      "quality_threshold",
+      "quality_threshold"
+    ]
+  },
+  "automated_response": {
+    "violations_processed": 5,
+    "automated_actions": [],
+    "manual_actions": [],
+    "escalations_triggered": [],
+    "notifications_sent": [
+      "dashboard_alert",
+      "email_simulated",
+      "dashboard_alert",
+      "email_simulated",
+      "dashboard_alert",
+      "email_simulated",
+      "dashboard_alert",
+      "email_simulated",
+      "dashboard_alert",
+      "email_simulated"
+    ]
+  },
+  "next_monitoring": "2025-08-30T11:34:46.876038"
+}

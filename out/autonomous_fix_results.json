@@ -1,0 +1,25 @@
+{
+  "execution_timestamp": "2025-08-30T11:08:11.363555",
+  "issues_detected": 1,
+  "fixes_attempted": 1,
+  "fixes_successful": 0,
+  "success_rate": 0.0,
+  "fix_results": [
+    {
+      "fix_id": "fix_yamllint_1371668824252641364_1756519689",
+      "issue_id": "yamllint_1371668824252641364",
+      "strategy": "yaml_autofix",
+      "status": "rolled_back",
+      "execution_time": 2.058494,
+      "changes_count": 2,
+      "verification_passed": false,
+      "impact": "positive"
+    }
+  ],
+  "performance_metrics": {
+    "avg_execution_time": 2.058494,
+    "max_execution_time": 2.058494,
+    "min_execution_time": 2.058494,
+    "total_execution_time": 2.058494
+  }
+}

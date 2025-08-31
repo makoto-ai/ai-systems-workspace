@@ -1,0 +1,72 @@
+name: Weekly KPI Report
+
+"on":
+  schedule:
+    - cron: '0 1 * * 1'  # Every Monday 10:00 JST (01:00 UTC)
+  workflow_dispatch: {}
+
+jobs:
+  kpi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: weekly-kpi
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore KPI history cache
+        uses: actions/cache/restore@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+          restore-keys: |
+            kpi-history-
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-ci.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies (pinned)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      - name: Run Golden Coverage Report
+        run: |
+          python scripts/quality/golden_coverage_report.py | tee golden_report.txt
+
+      - name: Dynamic Gate Summary
+        run: |
+          python scripts/quality/dynamic_gates.py --summary | tee gate_summary.txt
+
+      - name: Regression clustering report
+        run: |
+          python scripts/quality/regression_report.py | tee regression_report.txt || true
+
+      - name: Save KPI history cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-kpi
+          path: |
+            golden_report.txt
+            gate_summary.txt
+            regression_report.txt
+            out/kpi_history.jsonl

@@ -1,0 +1,43 @@
+{
+  "Activate": "Normal",
+  "CreationDate": 693595200.0,
+  "Macros": [
+    {
+      "Actions": [
+        {
+          "ActionUID": 2001,
+          "MacroActionType": "FolderWatch",
+          "Path": "~/Downloads",
+          "RecursiveFolderWatch": false,
+          "WatchForFileChanges": true,
+          "WatchForFileDeletes": false,
+          "WatchForSubfolderChanges": false
+        },
+        {
+          "ActionUID": 2002,
+          "MacroActionType": "ExecuteShell",
+          "Path": "/usr/bin/bash",
+          "Parameters": "/Users/araimakoto/bin/route_downloads_v2.sh \"%TriggerValue%\"",
+          "TimeOutAbortsMacro": true,
+          "TimeOutPeriod": 30,
+          "TrimResults": true,
+          "TrimResultsNew": true
+        }
+      ],
+      "CreationDate": 693595200.0,
+      "ModificationDate": 693595200.0,
+      "Name": "Downloads自動振り分け",
+      "Triggers": [
+        {
+          "FireType": "AddedToFolder",
+          "MacroTriggerType": "FolderWatch",
+          "Path": "~/Downloads",
+          "TriggerUID": 3001
+        }
+      ],
+      "UID": "DOWNLOADS-AUTO-SORTER-12345"
+    }
+  ],
+  "Name": "ファイル自動振り分け",
+  "UID": "FILE-AUTO-SORTER-GROUP-12345"
+}

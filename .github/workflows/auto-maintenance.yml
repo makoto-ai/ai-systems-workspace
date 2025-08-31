@@ -1,0 +1,56 @@
+name: Auto Maintenance PR (Weekly)
+
+"on":
+  schedule:
+    - cron: '0 1 * * 1'  # Every Monday 10:00 JST
+  workflow_dispatch: {}
+
+jobs:
+  auto-maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: auto-maintenance
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+          sudo apt-get update && sudo apt-get install -y yamllint
+
+      - name: "Run safe YAML auto-fix (canary: allowlist only)"
+        run: |
+          git config user.name "auto-maintenance-bot"
+          git config user.email "bot@example.com"
+          python scripts/quality/yaml_auto_fixer.py || true
+          # Limit changes to workflows only (allowlist)
+          git add .github/workflows || true
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "chore(ci): weekly safe YAML maintenance (canary)" || true
+
+      - name: Open Pull Request
+        if: success()
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: auto/weekly-maintenance
+          title: "chore(ci): weekly safe YAML maintenance (canary)"
+          body: |
+            This is an automated weekly maintenance PR.
+            - Scope: .github/workflows/*.yml only (allowlist)
+            - Actions: trailing spaces, EOF newline, bracket spacing (canary)
+            - Safety: skips destructive changes
+          labels: auto-fix, canary, safe
+          commit-message: "chore(ci): weekly safe YAML maintenance (canary)"

@@ -1,0 +1,683 @@
+{
+  "file_type_stats": {
+    "yaml": {
+      "count": 4,
+      "total_score": 3.65,
+      "avg_score": 0.9125
+    },
+    "python": {
+      "count": 7,
+      "total_score": 3.4,
+      "avg_score": 0.4857142857142857
+    },
+    "markdown": {
+      "count": 3,
+      "total_score": 1.2000000000000002,
+      "avg_score": 0.4000000000000001
+    }
+  },
+  "importance_stats": {},
+  "size_stats": {},
+  "phase_stats": {},
+  "threshold_adjustments": [
+    {
+      "timestamp": "2025-08-30T09:36:07.603911",
+      "context": {
+        "file_path": ".github/workflows/pr-quality-check.yml",
+        "importance_level": 5,
+        "file_type": "yaml",
+        "project_phase": "production",
+        "change_frequency": "high",
+        "size_category": "medium",
+        "complexity_hints": [
+          "many_conditions"
+        ]
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.9,
+      "gate_result": {
+        "file": ".github/workflows/pr-quality-check.yml",
+        "score": 0.9,
+        "context": {
+          "file_path": ".github/workflows/pr-quality-check.yml",
+          "importance_level": 5,
+          "file_type": "yaml",
+          "project_phase": "production",
+          "change_frequency": "high",
+          "size_category": "medium",
+          "complexity_hints": [
+            "many_conditions"
+          ]
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:36:07.603886",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.90 < target: 1.00)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.634149",
+      "context": {
+        "file_path": "scripts/quality/tag_failures.py",
+        "importance_level": 5,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "small",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.6,
+      "gate_result": {
+        "file": "scripts/quality/tag_failures.py",
+        "score": 0.6,
+        "context": {
+          "file_path": "scripts/quality/tag_failures.py",
+          "importance_level": 5,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "small",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:36:07.634124",
+        "status": "warning",
+        "level": "warning",
+        "message": "Quality warning (score: 0.60 < 0.85)",
+        "action": "improvement_recommended",
+        "recommendations": [
+          "\u26a0\ufe0f Quality improvement needed",
+          "Consider adding docstrings and comments"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.651716",
+      "context": {
+        "file_path": "README.md",
+        "importance_level": 3,
+        "file_type": "markdown",
+        "project_phase": "production",
+        "change_frequency": "medium",
+        "size_category": "medium",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.4,
+      "gate_result": {
+        "file": "README.md",
+        "score": 0.4,
+        "context": {
+          "file_path": "README.md",
+          "importance_level": 3,
+          "file_type": "markdown",
+          "project_phase": "production",
+          "change_frequency": "medium",
+          "size_category": "medium",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "documentation",
+        "timestamp": "2025-08-30T09:36:07.651695",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.40 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:36:07.667922",
+      "context": {
+        "file_path": "experimental/test.py",
+        "importance_level": 4,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "unknown",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.3,
+      "gate_result": {
+        "file": "experimental/test.py",
+        "score": 0.3,
+        "context": {
+          "file_path": "experimental/test.py",
+          "importance_level": 4,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "unknown",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "source_code",
+        "timestamp": "2025-08-30T09:36:07.667896",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.30 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression",
+          "This is a critical file - review carefully"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:41:35.030513",
+      "context": {
+        "file_path": ".github/workflows/pr-quality-check.yml",
+        "importance_level": 5,
+        "file_type": "yaml",
+        "project_phase": "production",
+        "change_frequency": "high",
+        "size_category": "medium",
+        "complexity_hints": [
+          "many_conditions"
+        ]
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.9,
+      "gate_result": {
+        "file": ".github/workflows/pr-quality-check.yml",
+        "score": 0.9,
+        "context": {
+          "file_path": ".github/workflows/pr-quality-check.yml",
+          "importance_level": 5,
+          "file_type": "yaml",
+          "project_phase": "production",
+          "change_frequency": "high",
+          "size_category": "medium",
+          "complexity_hints": [
+            "many_conditions"
+          ]
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:41:35.030479",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.90 < target: 1.00)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:41:35.059104",
+      "context": {
+        "file_path": "scripts/quality/tag_failures.py",
+        "importance_level": 5,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "small",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.6,
+      "gate_result": {
+        "file": "scripts/quality/tag_failures.py",
+        "score": 0.6,
+        "context": {
+          "file_path": "scripts/quality/tag_failures.py",
+          "importance_level": 5,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "small",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:41:35.059081",
+        "status": "warning",
+        "level": "warning",
+        "message": "Quality warning (score: 0.60 < 0.85)",
+        "action": "improvement_recommended",
+        "recommendations": [
+          "\u26a0\ufe0f Quality improvement needed",
+          "Consider adding docstrings and comments"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:41:35.075695",
+      "context": {
+        "file_path": "README.md",
+        "importance_level": 3,
+        "file_type": "markdown",
+        "project_phase": "production",
+        "change_frequency": "medium",
+        "size_category": "medium",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.4,
+      "gate_result": {
+        "file": "README.md",
+        "score": 0.4,
+        "context": {
+          "file_path": "README.md",
+          "importance_level": 3,
+          "file_type": "markdown",
+          "project_phase": "production",
+          "change_frequency": "medium",
+          "size_category": "medium",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "documentation",
+        "timestamp": "2025-08-30T09:41:35.075666",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.40 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:41:35.091985",
+      "context": {
+        "file_path": "experimental/test.py",
+        "importance_level": 4,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "unknown",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.3,
+      "gate_result": {
+        "file": "experimental/test.py",
+        "score": 0.3,
+        "context": {
+          "file_path": "experimental/test.py",
+          "importance_level": 4,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "unknown",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "source_code",
+        "timestamp": "2025-08-30T09:41:35.091961",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.30 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression",
+          "This is a critical file - review carefully"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:51:09.194229",
+      "context": {
+        "file_path": "test_quality_file.py",
+        "importance_level": 4,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "tiny",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.6499999999999999,
+        "target": 0.9
+      },
+      "actual_score": 0.7,
+      "gate_result": {
+        "file": "test_quality_file.py",
+        "score": 0.7,
+        "context": {
+          "file_path": "test_quality_file.py",
+          "importance_level": 4,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "tiny",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.6499999999999999,
+          "target": 0.9
+        },
+        "gate_name": "source_code",
+        "timestamp": "2025-08-30T09:51:09.194208",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.70 < target: 0.90)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T09:51:09.379404",
+      "context": {
+        "file_path": ".github/workflows/pr-quality-check.yml",
+        "importance_level": 5,
+        "file_type": "yaml",
+        "project_phase": "production",
+        "change_frequency": "high",
+        "size_category": "medium",
+        "complexity_hints": [
+          "many_conditions"
+        ]
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.95,
+      "gate_result": {
+        "file": ".github/workflows/pr-quality-check.yml",
+        "score": 0.95,
+        "context": {
+          "file_path": ".github/workflows/pr-quality-check.yml",
+          "importance_level": 5,
+          "file_type": "yaml",
+          "project_phase": "production",
+          "change_frequency": "high",
+          "size_category": "medium",
+          "complexity_hints": [
+            "many_conditions"
+          ]
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T09:51:09.379377",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.95 < target: 1.00)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T10:54:17.548370",
+      "context": {
+        "file_path": ".github/workflows/pr-quality-check.yml",
+        "importance_level": 5,
+        "file_type": "yaml",
+        "project_phase": "production",
+        "change_frequency": "high",
+        "size_category": "medium",
+        "complexity_hints": [
+          "many_conditions"
+        ]
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.9,
+      "gate_result": {
+        "file": ".github/workflows/pr-quality-check.yml",
+        "score": 0.9,
+        "context": {
+          "file_path": ".github/workflows/pr-quality-check.yml",
+          "importance_level": 5,
+          "file_type": "yaml",
+          "project_phase": "production",
+          "change_frequency": "high",
+          "size_category": "medium",
+          "complexity_hints": [
+            "many_conditions"
+          ]
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T10:54:17.548339",
+        "status": "passed_with_notes",
+        "level": "info",
+        "message": "Acceptable quality (score: 0.90 < target: 1.00)",
+        "action": "monitoring",
+        "recommendations": [
+          "\u2139\ufe0f Minor improvements possible"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T10:54:17.573495",
+      "context": {
+        "file_path": "scripts/quality/tag_failures.py",
+        "importance_level": 5,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "small",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.55,
+        "warning": 0.85,
+        "target": 1.0
+      },
+      "actual_score": 0.6,
+      "gate_result": {
+        "file": "scripts/quality/tag_failures.py",
+        "score": 0.6,
+        "context": {
+          "file_path": "scripts/quality/tag_failures.py",
+          "importance_level": 5,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "small",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.55,
+          "warning": 0.85,
+          "target": 1.0
+        },
+        "gate_name": "critical_files",
+        "timestamp": "2025-08-30T10:54:17.573467",
+        "status": "warning",
+        "level": "warning",
+        "message": "Quality warning (score: 0.60 < 0.85)",
+        "action": "improvement_recommended",
+        "recommendations": [
+          "\u26a0\ufe0f Quality improvement needed",
+          "Consider adding docstrings and comments"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T10:54:17.590578",
+      "context": {
+        "file_path": "README.md",
+        "importance_level": 3,
+        "file_type": "markdown",
+        "project_phase": "production",
+        "change_frequency": "medium",
+        "size_category": "medium",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.4,
+      "gate_result": {
+        "file": "README.md",
+        "score": 0.4,
+        "context": {
+          "file_path": "README.md",
+          "importance_level": 3,
+          "file_type": "markdown",
+          "project_phase": "production",
+          "change_frequency": "medium",
+          "size_category": "medium",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "documentation",
+        "timestamp": "2025-08-30T10:54:17.590550",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.40 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression"
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-08-30T10:54:17.607258",
+      "context": {
+        "file_path": "experimental/test.py",
+        "importance_level": 4,
+        "file_type": "python",
+        "project_phase": "production",
+        "change_frequency": "low",
+        "size_category": "unknown",
+        "complexity_hints": []
+      },
+      "thresholds": {
+        "critical": 0.44999999999999996,
+        "warning": 0.75,
+        "target": 0.9
+      },
+      "actual_score": 0.3,
+      "gate_result": {
+        "file": "experimental/test.py",
+        "score": 0.3,
+        "context": {
+          "file_path": "experimental/test.py",
+          "importance_level": 4,
+          "file_type": "python",
+          "project_phase": "production",
+          "change_frequency": "low",
+          "size_category": "unknown",
+          "complexity_hints": []
+        },
+        "thresholds": {
+          "critical": 0.44999999999999996,
+          "warning": 0.75,
+          "target": 0.9
+        },
+        "gate_name": "source_code",
+        "timestamp": "2025-08-30T10:54:17.607237",
+        "status": "blocked",
+        "level": "critical",
+        "message": "Critical quality issue (score: 0.30 < 0.45)",
+        "action": "immediate_fix_required",
+        "recommendations": [
+          "\ud83d\udea8 Immediate attention required",
+          "Consider rollback if this is a regression",
+          "This is a critical file - review carefully"
+        ]
+      }
+    }
+  ],
+  "performance_metrics": []
+}

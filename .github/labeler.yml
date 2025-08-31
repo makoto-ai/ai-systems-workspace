@@ -1,0 +1,11 @@
+ci:
+  - .github/**
+quality:
+  - scripts/quality/**
+docs:
+  - '**/*.md'
+python:
+  - '**/*.py'
+obsidian:
+  - docs/obsidian-knowledge/**
+

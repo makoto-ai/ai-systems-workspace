@@ -1,0 +1,40 @@
+{
+  "cycle_timestamp": "2025-08-30T11:19:31.904762",
+  "trigger_event": "manual_execution",
+  "system_state_summary": {
+    "overall_quality_score": 0.5705,
+    "sla_compliance_status": "violated",
+    "active_violations": 5,
+    "risk_level": "HIGH"
+  },
+  "decision_summary": {
+    "decision_id": "decision_1756520371",
+    "decision_type": "immediate_action",
+    "confidence_level": 0.95,
+    "recommended_actions_count": 1,
+    "success_probability": 0.7568333333333334
+  },
+  "execution_summary": {
+    "decision_id": "decision_1756520371",
+    "execution_timestamp": "2025-08-30T11:19:31.904724",
+    "overall_success": false,
+    "actions_executed": 1,
+    "successful_actions": 0,
+    "execution_results": [
+      {
+        "action_type": "run_autonomous_fix",
+        "success": false,
+        "execution_time": 0.235066,
+        "output": "🤖 自律修正エンジン開始...\n🔍 自律問題検出開始...\n✅ 問題検出完了: 0個の修正対象問題を発見\n\n🤖 自律修正エンジン実行結果\n========================================\n📊 実行統計:\n   検出問題数: 0\n   修正試行数: 0\n   修正成功数: 0\n",
+        "error": "Traceback (most recent call last):\n  File \"/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/quality/autonomous_fix_engine.py\", line 845, in <module>\n    main()\n  File \"/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/quality/autonomous_fix_engine.py\", line 838, in main\n    engine.display_results(results)\n  File \"/Users/araimakoto/ai-driven/ai-systems-workspace/scripts/quality/autonomous_fix_engine.py\", line 803, in display_results\n    print(f\"   成功率: {summary['success_rate']:.1%}\")\n                        ~~~~~~~^^^^^^^^^^^^^^^^\nKeyError: 'success_rate'\n"
+      }
+    ],
+    "total_execution_time": 0.235066
+  },
+  "performance_metrics": {
+    "decision_latency_seconds": 2.5,
+    "execution_efficiency": 0.0,
+    "confidence_accuracy": 0.95,
+    "total_cycle_time": 0.235066
+  }
+}

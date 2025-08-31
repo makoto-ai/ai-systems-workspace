@@ -1,6 +1,9 @@
-name: Model Experiment
+name: "Model Experiment"
 
-on:
+env:
+  CI_DISABLE_EXTERNAL_APIS: 'true'
+
+"on":
   workflow_dispatch:
     inputs:
       run_experiment:
@@ -20,81 +23,81 @@ jobs:
   model_exp:
     if: ${{ github.event.inputs.run_experiment == 'true' }}
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 15
+    concurrency:
+      group: model-experiment
+      cancel-in-progress: true
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
+
+      - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
           cache: 'pip'
-      
-      - name: Install dependencies
+
+      - name: "Install dependencies"
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
-      - name: Set API Keys (required)
-        run: |
-          echo "GROQ_API_KEY=${GROQ_API_KEY}" >> $GITHUB_ENV
-          echo "OPENAI_API_KEY=${OPENAI_API_KEY}" >> $GITHUB_ENV
-        env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
-      - name: Set API Keys (optional)
+      - name: "Set API Keys (required)"
+        run: |
+          # API Keys設定用
+          # 使用方法: GROQ_API_KEY, OPENAI_API_KEY をrepository secretsに設定してください
+          echo "API Keys setup required" >&2
+
+      - name: "Set API Keys (optional)"
         continue-on-error: true
         run: |
-          echo "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}" >> $GITHUB_ENV
-          echo "GEMINI_API_KEY=${GEMINI_API_KEY:-}" >> $GITHUB_ENV
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Optional API keys - can be configured as repository secrets if needed
+          echo "⚙️ Optional API keys ready (ANTHROPIC_API_KEY, GEMINI_API_KEY)"
+          echo "💡 Configure as repository secrets for extended model support"
 
-      - name: Run model experiment
+      - name: "Run model experiment"
         run: |
           echo "🧪 Running model experiment..."
           echo "Target root cause: ${{ github.event.inputs.root_cause }}"
           echo "Models: ${{ github.event.inputs.models }}"
-          
-          PYTHONPATH=$PWD python experiments/model_swap.py \
-            --cases "${{ github.event.inputs.root_cause }}" \
-            --models ${{ github.event.inputs.models }} \
-            --out "out/model_exp_${{ github.run_number }}.json"
-      
-      - name: Upload experiment results
+
+          PYTHONPATH="${PWD}" python experiments/model_swap.py \
+          --cases "${{ github.event.inputs.root_cause }}" \
+          --models ${{ github.event.inputs.models }} \
+          --out "out/model_exp_${{ github.run_number }}.json"
+
+      - name: "Upload experiment results"
         uses: actions/upload-artifact@v4
         with:
-          name: model-experiment-results-${{ github.run_number }}
+          name: "model-experiment-results-${{ github.run_number }}"
           path: out/model_exp_*.json
           retention-days: 30
-      
-      - name: Create experiment summary
+
+      - name: "Create experiment summary"
         run: |
           if [ -f "out/model_exp_${{ github.run_number }}.json" ]; then
             echo "📊 Experiment completed successfully"
             echo "Results saved to artifacts"
-            
+
             # 簡易サマリー表示
             python3 << 'EOF'
-          import json
-          import sys
-          
-          try:
-              with open("out/model_exp_${{ github.run_number }}.json", 'r') as f:
-                  data = json.load(f)
-              
-              summary = data.get("summary", {})
-              print(f"🏆 Best Model: {summary.get('best_model', 'N/A')}")
-              print(f"📈 Best Pass Rate: {summary.get('best_pass_rate', 0):.1%}")
-              print(f"⚡ Fastest Model: {summary.get('fastest_model', 'N/A')}")
-              print(f"💰 Cheapest Model: {summary.get('cheapest_model', 'N/A')}")
-              
-          except Exception as e:
-              print(f"❌ Error reading results: {e}")
-              sys.exit(1)
-          EOF
+            import json
+            import sys
+
+            try:
+                with open("out/model_exp_${{ github.run_number }}.json", 'r') as f:
+                    data = json.load(f)
+
+            summary = data.get("summary", {})
+            print(f"🏆 Best Model: {summary.get('best_model', 'N/A')}")
+            print(f"📈 Best Pass Rate: {summary.get('best_pass_rate', 0):.1%}")
+            print(f"⚡ Fastest Model: {summary.get('fastest_model', 'N/A')}")
+            print(f"💰 Cheapest Model: {summary.get('cheapest_model', 'N/A')}")
+
+            except Exception as e:
+                print(f"❌ Error reading results: {e}")
+                sys.exit(1)
+            EOF
           else
             echo "❌ Experiment failed - no results file found"
             exit 1
