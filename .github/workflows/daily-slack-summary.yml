@@ -27,6 +27,14 @@ jobs:
           restore-keys: |
             kpi-history-
 
+      - name: Restore SLO history cache
+        uses: actions/cache/restore@v4
+        with:
+          path: out/slo_history.jsonl
+          key: slo-history-${{ github.run_id }}
+          restore-keys: |
+            slo-history-
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -76,6 +84,9 @@ jobs:
           if not url:
               print('SLACK_WEBHOOK_URL not set; skipping')
               raise SystemExit(0)
+          start = time.time()
+          status = 'fail'
+          last_err = ''
           for i in range(3):
               try:
                   req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type':'application/json'})
@@ -83,10 +94,47 @@ jobs:
                       body = r.read().decode('utf-8', 'ignore').strip()
                       print(body)
                       if body.lower() == 'ok':
+                          status = 'ok'
                           break
               except Exception as e:
+                  last_err = str(e)
                   print('post error:', e)
               time.sleep(2 * (i + 1))
+          elapsed = int((time.time() - start) * 1000)
+          # persist step-local result for later SLO logging
+          with open('slo_result.json', 'w', encoding='utf-8') as f:
+              json.dump({"status": status, "elapsed_ms": elapsed, "error": last_err}, f)
+          PY
+
+      - name: Record SLO sample
+        run: |
+          python - <<'PY'
+          import json, time, os
+          from pathlib import Path
+          ts = int(time.time())
+          res = {}
+          try:
+              res = json.loads(Path('slo_result.json').read_text('utf-8'))
+          except Exception:
+              res = {"status": "unknown", "elapsed_ms": -1}
+          entry = {"timestamp": ts, "status": res.get("status","unknown"), "elapsed_ms": res.get("elapsed_ms", -1)}
+          out = Path('out'); out.mkdir(parents=True, exist_ok=True)
+          with (out / 'slo_history.jsonl').open('a', encoding='utf-8') as f:
+              f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+          # Evaluate simple SLO: last 200 samples
+          hist = []
+          try:
+              lines = (out / 'slo_history.jsonl').read_text('utf-8').strip().splitlines()[-200:]
+              hist = [json.loads(x) for x in lines if x.strip()]
+          except Exception:
+              pass
+          if hist:
+              ok = sum(1 for x in hist if x.get('status') == 'ok')
+              rate = 100.0 * ok / len(hist)
+              latest = hist[-1]
+              print(f"SLO window: n={len(hist)} success_rate={rate:.3f}% latest_elapsed_ms={latest.get('elapsed_ms',-1)}")
+              if rate < 99.5 or latest.get('elapsed_ms', 0) > 300000:
+                  print(f"::warning::SLO violation: success {rate:.3f}%, latest latency {latest.get('elapsed_ms',-1)}ms")
           PY
 
       - name: Upload artifacts
@@ -97,4 +145,5 @@ jobs:
             golden_report.txt
             gate_summary.txt
             out/kpi_history.jsonl
+            out/slo_history.jsonl
 
