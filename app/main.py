@@ -7,7 +7,8 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 from pathlib import Path
@@ -134,6 +135,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static UI for minimal voice client
+app.mount("/ui/voice", StaticFiles(directory="app/static/voice", html=True), name="ui-voice")
+
+
+@app.get("/ui/voice")
+async def ui_voice_root():
+    """Serve minimal UI index explicitly to avoid 404s on no-trailing-slash."""
+    return FileResponse("app/static/voice/index.html")
 
 # Include API routers
 app.include_router(health.router, prefix="/api")

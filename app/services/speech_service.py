@@ -155,10 +155,29 @@ class SpeechService:
             logger.info("Using fallback speech recognition")
             return self._fallback_transcribe(audio_data, use_language)
 
-        # Create temporary file to store audio data
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+        # Create temporary file and ensure WAV/PCM16/16kHz mono for stable VAD
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as temp_file:
             temp_file.write(audio_data)
-            temp_file_path = temp_file.name
+            raw_path = temp_file.name
+        temp_file_path = raw_path
+        try:
+            import subprocess, shutil
+            wav_fd, wav_tmp = tempfile.mkstemp(suffix=".wav")
+            os.close(wav_fd)
+            ffmpeg_bin = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
+            env = os.environ.copy()
+            env["PATH"] = env.get("PATH", "") + ":/opt/homebrew/bin:/usr/local/bin:/usr/bin"
+            # Try decoding input (webm/ogg/whatever) to wav pcm_s16le 16k mono
+            cmd = [
+                ffmpeg_bin, "-y", "-i", raw_path,
+                "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                wav_tmp,
+            ]
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+            temp_file_path = wav_tmp
+        except Exception:
+            # fallback: assume input already wav
+            temp_file_path = raw_path
 
         try:
             logger.info(f"EXTREME SPEED: Transcribing audio")
@@ -198,7 +217,8 @@ class SpeechService:
         finally:
             # Clean up temporary file
             try:
-                os.unlink(temp_file_path)
+                if os.path.exists(temp_file_path):
+                    os.unlink(temp_file_path)
             except OSError:
                 pass
 

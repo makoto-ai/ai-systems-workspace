@@ -77,7 +77,7 @@ async def get_model_info() -> Dict[str, Any]:
 
 @router.post("/transcribe")
 async def transcribe_audio_file(
-    file: UploadFile = File(...), language: Optional[str] = "ja"
+    file: UploadFile = File(...), language: Optional[str] = "ja", model_size: Optional[str] = None
 ) -> TranscriptionResponse:
     """
     Transcribe an uploaded audio file to text
@@ -94,20 +94,21 @@ async def transcribe_audio_file(
     start_time = time.time()
 
     try:
-        # Validate file type
-        if not file.content_type or not file.content_type.startswith("audio/"):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid file type: {file.content_type}. Please upload an audio file.",
-            )
+        # Relaxed: accept common browser types (audio/*, video/webm), and octet-stream from some UA
+        ct = file.content_type or ""
+        allowed = (
+            ct.startswith("audio/") or ct == "application/octet-stream" or ct == "video/webm" or ct == "audio/webm"
+        )
+        if not allowed:
+            raise HTTPException(status_code=400, detail=f"Invalid file type: {file.content_type}")
 
         # Read audio data
         audio_data = await file.read()
         if len(audio_data) == 0:
             raise HTTPException(status_code=400, detail="Empty audio file")
 
-        # Get speech service and transcribe
-        speech_service = get_speech_service()
+        # Get speech service and transcribe (compat across implementations)
+        speech_service = get_speech_service(model_size=model_size or "base")
         result = await speech_service.transcribe_audio(audio_data, language)
 
         processing_time = time.time() - start_time

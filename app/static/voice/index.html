@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Roleplay - Minimal UI</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 20px; color: #222; }
+      .row { display: flex; gap: 12px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+      button { padding: 10px 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; cursor: pointer; }
+      button.recording { background: #e53935; color: #fff; border-color: #e53935; }
+      select, input[type="text"] { padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+      textarea { width: 100%; height: 110px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; }
+      #wave { width: 100%; height: 80px; background: #f6f6f6; border-radius: 6px; }
+      .card { border: 1px solid #e5e5e5; border-radius: 10px; padding: 12px; margin: 12px 0; }
+      .muted { color: #666; }
+      .pill { padding: 2px 8px; background: #f0f0f0; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h2>音声AIロープレ（最小UI）</h2>
+
+    <div class="row">
+      <button id="toggleBtn">開始</button>
+      <span class="pill" id="status">idle</span>
+      <span class="pill" id="micState" style="background:#eee">mic: unknown</span>
+      <select id="micSelect"><option value="">入力デバイスを選択（任意）</option></select>
+      <select id="voiceSelect"><option value="">声を選択（任意）</option></select>
+    </div>
+
+    <canvas id="wave"></canvas>
+
+    <div class="card">
+      <div class="row"><strong>字幕（ASR）</strong></div>
+      <textarea id="transcript" placeholder="ここに認識結果が表示されます"></textarea>
+      <div class="muted">話し終えてボタンを離すと、認識→簡易フィードバックが表示されます。</div>
+    </div>
+
+    <div class="card">
+      <div class="row"><strong>フィードバック</strong></div>
+      <div id="metrics" class="muted"></div>
+      <div id="advice" style="margin-top: 6px; font-weight: 600;"></div>
+      <audio id="adviceAudio" controls style="margin-top:8px; display:none;"></audio>
+      <audio id="aiAudio" controls style="margin-top:8px; display:none;"></audio>
+      <div class="row muted" style="margin-top:8px; gap:16px">
+        <div id="codecInfo">codec: -</div>
+        <div id="httpInfo">http: -</div>
+        <div id="recInfo">rec: 0.0s</div>
+      </div>
+    </div>
+
+    <script src="/ui/voice/app.js"></script>
+  </body>
+  </html>
+
+

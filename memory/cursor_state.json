@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-31T16:09:56.552293",
-  "session_purpose": "post-commit",
+  "timestamp": "2025-09-01T00:05:51.736837",
+  "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "b9f9a20e90044158e47a90c1a33daeecc8cea5aa",
+    "commit_hash": "51b6672eb7f5ffb0a0c2f9ea7ebb39558d1cd8ff",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 0,
-    "status_details": ""
+    "uncommitted_changes": 12,
+    "status_details": "M  app/api/sales_roleplay.py\nM  app/api/speech.py\nA  app/api/streaming.py\nA  app/api/tts.py\nM  app/main.py\nA  app/services/metrics.py\nM  app/services/speech_service.py\nA  app/services/streaming_asr_service.py\nA  app/services/tts_streamer.py\nA  app/static/voice/app.js\nA  app/static/voice/index.html\nA  out/voice_metrics.jsonl"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1559,8 +1559,8 @@
   "project_structure": {
     "app": {
       "exists": true,
-      "python_files": 41,
-      "total_files": 163
+      "python_files": 46,
+      "total_files": 178
     },
     "config": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 27721,
+    "python_files_count": 25798,
     "cursor_configs_count": 13
   },
-  "state_hash": "99342c4ee7d12b6ebca3fb7bab69e1ea"
+  "state_hash": "996264e60c8063d9e8ba3b209433be5b"
 }
