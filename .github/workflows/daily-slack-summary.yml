@@ -1,0 +1,82 @@
+name: Daily KPI Slack Summary
+
+"on":
+  schedule:
+    - cron: '0 0 * * *'  # Daily 09:00 JST (00:00 UTC)
+  workflow_dispatch: {}
+
+jobs:
+  daily-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: daily-slack-summary
+      cancel-in-progress: true
+    env:
+      PYTHON_VERSION: '3.11'
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore KPI history cache
+        uses: actions/cache/restore@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+          restore-keys: |
+            kpi-history-
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies (pinned)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      - name: Generate latest KPI and Gate summary
+        run: |
+          python scripts/quality/golden_coverage_report.py | tee golden_report.txt
+          python scripts/quality/dynamic_gates.py --summary | tee gate_summary.txt
+
+      - name: Save KPI history cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: out/kpi_history.jsonl
+          key: kpi-history-${{ github.run_id }}
+
+      - name: Post Slack (daily summary)
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          LATEST=$(tail -n 1 out/kpi_history.jsonl || true)
+          GOLDEN=$(cat golden_report.txt | sed -e 's/"/\"/g')
+          GATE=$(cat gate_summary.txt | sed -e 's/"/\"/g')
+          PAYLOAD=$(cat <<'JSON'
+          {
+            "text": "Daily KPI Summary",
+            "blocks": [
+              {"type":"header","text":{"type":"plain_text","text":"Daily KPI Summary"}},
+              {"type":"section","text":{"type":"mrkdwn","text":"*Golden Coverage (latest)*\n```$GOLDEN```"}},
+              {"type":"section","text":{"type":"mrkdwn","text":"*Dynamic Gates*\n```$GATE```"}},
+              {"type":"context","elements":[{"type":"mrkdwn","text":"run: $GITHUB_RUN_ID | repo: $GITHUB_REPOSITORY"}]}
+            ]
+          }
+          JSON
+          )
+          echo "$PAYLOAD" | sed "s@$GOLDEN@$(printf "%s" "$GOLDEN" | sed 's@/@\\/@g')@" \
+                         | sed "s@$GATE@$(printf "%s" "$GATE" | sed 's@/@\\/@g')@" \
+                         | curl -sS -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-slack-summary
+          path: |
+            golden_report.txt
+            gate_summary.txt
+            out/kpi_history.jsonl
+
