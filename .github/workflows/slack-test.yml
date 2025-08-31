@@ -1,0 +1,25 @@
+name: Slack Webhook Connectivity Test
+
+"on":
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Test message"
+        required: false
+        default: "Slack webhook connectivity OK"
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post plain text to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MSG: ${{ github.event.inputs.message }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "No SLACK_WEBHOOK_URL secret configured" >&2; exit 1
+          fi
+          payload=$(jq -cn --arg text "$MSG" '{text: $text}')
+          curl -sS -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" | tee /dev/stderr
+
