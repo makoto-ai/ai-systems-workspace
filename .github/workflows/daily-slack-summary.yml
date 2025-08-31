@@ -50,26 +50,44 @@ jobs:
           key: kpi-history-${{ github.run_id }}
 
       - name: Post Slack (daily summary)
-        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          LATEST=$(tail -n 1 out/kpi_history.jsonl || true)
-          GOLDEN=$(cat golden_report.txt | sed -e 's/"/\"/g')
-          GATE=$(cat gate_summary.txt | sed -e 's/"/\"/g')
-          PAYLOAD=$(cat <<'JSON'
-          {
-            "text": "Daily KPI Summary",
-            "blocks": [
-              {"type":"header","text":{"type":"plain_text","text":"Daily KPI Summary"}},
-              {"type":"section","text":{"type":"mrkdwn","text":"*Golden Coverage (latest)*\n```$GOLDEN```"}},
-              {"type":"section","text":{"type":"mrkdwn","text":"*Dynamic Gates*\n```$GATE```"}},
-              {"type":"context","elements":[{"type":"mrkdwn","text":"run: $GITHUB_RUN_ID | repo: $GITHUB_REPOSITORY"}]}
-            ]
+          python - <<'PY'
+          import json, os, time, urllib.request
+          def read(p):
+              try:
+                  with open(p, 'r', encoding='utf-8') as f:
+                      return f.read()
+              except Exception:
+                  return ''
+          golden = read('golden_report.txt')
+          gate = read('gate_summary.txt')
+          payload = {
+              "text": "Daily KPI Summary",
+              "blocks": [
+                  {"type":"header","text":{"type":"plain_text","text":"Daily KPI Summary"}},
+                  {"type":"section","text":{"type":"mrkdwn","text":f"*Golden Coverage (latest)*\n```{golden}```"}},
+                  {"type":"section","text":{"type":"mrkdwn","text":f"*Dynamic Gates*\n```{gate}```"}},
+                  {"type":"context","elements":[{"type":"mrkdwn","text":f"run: {os.environ.get('GITHUB_RUN_ID','')} | repo: {os.environ.get('GITHUB_REPOSITORY','')}"}]}
+              ]
           }
-          JSON
-          )
-          echo "$PAYLOAD" | sed "s@$GOLDEN@$(printf "%s" "$GOLDEN" | sed 's@/@\\/@g')@" \
-                         | sed "s@$GATE@$(printf "%s" "$GATE" | sed 's@/@\\/@g')@" \
-                         | curl -sS -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+          url = os.environ.get('SLACK_WEBHOOK_URL','')
+          if not url:
+              print('SLACK_WEBHOOK_URL not set; skipping')
+              raise SystemExit(0)
+          for i in range(3):
+              try:
+                  req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type':'application/json'})
+                  with urllib.request.urlopen(req, timeout=10) as r:
+                      body = r.read().decode('utf-8', 'ignore').strip()
+                      print(body)
+                      if body.lower() == 'ok':
+                          break
+              except Exception as e:
+                  print('post error:', e)
+              time.sleep(2 * (i + 1))
+          PY
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
