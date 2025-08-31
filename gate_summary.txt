@@ -1,0 +1,7 @@
+🎛️ Dynamic Quality Gates Summary
+========================================
+total_gates: 4
+learning_data_points: 14
+file_type_coverage: 3
+last_updated: 2025-08-31T09:21:46.232994
+gate_names: ['critical_files', 'source_code', 'configuration', 'documentation']
