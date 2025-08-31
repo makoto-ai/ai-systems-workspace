@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-08-31T13:28:35.384443",
-  "session_purpose": "post-commit",
+  "timestamp": "2025-08-31T13:33:45.552045",
+  "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "c4cac5098892db1c176ca3080d604a73aa1da93f",
-    "branch": "autofix/yaml-warnings-mass-fix",
-    "uncommitted_changes": 8,
-    "status_details": "M \"Downloads\\350\\207\\252\\345\\213\\225\\346\\214\\257\\343\\202\\212\\345\\210\\206\\343\\201\\221\\345\\276\\251\\346\\227\\247.kmmacros\"\n M memory/cursor_state.json\n M memory/mcp_snapshot.json\n M scripts/local/downloads_guard_wrapper.sh\n M scripts/restore_km_file_sorter.py\n?? memory/snapshots/mcp_snapshot_20250831_132610.json\n?? scripts/local/convert_webp_to_png.sh\n?? scripts/local/route_downloads_after_24h.sh"
+    "commit_hash": "61930b8897b64b87d5049fe7fbb690c841c99842",
+    "branch": "test/acceptance-gate-check",
+    "uncommitted_changes": 6,
+    "status_details": "M \"Downloads\\350\\207\\252\\345\\213\\225\\346\\214\\257\\343\\202\\212\\345\\210\\206\\343\\201\\221\\345\\276\\251\\346\\227\\247.kmmacros\"\n M scripts/local/downloads_guard_wrapper.sh\n M scripts/restore_km_file_sorter.py\nM  tests/golden/weights_phase4.yaml\n?? scripts/local/convert_webp_to_png.sh\n?? scripts/local/route_downloads_after_24h.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1615,5 +1615,5 @@
     "python_files_count": 25944,
     "cursor_configs_count": 13
   },
-  "state_hash": "a60ffdc54fbfd9499d0fb37f879cc81f"
+  "state_hash": "339e78e634072bb9de92a7be3a020524"
 }
