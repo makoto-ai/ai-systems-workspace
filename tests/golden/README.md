@@ -282,4 +282,4 @@ streamlit run dashboard/golden_kpi.py
 ### 本格運用時の拡張
 - **Superset**: PostgreSQL/MySQL連携
 - **アラート**: Slack/Email通知
-- **自動レポート**: 週次/月次品質レポート
+- **自動レポート**: 週次/月次品質レポート\n# trigger acceptance gate run

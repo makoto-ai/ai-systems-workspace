@@ -1,5 +1,6 @@
 # Golden Test Phase 4 Weighted Evaluation
 # 重み付け設定: 頻出失敗/重要ケースを優先評価
+# 小変更: ドキュメントコメント追記（ゲート実行検証用）
 
 # 重み付けルール
 weights:

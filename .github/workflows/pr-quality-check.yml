@@ -238,6 +238,14 @@ jobs:
           echo "✅ 品質ゲート: PASSED"
         fi
 
+    - name: "Acceptance Gate (+1.0pp or -1.0pp, no regressions)"
+      if: ${{ !contains(github.event.pull_request.labels.*.name, 'data-collection') }}
+      run: |
+        echo "🔍 受入基準ゲート: Pred@0.72 +1.0pp or New -1.0pp (回帰なし)"
+        # PR側shadow結果を標準名にコピー
+        cp out/shadow_pr.json out/shadow_grid.json || true
+        python scripts/quality/acceptance_gate.py
+
     - name: "Update PR with Regression Analysis"
       if: always()
       uses: actions/github-script@v7
