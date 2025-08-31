@@ -165,8 +165,8 @@
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // 3秒録音→停止（簡易の自動ターン）
-    await new Promise(r => setTimeout(r, 3000));
+    // 5秒録音→停止（拾い向上）
+    await new Promise(r => setTimeout(r, 5000));
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';

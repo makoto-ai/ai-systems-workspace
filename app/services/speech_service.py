@@ -36,7 +36,7 @@ class SpeechService:
 
     def __init__(
         self,
-        model_size: str = "tiny",
+        model_size: str = "base",
         language: str = "ja",
         device: str = "auto",
         hf_token: Optional[str] = None,
@@ -50,16 +50,16 @@ class SpeechService:
             device: Device to use (FORCED to "cpu" for maximum stability)
             hf_token: HuggingFace token for speaker diarization (DISABLED for speed)
         """
-        # EXTREME SPEED MODE: Force optimal settings
-        self.model_size = "tiny"  # Fastest model only
+        # Configurable model with safe defaults
+        self.model_size = model_size or "base"
         self.language = language
-        self.device = "cpu"  # CPU is faster for tiny model
-        self.hf_token = None  # Completely disable diarization
+        self.device = self._get_device(device)
+        self.hf_token = None  # diarization disabled by default for speed
         self.model = None
         self.align_model = None
         self.diarize_model = None
 
-        # Extreme speed settings
+        # Performance settings
         self.extreme_speed = True
         self.minimal_processing = True
         self.skip_all_extras = True
@@ -85,15 +85,15 @@ class SpeechService:
                 logger.info("Fallback speech service initialized (no WhisperX)")
                 return
 
-            logger.info(f"Loading WhisperX TINY model for extreme speed")
+            logger.info(f"Loading WhisperX model size={self.model_size} device={self.device}")
 
-            # Load ONLY the core WhisperX model
+            # Load core WhisperX model with selected size
             self.model = whisperx.load_model(
-                "tiny",  # Always tiny for speed
-                device="cpu",  # CPU for tiny model stability
-                compute_type="int8",  # Fastest compute type
+                self.model_size,
+                device=self.device,
+                compute_type="int8",  # CPU-friendly; upgrade if GPU available
             )
-            logger.info(f"WhisperX TINY model loaded (EXTREME SPEED MODE)")
+            logger.info("WhisperX model loaded")
 
             # Skip ALL other models for maximum speed
             self.align_model = None

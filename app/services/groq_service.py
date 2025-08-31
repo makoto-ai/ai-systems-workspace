@@ -79,28 +79,33 @@ class GroqService:
         - 具体的で価値のある情報を提供
         - 自然な会話の流れを維持
         - 営業として適切で専門的な対応
-        - 60-80文字程度の適切な長さ
+        - 120-160文字程度の適切な長さ（冗長な列挙は避ける）
 
         営業担当者として自然に応答してください：
         """
 
         try:
             # HIGH QUALITY: Balanced Groq call with quality parameters
-            result = await self.chat_completion(prompt, max_tokens=150, temperature=0.5)
+            result = await self.chat_completion(prompt, max_tokens=280, temperature=0.5)
             response_text = result["response"].strip()
 
             # Quality assurance: Ensure appropriate response length
             if not response_text or len(response_text) < 20:
                 response_text = self._generate_quality_fallback(conversation_text)
 
-            # Quality control: Adjust length for natural conversation
-            if len(response_text) > 80:
-                # Truncate at sentence boundary if possible
+            # Quality control: cap to ~180字で文末調整
+            if len(response_text) > 180:
                 sentences = response_text.split("。")
-                if len(sentences) > 1:
-                    response_text = sentences[0] + "。"
-                else:
-                    response_text = response_text[:80]
+                cut = []
+                total = 0
+                for s in sentences:
+                    if not s:
+                        continue
+                    if total + len(s) + 1 > 180:
+                        break
+                    cut.append(s)
+                    total += len(s) + 1
+                response_text = ("。".join(cut) + "。") if cut else response_text[:180]
 
             # Enhanced intent detection with business context
             intent = self._detect_detailed_intent(conversation_text)

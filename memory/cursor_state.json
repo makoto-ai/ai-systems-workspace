@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-01T00:05:51.736837",
+  "timestamp": "2025-09-01T07:36:34.180469",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "51b6672eb7f5ffb0a0c2f9ea7ebb39558d1cd8ff",
+    "commit_hash": "05e3c59b1482a7093a374677563f2b234efaecb1",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 12,
-    "status_details": "M  app/api/sales_roleplay.py\nM  app/api/speech.py\nA  app/api/streaming.py\nA  app/api/tts.py\nM  app/main.py\nA  app/services/metrics.py\nM  app/services/speech_service.py\nA  app/services/streaming_asr_service.py\nA  app/services/tts_streamer.py\nA  app/static/voice/app.js\nA  app/static/voice/index.html\nA  out/voice_metrics.jsonl"
+    "uncommitted_changes": 3,
+    "status_details": "M  app/services/groq_service.py\nM  app/services/speech_service.py\nM  app/static/voice/app.js"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25798,
+    "python_files_count": 25851,
     "cursor_configs_count": 13
   },
-  "state_hash": "996264e60c8063d9e8ba3b209433be5b"
+  "state_hash": "708c2f49c79df67e871cec1348a9cec1"
 }
