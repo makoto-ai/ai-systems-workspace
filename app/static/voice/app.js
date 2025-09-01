@@ -381,6 +381,10 @@
 
         statusEl.textContent = 'replying...';
         let played = false;
+        let playedMode = '';
+        const cancelClientTTS = () => {
+          try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (_) {}
+        };
         const tryClientTTS = (text) => {
           if (played) return;
           if ('speechSynthesis' in window) {
@@ -389,34 +393,41 @@
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(u);
             played = true;
+            playedMode = 'client';
             httpInfo && (httpInfo.textContent = 'http: reply=client-tts');
             statusEl.textContent = 'replied (client tts)';
           }
         };
 
-        // Filler if LLM reply_text is slow (>200ms)
-        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 200);
+        // Filler if LLM reply_text is slow (>600ms)
+        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 600);
+        const textStartAt = Date.now();
         const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(tr.text)}`, { method: 'POST' }, 900);
         let replyText = '';
         if (textRes && textRes.ok) {
           try { const js = await textRes.json(); replyText = js?.output?.text || ''; } catch (_) { replyText = ''; }
         }
         clearTimeout(fillerTimer);
+        const textAt = Date.now();
         if (!replyText) replyText = '承知しました。続けてどうぞ。';
 
         // Start TTS in parallel (server) and set a client TTS fallback timer
+        const ttsStartAt = Date.now();
         const ttsServer = fetchWithTimeout(`/api/voice/simulate?text_input=${encodeURIComponent(replyText)}&speaker_id=${encodeURIComponent(spk)}`, { method: 'POST' }, 1500)
           .then(async r => {
             if (r && r.ok) { try { return await r.json(); } catch { return null; } }
             return null;
           });
 
-        // If server TTS is late (>600ms), use client TTS first
-        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 600);
+        // If server TTS is late (>1200ms), use client TTS first
+        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 1200);
         const sim = await ttsServer;
         clearTimeout(ttsTimer);
+        const ttsAt = Date.now();
 
         if (!played && sim && sim.output && sim.output.audio_data) {
+          // cancel any client TTS filler before playing server audio
+          cancelClientTTS();
           aiAudio.src = 'data:audio/wav;base64,' + sim.output.audio_data;
           aiAudio.style.display = '';
           aiAudio.play().catch(() => {});
@@ -424,6 +435,7 @@
           statusEl.textContent = 'replied';
           lastAiText = sim.output.text || replyText || '';
           played = true;
+          playedMode = 'server';
         } else if (!played) {
           tryClientTTS(replyText);
           lastAiText = replyText;
@@ -436,6 +448,21 @@
         if (fb && fb.advice) {
           adviceEl.textContent = fb.advice;
         }
+        // send per-turn metrics
+        try {
+          const eosAt = start + (Number(((Date.now() - start)/1000).toFixed(1)) * 1000) - 0; // approx; recInfo already shown
+          const payload = {
+            ts: new Date().toISOString(),
+            turnIndex,
+            route: playedMode || 'unknown',
+            recMs: (eosAt - start),
+            asrMs: (Date.now() - eosAt),
+            textMs: (textAt - textStartAt),
+            ttsMs: (ttsAt - ttsStartAt),
+            firstAudioMs: (playedMode === 'server' ? (ttsAt - eosAt) : (textAt - eosAt)),
+          };
+          fetch('/api/metrics/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
+        } catch (_) {}
       } catch (_) {
         // 失敗時は無音で継続
       }

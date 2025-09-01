@@ -124,16 +124,16 @@ class VoiceService:
 
             # EXTREME SPEED: Tune audio_query for faster first audio
             try:
-                # Speed up speech while keeping naturalness
-                audio_query["speedScale"] = float(max(1.2, min(1.50, audio_query.get("speedScale", 1.35))))
-                # Minimize leading/trailing silences
-                audio_query["prePhonemeLength"] = float(min(0.05, audio_query.get("prePhonemeLength", 0.1)))
-                audio_query["postPhonemeLength"] = float(min(0.06, audio_query.get("postPhonemeLength", 0.1)))
+                # Speed up speech slightly more while keeping naturalness
+                audio_query["speedScale"] = float(max(1.2, min(1.55, audio_query.get("speedScale", 1.40))))
+                # Minimize leading/trailing silences a bit further
+                audio_query["prePhonemeLength"] = float(min(0.04, audio_query.get("prePhonemeLength", 0.1)))
+                audio_query["postPhonemeLength"] = float(min(0.05, audio_query.get("postPhonemeLength", 0.1)))
                 # Shorten pauses between sentences if present
                 if "pauseLength" in audio_query:
-                    audio_query["pauseLength"] = float(min(0.05, audio_query.get("pauseLength", 0.1)))
+                    audio_query["pauseLength"] = float(min(0.04, audio_query.get("pauseLength", 0.1)))
                 if "pauseLengthScale" in audio_query:
-                    audio_query["pauseLengthScale"] = float(min(0.8, audio_query.get("pauseLengthScale", 1.0)))
+                    audio_query["pauseLengthScale"] = float(min(0.75, audio_query.get("pauseLengthScale", 1.0)))
             except Exception:
                 # If the query format differs, continue safely
                 pass

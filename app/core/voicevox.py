@@ -100,9 +100,18 @@ class VoicevoxClient:
             logger.info(f"VoicevoxClient initialized with base_url: {self.base_url}")
 
     async def _get_session(self) -> aiohttp.ClientSession:
-        """セッションを取得または初期化する"""
+        """セッションを取得または初期化する（Keep-Alive最適化）"""
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
+            connector = aiohttp.TCPConnector(limit=0, keepalive_timeout=30)
+            timeout = aiohttp.ClientTimeout(total=4, connect=1, sock_read=3)
+            self._session = aiohttp.ClientSession(
+                connector=connector,
+                timeout=timeout,
+                headers={
+                    "Connection": "keep-alive",
+                    "Accept": "application/json",
+                },
+            )
         return self._session
 
     async def get_speakers(self) -> List[Speaker]:

@@ -32,6 +32,7 @@ try:
         file_upload,
         sales_roleplay,
         selftest,
+        metrics,
         selftest,
     )
 except ImportError:
@@ -52,6 +53,7 @@ except ImportError:
         file_upload,
         sales_roleplay,
         selftest,
+        metrics,
     )
 
 # Import configuration
@@ -165,6 +167,7 @@ app.include_router(reminder.router, prefix="/api")
 app.include_router(file_upload.router, prefix="/api")
 app.include_router(sales_roleplay.router, prefix="/api")
 app.include_router(selftest.router, prefix="/api")
+app.include_router(metrics.router, prefix="/api")
 
 
 @app.exception_handler(Exception)
