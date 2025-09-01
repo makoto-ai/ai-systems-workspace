@@ -73,6 +73,7 @@
   let vadStartAt = 0;
   let vadLastActiveAt = 0;
   const ENABLE_FILLER = false; // disable client-side filler "はい"
+  const ENABLE_TTS_FALLBACK = false; // disable client TTS fallback to isolate issues
 
   // Helper: fetch with timeout
   async function fetchWithTimeout(url, opts = {}, timeoutMs = 3000) {
@@ -248,7 +249,7 @@
 
         // Two-stage ASR: fast then precise
         const userSel = (modelSelect && modelSelect.value) ? modelSelect.value : '';
-        const fast = userSel || 'small';
+        const fast = 'small'; // force small for stability
         const precise = 'medium';
         const t0 = Date.now();
         const pFast = postTranscribe(fast).then(r => ({ tag: 'fast', r }));
@@ -303,7 +304,7 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 2000, minMs = 450, silenceMs = 300) {
+  async function waitEndOfSpeech(maxMs = 1600, minMs = 450, silenceMs = 300) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
@@ -321,7 +322,7 @@
     await startRecording();
     const start = Date.now();
     // End-of-speech detection: aggressive cutoff for natural turn-taking
-    await waitEndOfSpeech(2000, 450, 300);
+    await waitEndOfSpeech(1600, 450, 300);
     // If no speech detected, skip downstream immediately
     if (vad.activeFrames < 3) {
       transcriptEl.value = '[無音検知] 音声が拾えていません。マイク/声量/デバイスを確認してください';
@@ -426,10 +427,10 @@
             return null;
           });
 
-        // If server TTS is late (>1200ms), use client TTS first
-        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 1200);
+        // Disable client TTS fallback for isolation
+        const ttsTimer = ENABLE_TTS_FALLBACK ? setTimeout(() => tryClientTTS(replyText), 1200) : null;
         const sim = await ttsServer;
-        clearTimeout(ttsTimer);
+        if (ttsTimer) clearTimeout(ttsTimer);
         const ttsAt = Date.now();
 
         if (!played && sim && sim.output && sim.output.audio_data) {

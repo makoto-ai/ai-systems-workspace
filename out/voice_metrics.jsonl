@@ -29,3 +29,9 @@
 {"ts": "2025-09-01T04:39:54.839Z", "turnIndex": 0, "route": "server", "recMs": 15600, "asrMs": -8, "textMs": 238, "ttsMs": 1126, "firstAudioMs": -9}
 {"ts": "2025-09-01T05:15:16.223Z", "turnIndex": 0, "route": "server", "recMs": 9100, "asrMs": -37, "textMs": 202, "ttsMs": 1129, "firstAudioMs": -39}
 {"ts": "2025-09-01T05:28:30.137Z", "turnIndex": 0, "route": "client", "recMs": 16000, "asrMs": 31, "textMs": 727, "ttsMs": 1112, "firstAudioMs": -1082}
+{"ts": "2025-09-01T08:47:57.995Z", "turnIndex": 0, "route": "client", "recMs": 13200, "asrMs": 6, "textMs": 902, "ttsMs": 1502, "firstAudioMs": -9474}
+{"ts": "2025-09-01T08:51:05.138Z", "turnIndex": 0, "route": "client", "recMs": 15400, "asrMs": 6, "textMs": 900, "ttsMs": 1502, "firstAudioMs": -11838}
+{"ts": "2025-09-01T08:55:45.746Z", "turnIndex": 0, "route": "client", "recMs": 8000, "asrMs": -46, "textMs": 901, "ttsMs": 1501, "firstAudioMs": -3010}
+{"ts": "2025-09-01T08:55:54.119Z", "turnIndex": 1, "route": "client", "recMs": 7100, "asrMs": 3, "textMs": 901, "ttsMs": 1501, "firstAudioMs": -2968}
+{"ts": "2025-09-01T08:56:04.061Z", "turnIndex": 2, "route": "client", "recMs": 8700, "asrMs": -27, "textMs": 545, "ttsMs": 1501, "firstAudioMs": -1528}
+{"ts": "2025-09-01T08:56:12.319Z", "turnIndex": 3, "route": "client", "recMs": 6800, "asrMs": -10, "textMs": 901, "ttsMs": 1501, "firstAudioMs": -2852}
