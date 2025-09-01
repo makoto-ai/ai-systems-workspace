@@ -75,7 +75,8 @@ async def ws_voice(websocket: WebSocket):
                 if partial_task is None or partial_task.done():
                     partial_task = asyncio.create_task(run_partial_loop())
             elif typ == "cancel_tts":
-                # No-op placeholder for cooperative cancel
+                # Cooperative cancel: set a flag consumed by streaming loop
+                cancel = True
                 await websocket.send_json({"event": "cancel_ack"})
             elif typ == "end":
                 ended = True
@@ -97,12 +98,17 @@ async def ws_voice(websocket: WebSocket):
                     pass
                 await websocket.send_json({"event": "text", "text": text})
 
-                # Generate reply + TTS (single-chunk for MVP)
+                # Generate reply + TTS (sentence-chunk streaming with cancel)
                 try:
                     convo = get_conversation_service()
                     ai = await convo.groq_service.sales_analysis(text or "")
                     reply_text = ai.get("response") or "ありがとうございます。もう少し詳しく教えていただけますか？"
                     voice_service = await convo._get_or_init_voice_service()
+                    # Prewarm to reduce first audio
+                    try:
+                        await voice_service.prewarm(speaker_id)
+                    except Exception:
+                        pass
                     # Sentence-level chunking for early playback
                     parts = []
                     for ch in ['。', '！', '？', '!','?']:
@@ -110,7 +116,10 @@ async def ws_voice(websocket: WebSocket):
                     parts = [p.strip().strip('|') for p in reply_text.split('|') if p and len(p.strip()) > 0]
                     if not parts:
                         parts = [reply_text]
+                    cancel = False
                     for idx, seg in enumerate(parts):
+                        if cancel:
+                            break
                         try:
                             wav = await voice_service.synthesize_voice(text=seg, speaker_id=speaker_id)
                             await websocket.send_json({

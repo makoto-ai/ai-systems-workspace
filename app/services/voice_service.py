@@ -60,6 +60,7 @@ class VoiceService:
             self.output_dir = Path(os.getenv("OUTPUT_DIR", "./data/voicevox"))
             self.output_dir.mkdir(parents=True, exist_ok=True)
             self.test_mode = test_mode
+            self._last_prewarm_ms: int = 0
             self._initialized = True
             logger.info("VoiceService initialized successfully")
 
@@ -152,6 +153,32 @@ class VoiceService:
             logger.error(f"Error in extreme speed voice synthesis: {e}")
             # EXTREME SPEED: Return minimal error audio
             return b""  # Empty bytes for fastest fallback
+
+    async def prewarm(self, speaker_id: int = 2) -> None:
+        """Prime VOICEVOX pipeline to reduce first-audio latency.
+        Runs at most once per 45 seconds to avoid unnecessary load.
+        """
+        import time as _t
+        now_ms = int(_t.time() * 1000)
+        if (now_ms - self._last_prewarm_ms) < 45_000:
+            return
+        try:
+            # minimal query+synthesis with single short mora
+            short_text = "テスト。"
+            aq = await self.client.create_audio_query(short_text, speaker_id)
+            if aq:
+                # keep params tiny to be fast
+                try:
+                    aq["speedScale"] = float(min(1.3, aq.get("speedScale", 1.1)))
+                    aq["prePhonemeLength"] = float(min(0.03, aq.get("prePhonemeLength", 0.05)))
+                    aq["postPhonemeLength"] = float(min(0.03, aq.get("postPhonemeLength", 0.05)))
+                except Exception:
+                    pass
+                _ = await self.client.synthesis(aq, speaker_id)
+            self._last_prewarm_ms = now_ms
+        except Exception:
+            # best-effort: ignore prewarm failures
+            return
 
     async def get_speakers(self) -> Dict[str, Dict[str, Any]]:
         """利用可能な話者の一覧を取得する"""
