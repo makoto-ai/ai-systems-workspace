@@ -246,6 +246,42 @@ async def simulate_conversation(
         raise HTTPException(status_code=500, detail=f"Simulation failed: {str(e)}")
 
 
+@router.post("/voice/reply_text")
+async def reply_text(
+    request: Request,
+    text_input: str,
+    context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Fast text-only reply for low-latency UX.
+
+    Args:
+        text_input: User transcript text
+        context: Optional conversation context
+
+    Returns:
+        JSON with short AI reply text and timings (no audio synthesis)
+    """
+    try:
+        t0 = time.time()
+        conversation_service = get_conversation_service()
+
+        # Generate concise reply using Groq (same policy as simulate)
+        ai_response = await conversation_service.groq_service.sales_analysis(text_input)
+        response_text = ai_response.get("response", "応答を生成できませんでした。")
+
+        return {
+            "success": True,
+            "processing_time": time.time() - t0,
+            "input": {"text": text_input, "type": "text_only"},
+            "output": {"text": response_text},
+            "ai_analysis": ai_response,
+        }
+    except Exception as e:
+        logger.error(f"Error in reply_text: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"reply_text failed: {str(e)}")
+
+
 @router.get("/voice/health")
 async def conversation_health_check(request: Request) -> Dict[str, Any]:
     """Health check for complete conversation pipeline"""

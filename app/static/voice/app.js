@@ -69,7 +69,7 @@
   let audioCtx; let analyser; let sourceNode; let rafId;
   // Simple VAD counters per turn
   let vad = { activeFrames: 0, totalFrames: 0 };
-  const VAD_THRESH = 0.02; // amplitude threshold (more sensitive)
+  const VAD_THRESH = 0.008; // even more sensitive to quiet speech
   let vadStartAt = 0;
   let vadLastActiveAt = 0;
 
@@ -186,7 +186,7 @@
     // update adaptive noise floor (slowly) when near baseline
     if (amp < noiseFloor + 0.01) noiseFloor = 0.9 * noiseFloor + 0.1 * amp;
     vad.totalFrames += 1;
-    const thresh = Math.max(VAD_THRESH, noiseFloor * 2.2);
+    const thresh = Math.max(VAD_THRESH, noiseFloor * 1.3);
     if (amp > thresh) {
       vad.activeFrames += 1; // threshold tuned for on-device mic
       vadLastActiveAt = Date.now();
@@ -271,13 +271,14 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 7000, minMs = 800, silenceMs = 700) {
+  async function waitEndOfSpeech(maxMs = 7000, minMs = 700, silenceMs = 500) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
       const elapsed = now - start;
       const sinceActive = now - vadLastActiveAt;
-      if (elapsed >= minMs && sinceActive >= silenceMs) return;
+      // Do not end before any speech detected (at least 1-2 active frames)
+      if (elapsed >= minMs && sinceActive >= silenceMs && vad.activeFrames >= 1) return;
       if (elapsed >= maxMs) return;
       await new Promise(r => setTimeout(r, 60));
     }
@@ -288,13 +289,13 @@
     await startRecording();
     const start = Date.now();
     // End-of-speech detection: earlier cutoff
-    await waitEndOfSpeech(7000, 800, 700);
+    await waitEndOfSpeech(7000, 700, 500);
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
     // VAD gating: if speech ratio is too low, skip downstream
     const speechRatio = vad.totalFrames ? (vad.activeFrames / vad.totalFrames) : 0;
-    if (speechRatio < 0.1) {
+    if (speechRatio < 0.04) {
       transcriptEl.value = '[無音検知] 話し始めてから「開始」を押す/声量を上げてください';
       if (rafId) cancelAnimationFrame(rafId);
       return;
@@ -342,38 +343,59 @@
 
         // Removed pre-reply delay for faster response
 
-        // Parallelize feedback and simulate
+        // Parallelize feedback, fast text reply, and TTS
         const fbBody = { transcript: tr.text };
         const fbPromise = fetch('/api/sales/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fbBody) })
           .then(r => r.json()).catch(() => ({}));
 
-        const url = `/api/voice/simulate?text_input=${encodeURIComponent(tr.text)}&speaker_id=${encodeURIComponent(spk)}`;
         statusEl.textContent = 'replying...';
-        const simRes = await fetchWithTimeout(url, { method: 'POST' }, 2000);
-        let sim = null;
-        if (simRes && simRes.ok) {
-          try { sim = await simRes.json(); } catch (_) { sim = null; }
-        }
+        let played = false;
+        const tryClientTTS = (text) => {
+          if (played) return;
+          if ('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'ja-JP';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+            played = true;
+            httpInfo && (httpInfo.textContent = 'http: reply=client-tts');
+            statusEl.textContent = 'replied (client tts)';
+          }
+        };
 
-        if (sim && sim.output && sim.output.audio_data) {
+        // Filler if LLM reply_text is slow (>300ms)
+        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 300);
+        const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(tr.text)}`, { method: 'POST' }, 1500);
+        let replyText = '';
+        if (textRes && textRes.ok) {
+          try { const js = await textRes.json(); replyText = js?.output?.text || ''; } catch (_) { replyText = ''; }
+        }
+        clearTimeout(fillerTimer);
+        if (!replyText) replyText = '承知しました。続けてどうぞ。';
+
+        // Start TTS in parallel (server) and set a client TTS fallback timer
+        const ttsServer = fetchWithTimeout(`/api/voice/simulate?text_input=${encodeURIComponent(replyText)}&speaker_id=${encodeURIComponent(spk)}`, { method: 'POST' }, 2500)
+          .then(async r => {
+            if (r && r.ok) { try { return await r.json(); } catch { return null; } }
+            return null;
+          });
+
+        // If server TTS is late (>1200ms), use client TTS first
+        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 1200);
+        const sim = await ttsServer;
+        clearTimeout(ttsTimer);
+
+        if (!played && sim && sim.output && sim.output.audio_data) {
           aiAudio.src = 'data:audio/wav;base64,' + sim.output.audio_data;
           aiAudio.style.display = '';
           aiAudio.play().catch(() => {});
-          httpInfo && (httpInfo.textContent = 'http: reply=200');
+          httpInfo && (httpInfo.textContent = 'http: reply=server-tts');
           statusEl.textContent = 'replied';
-          lastAiText = sim.output.text || '';
-        } else if (sim && sim.output && sim.output.text && 'speechSynthesis' in window) {
-          // 音声がなければブラウザTTSで補完
-          const uttr = new SpeechSynthesisUtterance(sim.output.text);
-          uttr.lang = 'ja-JP';
-          window.speechSynthesis.speak(uttr);
-          httpInfo && (httpInfo.textContent = 'http: reply=text-only');
-          statusEl.textContent = 'replied (tts)';
-          lastAiText = sim.output.text || '';
-        } else {
-          // Timeout/失敗時はUIに表示するのみ（発話しない）
-          statusEl.textContent = 'reply timeout/error';
-          httpInfo && (httpInfo.textContent = 'http: reply=timeout/error');
+          lastAiText = sim.output.text || replyText || '';
+          played = true;
+        } else if (!played) {
+          tryClientTTS(replyText);
+          lastAiText = replyText;
         }
 
         const fb = await fbPromise;

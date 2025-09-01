@@ -1,0 +1,65 @@
+{
+  "iterations": 9,
+  "latencies": [
+    2.0114381313323975,
+    1.1287858486175537,
+    1.1250429153442383,
+    1.2308659553527832,
+    1.062002182006836,
+    1.1925058364868164,
+    1.1939411163330078,
+    1.0648517608642578,
+    1.023413896560669
+  ],
+  "p50": 1.129,
+  "p90": 2.011,
+  "asr_rate": 1.0,
+  "passed": false,
+  "details": [
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 2.011
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.129
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.125
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.231
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.062
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.193
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.194
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.065
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.023
+    }
+  ]
+}
