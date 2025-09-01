@@ -167,23 +167,90 @@ class SpeechService:
             ffmpeg_bin = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
             env = os.environ.copy()
             env["PATH"] = env.get("PATH", "") + ":/opt/homebrew/bin:/usr/local/bin:/usr/bin"
-            # Try decoding input (webm/ogg/whatever) to wav pcm_s16le 16k mono
-            cmd = [
-                ffmpeg_bin, "-y", "-i", raw_path,
+
+            def _run(cmd: list[str]):
+                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+
+            # Strategy: try several robust decode paths in order
+            tried: list[list[str]] = []
+            success = False
+
+            # 1) Default decode with increased probe/analyze and tolerant flags
+            cmd1 = [
+                ffmpeg_bin, "-y",
+                "-analyzeduration", "2M", "-probesize", "32M",
+                "-fflags", "+genpts+discardcorrupt",
+                "-i", raw_path,
                 "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
                 wav_tmp,
             ]
+            tried.append(cmd1)
             try:
-                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+                _run(cmd1)
+                success = True
             except Exception:
-                # Retry with explicit format hint for webm container
+                pass
+
+            # 2) Explicit container format: webm
+            if not success:
                 cmd2 = [
-                    ffmpeg_bin, "-y", "-f", "webm", "-i", raw_path,
+                    ffmpeg_bin, "-y",
+                    "-f", "webm",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-i", raw_path,
                     "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
                     wav_tmp,
                 ]
-                subprocess.run(cmd2, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
-            temp_file_path = wav_tmp
+                tried.append(cmd2)
+                try:
+                    _run(cmd2)
+                    success = True
+                except Exception:
+                    pass
+
+            # 3) Explicit container format: matroska
+            if not success:
+                cmd3 = [
+                    ffmpeg_bin, "-y",
+                    "-f", "matroska",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                tried.append(cmd3)
+                try:
+                    _run(cmd3)
+                    success = True
+                except Exception:
+                    pass
+
+            # 4) Remux copy to new webm then decode
+            if not success:
+                remux_fd, remux_path = tempfile.mkstemp(suffix=".webm")
+                os.close(remux_fd)
+                try:
+                    cmd4a = [ffmpeg_bin, "-y", "-analyzeduration", "2M", "-probesize", "32M", "-fflags", "+genpts", "-i", raw_path, "-c", "copy", remux_path]
+                    tried.append(cmd4a)
+                    _run(cmd4a)
+                    cmd4b = [ffmpeg_bin, "-y", "-i", remux_path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav_tmp]
+                    tried.append(cmd4b)
+                    _run(cmd4b)
+                    success = True
+                except Exception:
+                    pass
+                finally:
+                    try:
+                        if os.path.exists(remux_path):
+                            os.unlink(remux_path)
+                    except OSError:
+                        pass
+
+            if not success:
+                # As a last resort, leave original path to try direct load; will raise if unsupported
+                temp_file_path = raw_path
+            else:
+                temp_file_path = wav_tmp
         except Exception:
             # fallback: assume input already wav
             temp_file_path = raw_path

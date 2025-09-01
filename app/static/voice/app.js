@@ -72,6 +72,7 @@
   const VAD_THRESH = 0.008; // even more sensitive to quiet speech
   let vadStartAt = 0;
   let vadLastActiveAt = 0;
+  const ENABLE_FILLER = false; // disable client-side filler "はい"
 
   // Helper: fetch with timeout
   async function fetchWithTimeout(url, opts = {}, timeoutMs = 3000) {
@@ -87,11 +88,17 @@
     }
   }
 
-  // Wait until AI audio playback (server or client TTS) finishes, or timeout
-  async function waitAiPlaybackDone(maxMs = 4000) {
+  // Wait until AI audio playback (server or client TTS) finishes, or timeout (short)
+  async function waitAiPlaybackDone(maxMs = 1200) {
     return new Promise(resolve => {
       let done = false;
       const finish = () => { if (!done) { done = true; resolve(); } };
+      // If not currently playing anything, skip immediately
+      try {
+        const speaking = ('speechSynthesis' in window) ? window.speechSynthesis.speaking : false;
+        const audioPlaying = !!(aiAudio && !aiAudio.paused && !aiAudio.ended);
+        if (!speaking && !audioPlaying) return finish();
+      } catch (_) { /* ignore */ }
       const timer = setTimeout(finish, maxMs);
       try {
         if (aiAudio && !aiAudio.paused && !aiAudio.ended) {
@@ -101,7 +108,7 @@
         if ('speechSynthesis' in window) {
           const check = () => {
             if (!window.speechSynthesis.speaking) { clearTimeout(timer); finish(); }
-            else setTimeout(check, 120);
+            else setTimeout(check, 100);
           };
           check();
           return;
@@ -296,7 +303,7 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 2500, minMs = 450, silenceMs = 350) {
+  async function waitEndOfSpeech(maxMs = 2000, minMs = 450, silenceMs = 300) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
@@ -314,7 +321,7 @@
     await startRecording();
     const start = Date.now();
     // End-of-speech detection: aggressive cutoff for natural turn-taking
-    await waitEndOfSpeech(2500, 450, 350);
+    await waitEndOfSpeech(2000, 450, 300);
     // If no speech detected, skip downstream immediately
     if (vad.activeFrames < 3) {
       transcriptEl.value = '[無音検知] 音声が拾えていません。マイク/声量/デバイスを確認してください';
@@ -399,15 +406,15 @@
           }
         };
 
-        // Filler if LLM reply_text is slow (>600ms)
-        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 600);
+        // Filler disabled to avoid "はい" only responses
+        const fillerTimer = ENABLE_FILLER ? setTimeout(() => tryClientTTS('はい'), 900) : null;
         const textStartAt = Date.now();
         const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(tr.text)}`, { method: 'POST' }, 900);
         let replyText = '';
         if (textRes && textRes.ok) {
           try { const js = await textRes.json(); replyText = js?.output?.text || ''; } catch (_) { replyText = ''; }
         }
-        clearTimeout(fillerTimer);
+        if (fillerTimer) clearTimeout(fillerTimer);
         const textAt = Date.now();
         if (!replyText) replyText = '承知しました。続けてどうぞ。';
 
@@ -483,8 +490,8 @@
     // 連続ターンテイク（簡易）
     while (running) {
       await oneTurn();
-      // AI再生が続く間はバー ジインを避ける（最大4s）
-      await waitAiPlaybackDone(4000);
+      // AI再生中のみ短時間待機（最大1.2s）
+      await waitAiPlaybackDone(1200);
       // 最短のインターバル
       await new Promise(r => setTimeout(r, 150));
     }

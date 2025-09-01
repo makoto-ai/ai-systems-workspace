@@ -27,3 +27,5 @@
 {"ts": "2025-08-31T14:36:30.699065+00:00", "type": "reply", "route": "/api/voice/simulate", "ok": true, "duration_ms": 3546, "llm_ms": 3546, "text_len": 107, "speaker_id": 2}
 {"ts": "2025-08-31T14:36:51.451496+00:00", "type": "reply", "route": "/api/voice/simulate", "ok": true, "duration_ms": 1643, "llm_ms": 1643, "text_len": 46, "speaker_id": 2}
 {"ts": "2025-09-01T04:39:54.839Z", "turnIndex": 0, "route": "server", "recMs": 15600, "asrMs": -8, "textMs": 238, "ttsMs": 1126, "firstAudioMs": -9}
+{"ts": "2025-09-01T05:15:16.223Z", "turnIndex": 0, "route": "server", "recMs": 9100, "asrMs": -37, "textMs": 202, "ttsMs": 1129, "firstAudioMs": -39}
+{"ts": "2025-09-01T05:28:30.137Z", "turnIndex": 0, "route": "client", "recMs": 16000, "asrMs": 31, "textMs": 727, "ttsMs": 1112, "firstAudioMs": -1082}

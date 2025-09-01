@@ -93,6 +93,16 @@ class GroqService:
             if not response_text or len(response_text) < 20 or len(response_text) > 140:
                 response_text = self._generate_quality_fallback(conversation_text)
 
+            # Prevent single-word/short acknowledgements like "はい" only
+            banned_minimal = ["はい", "うん", "ええ", "了解", "承知", "OK", "ok"]
+            if any(response_text.strip() == w for w in banned_minimal):
+                response_text = self._generate_quality_fallback(conversation_text)
+
+            # Ensure the reply ends with a brief question to continue the dialogue
+            if not any(x in response_text for x in ["？", "?", "でしょうか", "ますか", "ませんか"]):
+                # append a short follow-up question politely
+                response_text = (response_text.rstrip("。") + "。ご希望やご不明点はありますでしょうか？")[:120]
+
             # Quality control: cap to ~110字で文末調整（話しすぎ抑制）
             if len(response_text) > 110:
                 sentences = response_text.split("。")
