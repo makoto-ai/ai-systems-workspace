@@ -152,6 +152,12 @@ async def ui_voice_root():
     """Serve minimal UI index explicitly to avoid 404s on no-trailing-slash."""
     return FileResponse("app/static/voice/index.html")
 
+
+@app.get("/ui/monitor")
+async def ui_monitor_root():
+    """Serve monitoring dashboard for performance visibility."""
+    return FileResponse("app/static/voice/monitor.html")
+
 # Include API routers
 app.include_router(health.router, prefix="/api")
 app.include_router(voice.router, prefix="/api")

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voice Selftest Monitor</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 20px; color: #222; }
+      .row { display: flex; gap: 16px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+      .pill { padding: 4px 10px; border-radius: 999px; background:#f0f0f0; font-weight: 600; }
+      .ok { background: #e8f5e9; color: #2e7d32; }
+      .ng { background: #ffebee; color: #c62828; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border: 1px solid #e0e0e0; padding: 6px 8px; font-size: 14px; text-align: right; }
+      th { background: #fafafa; }
+      td:first-child, th:first-child { text-align: left; }
+      small { color: #666; }
+    </style>
+  </head>
+  <body>
+    <h2>自動検証ダッシュボード</h2>
+    <div class="row">
+      <span>音声UI → <a href="/ui/voice">戻る</a></span>
+    </div>
+
+    <div class="row">
+      <div>最新合否: <span id="passed" class="pill">-</span></div>
+      <div>P50: <span id="p50" class="pill">-</span></div>
+      <div>P90: <span id="p90" class="pill">-</span></div>
+      <div>ASR率: <span id="asr" class="pill">-</span></div>
+      <div>連続合格率: <span id="ratio" class="pill">-</span></div>
+    </div>
+    <div class="row">
+      <button id="runNow">今すぐ自己テスト(15回)</button>
+      <button id="autoToggle">自動実行: OFF</button>
+      <span id="runStatus" class="pill">idle</span>
+    </div>
+    <small>合格基準: P50≤1.2s, P90≤1.8s, ASR≥0.95</small>
+
+    <h3>履歴（最新50）</h3>
+    <table>
+      <thead>
+        <tr><th>時刻</th><th>P50</th><th>P90</th><th>ASR率</th><th>合否</th></tr>
+      </thead>
+      <tbody id="history"></tbody>
+    </table>
+
+    <script>
+      async function fetchJSON(url) {
+        try { const r = await fetch(url); return await r.json(); } catch { return null; }
+      }
+      function setBadge(el, val, ok) {
+        el.textContent = String(val);
+        el.classList.remove('ok','ng');
+        if (ok === true) el.classList.add('ok');
+        if (ok === false) el.classList.add('ng');
+      }
+      async function postRun(iterations=15) {
+        try {
+          document.getElementById('runStatus').textContent = 'running...';
+          const r = await fetch(`/api/selftest/run_performance?iterations=${encodeURIComponent(iterations)}`, { method: 'POST' });
+          const js = await r.json().catch(() => ({}));
+          document.getElementById('runStatus').textContent = r.ok ? 'done' : 'error';
+          return js;
+        } catch (e) {
+          document.getElementById('runStatus').textContent = 'error';
+          return null;
+        }
+      }
+      async function refresh() {
+        const sum = await fetchJSON('/api/metrics/perf/summary');
+        if (sum) {
+          const passOk = !!sum.passed;
+          setBadge(document.getElementById('passed'), passOk ? '合格' : '不合格', passOk);
+          setBadge(document.getElementById('p50'), sum.p50 ?? '-', (sum.p50 != null && sum.p50 <= 1.2));
+          setBadge(document.getElementById('p90'), sum.p90 ?? '-', (sum.p90 != null && sum.p90 <= 1.8));
+          setBadge(document.getElementById('asr'), sum.asr_rate ?? '-', (sum.asr_rate != null && sum.asr_rate >= 0.95));
+          setBadge(document.getElementById('ratio'), sum.pass_ratio ?? '-', (sum.pass_ratio != null && sum.pass_ratio >= 0.8));
+        }
+        const hist = await fetchJSON('/api/metrics/perf/history?n=50');
+        const tbody = document.getElementById('history');
+        tbody.innerHTML = '';
+        if (hist && Array.isArray(hist.history)) {
+          for (const h of hist.history) {
+            const tr = document.createElement('tr');
+            const tdTs = document.createElement('td'); tdTs.textContent = h.ts || '-'; tr.appendChild(tdTs);
+            const tdP50 = document.createElement('td'); tdP50.textContent = (h.p50 != null) ? h.p50 : '-'; tr.appendChild(tdP50);
+            const tdP90 = document.createElement('td'); tdP90.textContent = (h.p90 != null) ? h.p90 : '-'; tr.appendChild(tdP90);
+            const tdAsr = document.createElement('td'); tdAsr.textContent = (h.asr_rate != null) ? h.asr_rate : '-'; tr.appendChild(tdAsr);
+            const tdPass = document.createElement('td'); tdPass.textContent = h.passed ? '合格' : '不合格'; tr.appendChild(tdPass);
+            tbody.appendChild(tr);
+          }
+        }
+      }
+      refresh();
+      setInterval(refresh, 3000);
+
+      // Controls
+      let auto = false; let autoTimer = null;
+      document.getElementById('runNow').addEventListener('click', async () => {
+        await postRun(15); await refresh();
+      });
+      document.getElementById('autoToggle').addEventListener('click', async (e) => {
+        auto = !auto;
+        e.target.textContent = `自動実行: ${auto ? 'ON' : 'OFF'}`;
+        if (auto) {
+          if (autoTimer) clearInterval(autoTimer);
+          autoTimer = setInterval(async () => { await postRun(12); await refresh(); }, 60000);
+          await postRun(12); await refresh();
+        } else if (autoTimer) {
+          clearInterval(autoTimer); autoTimer = null;
+        }
+      });
+    </script>
+  </body>
+  </html>
+
+

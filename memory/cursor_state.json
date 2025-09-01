@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-01T19:28:53.885101",
+  "timestamp": "2025-09-01T20:29:10.360258",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "848a68d4359565149d590ade0057bf5b18e809d0",
+    "commit_hash": "307c8f9691886f54db4b7f193d6a0a41382cc08f",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  out/voice_performance.json"
+    "uncommitted_changes": 6,
+    "status_details": "M  app/api/metrics.py\nM  app/main.py\nM  app/static/voice/app.js\nM  app/static/voice/index.html\nA  app/static/voice/monitor.html\nM  out/voice_performance.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1560,7 +1560,7 @@
     "app": {
       "exists": true,
       "python_files": 49,
-      "total_files": 184
+      "total_files": 185
     },
     "config": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25877,
+    "python_files_count": 25881,
     "cursor_configs_count": 13
   },
-  "state_hash": "c98fdcb6c23c17374ec5fd0adc10a0bf"
+  "state_hash": "7e0405e42275bb0d6bf99ef3087f3ee0"
 }

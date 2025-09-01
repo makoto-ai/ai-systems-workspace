@@ -16,6 +16,7 @@ async def post_voice_metrics(payload: Dict[str, Any]) -> Dict[str, Any]:
         "textMs": payload.get("textMs"),
         "ttsMs": payload.get("ttsMs"),
         "firstAudioMs": payload.get("firstAudioMs"),
+        "asrOk": payload.get("asrOk", None),
     }, ensure_ascii=False)
     with open("out/voice_metrics.jsonl", "a", encoding="utf-8") as f:
         f.write(line + "\n")
@@ -53,4 +54,65 @@ async def get_voice_metrics_summary(window: int = 50) -> Dict[str, Any]:
         }
     except Exception as e:
         return {"error": str(e), "passed": False}
+
+
+@router.get("/metrics/perf/history")
+async def get_perf_history(n: int = 50) -> Dict[str, Any]:
+    path_hist = "out/voice_performance_history.jsonl"
+    path_single = "out/voice_performance.json"
+    history: List[Dict[str, Any]] = []
+    try:
+        if os.path.exists(path_hist):
+            with open(path_hist, "r", encoding="utf-8") as f:
+                lines = f.readlines()[-max(1, n):]
+            for ln in lines:
+                try:
+                    obj = json.loads(ln)
+                    ts = obj.get("ts")
+                    res = obj.get("result") or {}
+                    entry = {
+                        "ts": ts,
+                        "p50": res.get("p50"),
+                        "p90": res.get("p90"),
+                        "asr_rate": res.get("asr_rate"),
+                        "passed": res.get("passed"),
+                    }
+                    history.append(entry)
+                except Exception:
+                    pass
+        elif os.path.exists(path_single):
+            with open(path_single, "r", encoding="utf-8") as f:
+                res = json.load(f)
+            history.append({
+                "ts": res.get("ts") or time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "p50": res.get("p50"),
+                "p90": res.get("p90"),
+                "asr_rate": res.get("asr_rate"),
+                "passed": res.get("passed"),
+            })
+    except Exception as e:
+        return {"error": str(e), "history": []}
+    return {"count": len(history), "history": history}
+
+
+@router.get("/metrics/perf/summary")
+async def get_perf_summary(window: int = 20) -> Dict[str, Any]:
+    # Summarize last result and pass ratio over window
+    hist = await get_perf_history(window)
+    if isinstance(hist, dict) and hist.get("history") is not None:
+        history = hist["history"]
+        if not history:
+            return {"count": 0, "p50": None, "p90": None, "asr_rate": None, "passed": False, "pass_ratio": None}
+        last = history[-1]
+        passed_count = sum(1 for h in history if h.get("passed"))
+        pass_ratio = passed_count / len(history) if history else None
+        return {
+            "count": len(history),
+            "p50": last.get("p50"),
+            "p90": last.get("p90"),
+            "asr_rate": last.get("asr_rate"),
+            "passed": last.get("passed"),
+            "pass_ratio": round(pass_ratio, 3) if pass_ratio is not None else None,
+        }
+    return {"count": 0, "p50": None, "p90": None, "asr_rate": None, "passed": False, "pass_ratio": None}
 

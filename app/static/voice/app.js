@@ -69,9 +69,10 @@
   let running = false;
   let audioCtx; let analyser; let sourceNode; let rafId;
   let ws = null; let wsReady = false; let wsDoneResolver = null; let wsText = '';
-  // TTS jitter queue
+  // TTS jitter queue state
   const ttsQueue = [];
   let ttsPlaying = false;
+  let wsFirstAudioAt = 0;
   // Simple VAD counters per turn
   let vad = { activeFrames: 0, totalFrames: 0 };
   const VAD_THRESH = 0.008; // even more sensitive to quiet speech
@@ -158,6 +159,29 @@
     return '';
   }
 
+  // --- TTS jitter queue (sequential playback with timeout) ---
+  async function pumpTtsQueue() {
+    if (ttsPlaying) return;
+    ttsPlaying = true;
+    try {
+      while (ttsQueue.length) {
+        const item = ttsQueue.shift();
+        if (!item || !item.b64) continue;
+        aiAudio.src = 'data:audio/wav;base64,' + item.b64;
+        aiAudio.style.display = '';
+        const playPromise = aiAudio.play();
+        if (!wsFirstAudioAt) wsFirstAudioAt = Date.now();
+        try { await playPromise; } catch (_) {}
+        await new Promise(res => {
+          const to = setTimeout(() => { try { aiAudio.pause(); aiAudio.currentTime = 0; } catch(_){}; res(); }, 2500);
+          aiAudio.onended = () => { clearTimeout(to); res(); };
+        });
+      }
+    } finally {
+      ttsPlaying = false;
+    }
+  }
+
   async function startRecording() {
     try {
       // prepare deviceId if selected
@@ -239,8 +263,7 @@
         if (speaking) { window.speechSynthesis.cancel(); }
         if (audioPlaying) { aiAudio.pause(); aiAudio.currentTime = 0; }
         // clear any pending TTS chunks on barge-in
-        if (typeof ttsQueue !== 'undefined') { ttsQueue.length = 0; }
-        if (typeof ttsPlaying !== 'undefined') { ttsPlaying = false; }
+        ttsQueue.length = 0; ttsPlaying = false;
         // notify server to cancel ongoing TTS
         sendWs({ type: 'cancel_tts' });
       } catch (_) {}
@@ -527,9 +550,8 @@
             wsText = (msg.text || '').trim();
             transcriptEl.value = wsText || transcriptEl.value;
           } else if (msg.event === 'tts' && msg.audio_b64) {
-            aiAudio.src = 'data:audio/wav;base64,' + msg.audio_b64;
-            aiAudio.style.display = '';
-            aiAudio.play().catch(() => {});
+            ttsQueue.push({ idx: msg.index ?? 0, text: msg.text || '', b64: msg.audio_b64 });
+            pumpTtsQueue();
             lastAiText = msg.text || lastAiText;
             statusEl.textContent = 'replied (ws)';
           } else if (msg.event === 'done') {
@@ -562,6 +584,7 @@
     // start mic
     await startRecording();
     const start = Date.now();
+    wsFirstAudioAt = 0;
     // stream chunks while recording
     const origHandler = mediaRecorder.ondataavailable;
     mediaRecorder.ondataavailable = async (e) => {
@@ -589,6 +612,22 @@
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
     // fill transcript
     if (result && result.text) transcriptEl.value = result.text;
+    // UI metrics for WS
+    try {
+      const eosAt = start + (Number(((Date.now() - start)/1000).toFixed(1)) * 1000);
+      const payload = {
+        ts: new Date().toISOString(),
+        turnIndex,
+        route: 'ws',
+        recMs: (eosAt - start),
+        asrMs: (Date.now() - eosAt),
+        textMs: 0,
+        ttsMs: 0,
+        firstAudioMs: wsFirstAudioAt ? (wsFirstAudioAt - eosAt) : 0,
+        asrOk: !!(wsText && wsText.trim().length >= 2)
+      };
+      fetch('/api/metrics/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
+    } catch (_) {}
     if (rafId) cancelAnimationFrame(rafId);
     turnIndex += 1;
   }
