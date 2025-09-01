@@ -69,6 +69,9 @@
   let running = false;
   let audioCtx; let analyser; let sourceNode; let rafId;
   let ws = null; let wsReady = false; let wsDoneResolver = null; let wsText = '';
+  // TTS jitter queue
+  const ttsQueue = [];
+  let ttsPlaying = false;
   // Simple VAD counters per turn
   let vad = { activeFrames: 0, totalFrames: 0 };
   const VAD_THRESH = 0.008; // even more sensitive to quiet speech
@@ -76,6 +79,10 @@
   let vadLastActiveAt = 0;
   const ENABLE_FILLER = false; // disable client-side filler "はい"
   const ENABLE_TTS_FALLBACK = false; // disable client TTS fallback to isolate issues
+
+  function sendWs(obj) {
+    try { if (ws && wsReady) ws.send(JSON.stringify(obj)); } catch (_) {}
+  }
 
   // Helper: fetch with timeout
   async function fetchWithTimeout(url, opts = {}, timeoutMs = 3000) {
@@ -231,6 +238,11 @@
         const audioPlaying = !!(aiAudio && !aiAudio.paused && !aiAudio.ended);
         if (speaking) { window.speechSynthesis.cancel(); }
         if (audioPlaying) { aiAudio.pause(); aiAudio.currentTime = 0; }
+        // clear any pending TTS chunks on barge-in
+        if (typeof ttsQueue !== 'undefined') { ttsQueue.length = 0; }
+        if (typeof ttsPlaying !== 'undefined') { ttsPlaying = false; }
+        // notify server to cancel ongoing TTS
+        sendWs({ type: 'cancel_tts' });
       } catch (_) {}
     }
     rafId = requestAnimationFrame(drawWave);
@@ -508,7 +520,10 @@
       ws.onmessage = (ev) => {
         try {
           const msg = JSON.parse(ev.data || '{}');
-          if (msg.event === 'text') {
+          if (msg.event === 'asr_partial') {
+            const p = (msg.text || '').trim();
+            if (p) transcriptEl.value = p; // live subtitle
+          } else if (msg.event === 'text') {
             wsText = (msg.text || '').trim();
             transcriptEl.value = wsText || transcriptEl.value;
           } else if (msg.event === 'tts' && msg.audio_b64) {
