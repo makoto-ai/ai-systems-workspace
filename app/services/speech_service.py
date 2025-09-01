@@ -156,7 +156,7 @@ class SpeechService:
             return self._fallback_transcribe(audio_data, use_language)
 
         # Create temporary file and ensure WAV/PCM16/16kHz mono for stable VAD
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".bin") as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
             temp_file.write(audio_data)
             raw_path = temp_file.name
         temp_file_path = raw_path
@@ -173,7 +173,16 @@ class SpeechService:
                 "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
                 wav_tmp,
             ]
-            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+            try:
+                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+            except Exception:
+                # Retry with explicit format hint for webm container
+                cmd2 = [
+                    ffmpeg_bin, "-y", "-f", "webm", "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                subprocess.run(cmd2, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
             temp_file_path = wav_tmp
         except Exception:
             # fallback: assume input already wav

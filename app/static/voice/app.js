@@ -156,7 +156,7 @@
       } catch (_) {}
       audioChunks = [];
       mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-      mediaRecorder.start(50);
+      mediaRecorder.start(30);
     } catch (e) {
       if (micState) { micState.textContent = 'mic: denied'; micState.style.background = '#ffebee'; }
       throw e;
@@ -186,7 +186,7 @@
     // update adaptive noise floor (slowly) when near baseline
     if (amp < noiseFloor + 0.01) noiseFloor = 0.9 * noiseFloor + 0.1 * amp;
     vad.totalFrames += 1;
-    const thresh = Math.max(VAD_THRESH, noiseFloor * 1.3);
+    const thresh = Math.max(VAD_THRESH, noiseFloor * 1.6);
     if (amp > thresh) {
       vad.activeFrames += 1; // threshold tuned for on-device mic
       vadLastActiveAt = Date.now();
@@ -225,12 +225,12 @@
         // Helper timers
         const waitMs = (ms) => new Promise(r => setTimeout(r, ms));
 
-        // First window (speed-first: 300ms)
+        // First window (speed-first: 180ms)
         let first;
         if (pPrecise) {
-          first = await Promise.race([pPrecise, pFast, waitMs(300).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pPrecise, pFast, waitMs(180).then(() => ({ tag: 'timer' }))]);
         } else {
-          first = await Promise.race([pFast, waitMs(300).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pFast, waitMs(180).then(() => ({ tag: 'timer' }))]);
         }
 
         const elapsed = () => Date.now() - t0;
@@ -248,8 +248,8 @@
           if (conf >= 0.65 || !pPrecise) {
             return finish(first.r, 'fast');
           }
-          // Low confidence: wait a bit more for precise (up to 300ms total)
-          const left = Math.max(0, 300 - elapsed());
+          // Low confidence: wait a bit more for precise (up to 180ms total)
+          const left = Math.max(0, 180 - elapsed());
           if (left === 0) return finish(first.r, 'fast');
           const second = await Promise.race([pPrecise, waitMs(left).then(() => ({ tag: 'timer2' }))]);
           if (second && second.tag === 'precise') return finish(second.r, 'precise');
@@ -271,7 +271,7 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 7000, minMs = 700, silenceMs = 500) {
+  async function waitEndOfSpeech(maxMs = 2500, minMs = 450, silenceMs = 350) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
@@ -288,8 +288,14 @@
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // End-of-speech detection: earlier cutoff
-    await waitEndOfSpeech(7000, 700, 500);
+    // End-of-speech detection: aggressive cutoff for natural turn-taking
+    await waitEndOfSpeech(2500, 450, 350);
+    // If no speech detected, skip downstream immediately
+    if (vad.activeFrames < 3) {
+      transcriptEl.value = '[無音検知] 音声が拾えていません。マイク/声量/デバイスを確認してください';
+      if (rafId) cancelAnimationFrame(rafId);
+      return;
+    }
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
@@ -363,9 +369,9 @@
           }
         };
 
-        // Filler if LLM reply_text is slow (>300ms)
-        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 300);
-        const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(tr.text)}`, { method: 'POST' }, 1500);
+        // Filler if LLM reply_text is slow (>200ms)
+        const fillerTimer = setTimeout(() => tryClientTTS('はい'), 200);
+        const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(tr.text)}`, { method: 'POST' }, 900);
         let replyText = '';
         if (textRes && textRes.ok) {
           try { const js = await textRes.json(); replyText = js?.output?.text || ''; } catch (_) { replyText = ''; }
@@ -380,8 +386,8 @@
             return null;
           });
 
-        // If server TTS is late (>1200ms), use client TTS first
-        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 1200);
+        // If server TTS is late (>800ms), use client TTS first
+        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 800);
         const sim = await ttsServer;
         clearTimeout(ttsTimer);
 
