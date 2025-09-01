@@ -43,7 +43,7 @@ jobs:
 
       - name: Open Pull Request
         if: success()
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           branch: auto/weekly-maintenance
           title: "chore(ci): weekly safe YAML maintenance (canary)"
