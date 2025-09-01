@@ -467,6 +467,7 @@
             textMs: (textAt - textStartAt),
             ttsMs: (ttsAt - ttsStartAt),
             firstAudioMs: (playedMode === 'server' ? (ttsAt - eosAt) : (textAt - eosAt)),
+            asrOk: !!(tr && tr.text && tr.text.trim().length >= 2)
           };
           fetch('/api/metrics/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).catch(() => {});
         } catch (_) {}
