@@ -87,6 +87,31 @@
     }
   }
 
+  // Wait until AI audio playback (server or client TTS) finishes, or timeout
+  async function waitAiPlaybackDone(maxMs = 4000) {
+    return new Promise(resolve => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      const timer = setTimeout(finish, maxMs);
+      try {
+        if (aiAudio && !aiAudio.paused && !aiAudio.ended) {
+          aiAudio.addEventListener('ended', () => { clearTimeout(timer); finish(); }, { once: true });
+          return;
+        }
+        if ('speechSynthesis' in window) {
+          const check = () => {
+            if (!window.speechSynthesis.speaking) { clearTimeout(timer); finish(); }
+            else setTimeout(check, 120);
+          };
+          check();
+          return;
+        }
+      } catch (_) {}
+      // Fallback
+      finish();
+    });
+  }
+
   // Lightweight prewarm to reduce first-turn latency
   let prewarmed = false;
   async function prewarm() {
@@ -380,14 +405,14 @@
         if (!replyText) replyText = '承知しました。続けてどうぞ。';
 
         // Start TTS in parallel (server) and set a client TTS fallback timer
-        const ttsServer = fetchWithTimeout(`/api/voice/simulate?text_input=${encodeURIComponent(replyText)}&speaker_id=${encodeURIComponent(spk)}`, { method: 'POST' }, 2500)
+        const ttsServer = fetchWithTimeout(`/api/voice/simulate?text_input=${encodeURIComponent(replyText)}&speaker_id=${encodeURIComponent(spk)}`, { method: 'POST' }, 1500)
           .then(async r => {
             if (r && r.ok) { try { return await r.json(); } catch { return null; } }
             return null;
           });
 
-        // If server TTS is late (>800ms), use client TTS first
-        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 800);
+        // If server TTS is late (>600ms), use client TTS first
+        const ttsTimer = setTimeout(() => tryClientTTS(replyText), 600);
         const sim = await ttsServer;
         clearTimeout(ttsTimer);
 
@@ -431,8 +456,10 @@
     // 連続ターンテイク（簡易）
     while (running) {
       await oneTurn();
-      // 短い間隔
-      await new Promise(r => setTimeout(r, 250));
+      // AI再生が続く間はバー ジインを避ける（最大4s）
+      await waitAiPlaybackDone(4000);
+      // 最短のインターバル
+      await new Promise(r => setTimeout(r, 150));
     }
   });
 
