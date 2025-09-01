@@ -1,38 +1,73 @@
 {
   "iterations": 12,
   "latencies": [
-    1.6331021785736084,
-    1.0218920707702637,
-    1.041053056716919,
-    1.0647988319396973,
-    1.0599889755249023,
-    1.0398178100585938,
-    1.0330417156219482,
-    1.0441868305206299,
-    1.0266530513763428,
-    1.052001714706421,
-    1.0535058975219727,
-    1.0398850440979004
+    1.0429682731628418,
+    1.0254747867584229,
+    1.3678510189056396,
+    1.0359930992126465,
+    1.0364108085632324,
+    1.0126137733459473,
+    1.031609058380127,
+    0.998206377029419,
+    1.1546380519866943,
+    1.073577880859375,
+    1.064647912979126,
+    1.027390956878662
   ],
-  "p50": 1.043,
-  "p90": 1.463,
+  "p50": 1.036,
+  "p90": 1.304,
   "asr_rate": 1.0,
   "passed": true,
   "details": [
     {
       "sim": true,
       "asr": true,
-      "first_audio_s": 1.633
+      "first_audio_s": 1.043
     },
     {
       "sim": true,
       "asr": true,
-      "first_audio_s": 1.022
+      "first_audio_s": 1.025
     },
     {
       "sim": true,
       "asr": true,
-      "first_audio_s": 1.041
+      "first_audio_s": 1.368
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.036
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.036
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.013
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.032
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 0.998
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.155
+    },
+    {
+      "sim": true,
+      "asr": true,
+      "first_audio_s": 1.074
     },
     {
       "sim": true,
@@ -42,42 +77,7 @@
     {
       "sim": true,
       "asr": true,
-      "first_audio_s": 1.06
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.04
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.033
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.044
-    },
-    {
-      "sim": true,
-      "asr": true,
       "first_audio_s": 1.027
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.052
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.054
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.04
     }
   ]
 }
