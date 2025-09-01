@@ -25,6 +25,8 @@
   let turnIndex = 0;
   // Adaptive VAD baseline
   let noiseFloor = 0.015;
+  // Track last AI text to avoid echo feeding
+  let lastAiText = '';
 
   // Load voices (first sales list, fallback to raw voicevox speakers)
   (async () => {
@@ -83,6 +85,22 @@
       clearTimeout(t);
       return null;
     }
+  }
+
+  // Lightweight prewarm to reduce first-turn latency
+  let prewarmed = false;
+  async function prewarm() {
+    if (prewarmed) return;
+    prewarmed = true;
+    try {
+      await Promise.race([
+        Promise.all([
+          fetchWithTimeout('/api/voice/health', {}, 800),
+          fetchWithTimeout('/api/sales/speakers', {}, 800)
+        ]),
+        new Promise(r => setTimeout(r, 300))
+      ]);
+    } catch (_) {}
   }
 
   function pickMime() {
@@ -207,12 +225,12 @@
         // Helper timers
         const waitMs = (ms) => new Promise(r => setTimeout(r, ms));
 
-        // First window (speed-first: 400ms)
+        // First window (speed-first: 300ms)
         let first;
         if (pPrecise) {
-          first = await Promise.race([pPrecise, pFast, waitMs(400).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pPrecise, pFast, waitMs(300).then(() => ({ tag: 'timer' }))]);
         } else {
-          first = await Promise.race([pFast, waitMs(400).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pFast, waitMs(300).then(() => ({ tag: 'timer' }))]);
         }
 
         const elapsed = () => Date.now() - t0;
@@ -227,11 +245,11 @@
         }
         if (first && first.tag === 'fast') {
           const conf = typeof first.r?.confidence === 'number' ? first.r.confidence : 0;
-          if (conf >= 0.6 || !pPrecise) {
+          if (conf >= 0.65 || !pPrecise) {
             return finish(first.r, 'fast');
           }
-          // Low confidence: wait a bit more for precise (up to 400ms total)
-          const left = Math.max(0, 400 - elapsed());
+          // Low confidence: wait a bit more for precise (up to 300ms total)
+          const left = Math.max(0, 300 - elapsed());
           if (left === 0) return finish(first.r, 'fast');
           const second = await Promise.race([pPrecise, waitMs(left).then(() => ({ tag: 'timer2' }))]);
           if (second && second.tag === 'precise') return finish(second.r, 'precise');
@@ -253,7 +271,7 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 9000, minMs = 900, silenceMs = 1200) {
+  async function waitEndOfSpeech(maxMs = 7000, minMs = 800, silenceMs = 700) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
@@ -261,7 +279,7 @@
       const sinceActive = now - vadLastActiveAt;
       if (elapsed >= minMs && sinceActive >= silenceMs) return;
       if (elapsed >= maxMs) return;
-      await new Promise(r => setTimeout(r, 80));
+      await new Promise(r => setTimeout(r, 60));
     }
   }
 
@@ -269,8 +287,8 @@
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // End-of-speech detection: speed-first thresholds
-    await waitEndOfSpeech(9000, 900, 1200);
+    // End-of-speech detection: earlier cutoff
+    await waitEndOfSpeech(7000, 800, 700);
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
@@ -286,6 +304,13 @@
       const textLen = tr.text.trim().length;
       if (textLen < 2) {
         // very short/uncertain -> skip simulate to avoid誤発話
+        if (rafId) cancelAnimationFrame(rafId);
+        return;
+      }
+      // Avoid echo: skip if transcript equals last AI text or contains fallback phrase
+      const textForSim = tr.text.trim();
+      if ((lastAiText && textForSim === lastAiText.trim()) || textForSim.startsWith('少々お待ちください')) {
+        statusEl.textContent = 'skipped echo';
         if (rafId) cancelAnimationFrame(rafId);
         return;
       }
@@ -315,8 +340,7 @@
           if (!spk) spk = 2; // fallback default
         }
 
-        // Small pre-reply delay to avoid barge-in overlap
-        await new Promise(r => setTimeout(r, 200));
+        // Removed pre-reply delay for faster response
 
         // Parallelize feedback and simulate
         const fbBody = { transcript: tr.text };
@@ -337,6 +361,7 @@
           aiAudio.play().catch(() => {});
           httpInfo && (httpInfo.textContent = 'http: reply=200');
           statusEl.textContent = 'replied';
+          lastAiText = sim.output.text || '';
         } else if (sim && sim.output && sim.output.text && 'speechSynthesis' in window) {
           // 音声がなければブラウザTTSで補完
           const uttr = new SpeechSynthesisUtterance(sim.output.text);
@@ -344,16 +369,10 @@
           window.speechSynthesis.speak(uttr);
           httpInfo && (httpInfo.textContent = 'http: reply=text-only');
           statusEl.textContent = 'replied (tts)';
+          lastAiText = sim.output.text || '';
         } else {
-          // Timeout/失敗時の必須フォールバック
-          if ('speechSynthesis' in window) {
-            const fallback = new SpeechSynthesisUtterance('少々お待ちください。只今処理中です。');
-            fallback.lang = 'ja-JP';
-            window.speechSynthesis.speak(fallback);
-            statusEl.textContent = 'replied (fallback)';
-          } else {
-            statusEl.textContent = 'reply failed';
-          }
+          // Timeout/失敗時はUIに表示するのみ（発話しない）
+          statusEl.textContent = 'reply timeout/error';
           httpInfo && (httpInfo.textContent = 'http: reply=timeout/error');
         }
 
@@ -379,11 +398,13 @@
     toggleBtn.textContent = running ? '停止' : '開始';
     if (!running) { setStatus('idle', false); return; }
     setStatus('ready', false);
+    // fire-and-forget prewarm
+    prewarm();
     // 連続ターンテイク（簡易）
     while (running) {
       await oneTurn();
-      // 0.5秒の間
-      await new Promise(r => setTimeout(r, 500));
+      // 短い間隔
+      await new Promise(r => setTimeout(r, 250));
     }
   });
 
