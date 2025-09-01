@@ -173,23 +173,69 @@
     return new Promise(resolve => {
       mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        // Convert to WAV on server is not implemented here; rely on backend accepting webm? Fallback: send as file
-        const form = new FormData();
-        form.append('file', new File([blob], 'input.webm', { type: 'audio/webm' }));
-        try {
-          const model = modelSelect && modelSelect.value ? modelSelect.value : 'base';
-          const res = await fetch(`/api/speech/transcribe?language=ja&model_size=${encodeURIComponent(model)}` , { method: 'POST', body: form });
-          let payload;
-          try { payload = await res.json(); } catch (_) { payload = { raw: await res.text() }; }
-          if (httpInfo) httpInfo.textContent = 'http: ' + res.status;
-          if (!res.ok) {
-            resolve({ error: `HTTP ${res.status}`, detail: payload });
-          } else {
-            resolve(payload);
+        const mkForm = () => {
+          const f = new FormData();
+          f.append('file', new File([blob], 'input.webm', { type: 'audio/webm' }));
+          return f;
+        };
+        const postTranscribe = async (size) => {
+          try {
+            const res = await fetch(`/api/speech/transcribe?language=ja&model_size=${encodeURIComponent(size)}`, { method: 'POST', body: mkForm() });
+            let payload;
+            try { payload = await res.json(); } catch (_) { payload = { raw: await res.text() }; }
+            return res.ok ? payload : { error: `HTTP ${res.status}`, detail: payload };
+          } catch (e) {
+            return { error: String(e) };
           }
-        } catch (e) {
-          resolve({ error: String(e) });
+        };
+
+        // Two-stage ASR: fast then precise
+        const userSel = (modelSelect && modelSelect.value) ? modelSelect.value : '';
+        const fast = userSel || 'small';
+        const precise = 'medium';
+        const t0 = Date.now();
+        const pFast = postTranscribe(fast).then(r => ({ tag: 'fast', r }));
+        const pPrecise = (fast === precise) ? null : postTranscribe(precise).then(r => ({ tag: 'precise', r }));
+
+        // Helper timers
+        const waitMs = (ms) => new Promise(r => setTimeout(r, ms));
+
+        // First window (e.g., 800ms)
+        let first;
+        if (pPrecise) {
+          first = await Promise.race([pPrecise, pFast, waitMs(800).then(() => ({ tag: 'timer' }))]);
+        } else {
+          first = await Promise.race([pFast, waitMs(800).then(() => ({ tag: 'timer' }))]);
         }
+
+        const elapsed = () => Date.now() - t0;
+
+        const finish = (payload, fromTag) => {
+          if (httpInfo) httpInfo.textContent = `http: asr=${fromTag}`;
+          resolve(payload);
+        };
+
+        if (first && first.tag === 'precise') {
+          return finish(first.r, 'precise');
+        }
+        if (first && first.tag === 'fast') {
+          const conf = typeof first.r?.confidence === 'number' ? first.r.confidence : 0;
+          if (conf >= 0.75 || !pPrecise) {
+            return finish(first.r, 'fast');
+          }
+          // Low confidence: wait a bit more for precise (up to 1200ms total)
+          const left = Math.max(0, 1200 - elapsed());
+          if (left === 0) return finish(first.r, 'fast');
+          const second = await Promise.race([pPrecise, waitMs(left).then(() => ({ tag: 'timer2' }))]);
+          if (second && second.tag === 'precise') return finish(second.r, 'precise');
+          return finish(first.r, 'fast');
+        }
+        // Timer fired first: take whichever finishes next
+        const next = await Promise.race([pPrecise || pFast, pFast]);
+        if (next) return finish(next.r, next.tag);
+        // Fallback
+        const fallback = await pFast;
+        return finish(fallback.r, 'fast');
       };
       mediaRecorder.stop();
     });
