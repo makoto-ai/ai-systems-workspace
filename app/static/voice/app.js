@@ -21,6 +21,10 @@
   let userSelectedSpeaker = false;
   let lastScenarioId = '';
   let scenarioRecommendedSpeakerId = null;
+  // Turn index for first-turn behavior
+  let turnIndex = 0;
+  // Adaptive VAD baseline
+  let noiseFloor = 0.015;
 
   // Load voices (first sales list, fallback to raw voicevox speakers)
   (async () => {
@@ -161,8 +165,11 @@
     let sum = 0;
     for (let i = 0; i < buf.length; i++) sum += Math.abs(buf[i] - 128);
     const amp = sum / (buf.length * 128);
+    // update adaptive noise floor (slowly) when near baseline
+    if (amp < noiseFloor + 0.01) noiseFloor = 0.9 * noiseFloor + 0.1 * amp;
     vad.totalFrames += 1;
-    if (amp > VAD_THRESH) {
+    const thresh = Math.max(VAD_THRESH, noiseFloor * 2.2);
+    if (amp > thresh) {
       vad.activeFrames += 1; // threshold tuned for on-device mic
       vadLastActiveAt = Date.now();
     }
@@ -200,12 +207,12 @@
         // Helper timers
         const waitMs = (ms) => new Promise(r => setTimeout(r, ms));
 
-        // First window (e.g., 800ms)
+        // First window (speed-first: 400ms)
         let first;
         if (pPrecise) {
-          first = await Promise.race([pPrecise, pFast, waitMs(800).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pPrecise, pFast, waitMs(400).then(() => ({ tag: 'timer' }))]);
         } else {
-          first = await Promise.race([pFast, waitMs(800).then(() => ({ tag: 'timer' }))]);
+          first = await Promise.race([pFast, waitMs(400).then(() => ({ tag: 'timer' }))]);
         }
 
         const elapsed = () => Date.now() - t0;
@@ -220,11 +227,11 @@
         }
         if (first && first.tag === 'fast') {
           const conf = typeof first.r?.confidence === 'number' ? first.r.confidence : 0;
-          if (conf >= 0.75 || !pPrecise) {
+          if (conf >= 0.6 || !pPrecise) {
             return finish(first.r, 'fast');
           }
-          // Low confidence: wait a bit more for precise (up to 1200ms total)
-          const left = Math.max(0, 1200 - elapsed());
+          // Low confidence: wait a bit more for precise (up to 400ms total)
+          const left = Math.max(0, 400 - elapsed());
           if (left === 0) return finish(first.r, 'fast');
           const second = await Promise.race([pPrecise, waitMs(left).then(() => ({ tag: 'timer2' }))]);
           if (second && second.tag === 'precise') return finish(second.r, 'precise');
@@ -246,7 +253,7 @@
     toggleBtn.classList.toggle('recording', !!active);
   }
 
-  async function waitEndOfSpeech(maxMs = 10000, minMs = 1200, silenceMs = 600) {
+  async function waitEndOfSpeech(maxMs = 9000, minMs = 900, silenceMs = 1200) {
     const start = Date.now();
     while (true) {
       const now = Date.now();
@@ -262,8 +269,8 @@
     setStatus('recording', true);
     await startRecording();
     const start = Date.now();
-    // End-of-speech detection: wait for trailing silence or max cap
-    await waitEndOfSpeech(20000, 2000, 1500);
+    // End-of-speech detection: speed-first thresholds
+    await waitEndOfSpeech(9000, 900, 1200);
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
@@ -308,6 +315,9 @@
           if (!spk) spk = 2; // fallback default
         }
 
+        // Small pre-reply delay to avoid barge-in overlap
+        await new Promise(r => setTimeout(r, 200));
+
         // Parallelize feedback and simulate
         const fbBody = { transcript: tr.text };
         const fbPromise = fetch('/api/sales/feedback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fbBody) })
@@ -315,7 +325,7 @@
 
         const url = `/api/voice/simulate?text_input=${encodeURIComponent(tr.text)}&speaker_id=${encodeURIComponent(spk)}`;
         statusEl.textContent = 'replying...';
-        const simRes = await fetchWithTimeout(url, { method: 'POST' }, 3500);
+        const simRes = await fetchWithTimeout(url, { method: 'POST' }, 2000);
         let sim = null;
         if (simRes && simRes.ok) {
           try { sim = await simRes.json(); } catch (_) { sim = null; }
@@ -361,6 +371,7 @@
       transcriptEl.value = tr && (tr.error || tr.detail || tr.raw) ? `[${tr.error ?? ''}] ${JSON.stringify(tr.detail ?? tr.raw ?? '')}` : '認識に失敗しました';
     }
     if (rafId) cancelAnimationFrame(rafId);
+    turnIndex += 1;
   }
 
   toggleBtn.addEventListener('click', async () => {
