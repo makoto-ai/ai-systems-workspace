@@ -33,6 +33,7 @@ try:
         sales_roleplay,
         selftest,
         metrics,
+        ws_voice,
         selftest,
     )
 except ImportError:
@@ -54,6 +55,7 @@ except ImportError:
         sales_roleplay,
         selftest,
         metrics,
+        ws_voice,
     )
 
 # Import configuration
@@ -168,6 +170,7 @@ app.include_router(file_upload.router, prefix="/api")
 app.include_router(sales_roleplay.router, prefix="/api")
 app.include_router(selftest.router, prefix="/api")
 app.include_router(metrics.router, prefix="/api")
+app.include_router(ws_voice.router)
 
 
 @app.exception_handler(Exception)

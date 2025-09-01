@@ -17,6 +17,7 @@
   const micSelect = document.getElementById('micSelect');
   const modelSelect = document.getElementById('modelSelect');
   const scenarioSelect = document.getElementById('scenarioSelect');
+  const USE_WS = true; // prefer websocket streaming when available
   // Speaker locking & scenario tracking
   let userSelectedSpeaker = false;
   let lastScenarioId = '';
@@ -67,6 +68,7 @@
   let audioChunks = [];
   let running = false;
   let audioCtx; let analyser; let sourceNode; let rafId;
+  let ws = null; let wsReady = false; let wsDoneResolver = null; let wsText = '';
   // Simple VAD counters per turn
   let vad = { activeFrames: 0, totalFrames: 0 };
   const VAD_THRESH = 0.008; // even more sensitive to quiet speech
@@ -223,6 +225,13 @@
     if (amp > thresh) {
       vad.activeFrames += 1; // threshold tuned for on-device mic
       vadLastActiveAt = Date.now();
+      // Barge-in: if AI is speaking, stop immediately when user voice is detected
+      try {
+        const speaking = ('speechSynthesis' in window) ? window.speechSynthesis.speaking : false;
+        const audioPlaying = !!(aiAudio && !aiAudio.paused && !aiAudio.ended);
+        if (speaking) { window.speechSynthesis.cancel(); }
+        if (audioPlaying) { aiAudio.pause(); aiAudio.currentTime = 0; }
+      } catch (_) {}
     }
     rafId = requestAnimationFrame(drawWave);
   }
@@ -482,6 +491,93 @@
     turnIndex += 1;
   }
 
+  // --- WebSocket helpers ---
+  function wsUrl() {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${location.host}/ws/voice`;
+  }
+  function ensureWs(speakerId) {
+    return new Promise((resolve) => {
+      if (ws && wsReady) return resolve(true);
+      ws = new WebSocket(wsUrl()); wsReady = false; wsText = '';
+      ws.onopen = () => {
+        wsReady = true;
+        try { ws.send(JSON.stringify({ type: 'start', speaker_id: Number(speakerId) || 2 })); } catch {}
+        resolve(true);
+      };
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data || '{}');
+          if (msg.event === 'text') {
+            wsText = (msg.text || '').trim();
+            transcriptEl.value = wsText || transcriptEl.value;
+          } else if (msg.event === 'tts' && msg.audio_b64) {
+            aiAudio.src = 'data:audio/wav;base64,' + msg.audio_b64;
+            aiAudio.style.display = '';
+            aiAudio.play().catch(() => {});
+            lastAiText = msg.text || lastAiText;
+            statusEl.textContent = 'replied (ws)';
+          } else if (msg.event === 'done') {
+            if (wsDoneResolver) { wsDoneResolver({ text: wsText }); wsDoneResolver = null; }
+          }
+        } catch {}
+      };
+      ws.onerror = () => {};
+      ws.onclose = () => { wsReady = false; };
+    });
+  }
+  function blobToBase64(blob) {
+    return new Promise((resolve) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const arr = new Uint8Array(r.result);
+        let str = '';
+        for (let i = 0; i < arr.byteLength; i++) str += String.fromCharCode(arr[i]);
+        resolve(btoa(str));
+      };
+      r.readAsArrayBuffer(blob);
+    });
+  }
+
+  async function oneTurnWs() {
+    setStatus('recording', true);
+    // pick speaker
+    let spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : 2;
+    await ensureWs(spk);
+    // start mic
+    await startRecording();
+    const start = Date.now();
+    // stream chunks while recording
+    const origHandler = mediaRecorder.ondataavailable;
+    mediaRecorder.ondataavailable = async (e) => {
+      try { if (e.data && e.data.size > 0 && ws && wsReady) {
+        const b64 = await blobToBase64(e.data);
+        ws.send(JSON.stringify({ type: 'chunk', audio_b64: b64 }));
+      }} catch {}
+      if (typeof origHandler === 'function') try { origHandler(e); } catch {}
+    };
+
+    await waitEndOfSpeech(1600, 450, 300);
+    if (vad.activeFrames < 3) {
+      transcriptEl.value = '[無音検知] 音声が拾えていません。マイク/声量/デバイスを確認してください';
+      if (rafId) cancelAnimationFrame(rafId);
+      return;
+    }
+    setStatus('processing', false);
+    // stop and signal end
+    await new Promise((resolve) => { mediaRecorder.onstop = resolve; mediaRecorder.stop(); });
+    try { if (ws && wsReady) ws.send(JSON.stringify({ type: 'end' })); } catch {}
+
+    // wait for server done
+    const turnDone = new Promise((resolve) => { wsDoneResolver = resolve; });
+    const result = await Promise.race([turnDone, new Promise(r => setTimeout(() => r({ text: '' }), 4000))]);
+    if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
+    // fill transcript
+    if (result && result.text) transcriptEl.value = result.text;
+    if (rafId) cancelAnimationFrame(rafId);
+    turnIndex += 1;
+  }
+
   toggleBtn.addEventListener('click', async () => {
     running = !running;
     toggleBtn.textContent = running ? '停止' : '開始';
@@ -491,7 +587,7 @@
     prewarm();
     // 連続ターンテイク（簡易）
     while (running) {
-      await oneTurn();
+      if (USE_WS) { await oneTurnWs(); } else { await oneTurn(); }
       // AI再生中のみ短時間待機（最大1.2s）
       await waitAiPlaybackDone(1200);
       // 最短のインターバル
