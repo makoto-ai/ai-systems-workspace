@@ -1,83 +1,83 @@
 {
   "iterations": 12,
   "latencies": [
-    1.0905799865722656,
-    1.0257208347320557,
-    1.0298640727996826,
-    1.048630952835083,
-    1.2954506874084473,
-    1.0189719200134277,
-    1.018500804901123,
-    1.0718050003051758,
-    1.1040480136871338,
-    1.0548031330108643,
-    1.0448329448699951,
-    1.0402979850769043
+    1.3412144184112549,
+    1.052393913269043,
+    1.0402419567108154,
+    1.0387911796569824,
+    1.0617811679840088,
+    1.0419702529907227,
+    1.0653772354125977,
+    1.0480051040649414,
+    1.0893008708953857,
+    1.0327398777008057,
+    1.0780279636383057,
+    1.0332469940185547
   ],
-  "p50": 1.047,
-  "p90": 1.238,
-  "asr_rate": 0.667,
+  "p50": 1.05,
+  "p90": 1.266,
+  "asr_rate": 0.0,
   "passed": false,
   "details": [
     {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.091
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.026
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.03
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.049
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.295
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.019
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.019
-    },
-    {
-      "sim": true,
-      "asr": true,
-      "first_audio_s": 1.072
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.341
     },
     {
       "sim": false,
       "asr": false,
-      "first_audio_s": 1.104
-    },
-    {
-      "sim": false,
-      "asr": false,
-      "first_audio_s": 1.055
-    },
-    {
-      "sim": false,
-      "asr": false,
-      "first_audio_s": 1.045
+      "first_audio_s": 1.052
     },
     {
       "sim": false,
       "asr": false,
       "first_audio_s": 1.04
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.039
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.062
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.042
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.065
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.048
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.089
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.033
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.078
+    },
+    {
+      "sim": false,
+      "asr": false,
+      "first_audio_s": 1.033
     }
   ]
 }
