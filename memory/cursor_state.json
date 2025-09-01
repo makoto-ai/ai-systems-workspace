@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-01T09:36:57.304967",
+  "timestamp": "2025-09-01T10:07:31.420206",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "3f5ecb0c7d15d1937e58726599ab439b3c18d763",
+    "commit_hash": "5d56cb610afbfd83bc0b81e319c71d6a41b02b12",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  app/static/voice/app.js"
+    "uncommitted_changes": 2,
+    "status_details": "M  app/main.py\nA  scripts/selftest.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1559,8 +1559,8 @@
   "project_structure": {
     "app": {
       "exists": true,
-      "python_files": 46,
-      "total_files": 178
+      "python_files": 47,
+      "total_files": 180
     },
     "config": {
       "exists": true,
@@ -1570,7 +1570,7 @@
     "scripts": {
       "exists": true,
       "python_files": 97,
-      "total_files": 271
+      "total_files": 272
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25851,
+    "python_files_count": 25853,
     "cursor_configs_count": 13
   },
-  "state_hash": "cbd9d2d8615f143302888faf646efe5d"
+  "state_hash": "6b67bbf99b0fe087a4766b6dc0ecfb24"
 }

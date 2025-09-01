@@ -31,6 +31,8 @@ try:
         reminder,
         file_upload,
         sales_roleplay,
+        selftest,
+        selftest,
     )
 except ImportError:
     from app.api import (
@@ -49,6 +51,7 @@ except ImportError:
         reminder,
         file_upload,
         sales_roleplay,
+        selftest,
     )
 
 # Import configuration
@@ -161,6 +164,7 @@ app.include_router(context.router, prefix="/api")
 app.include_router(reminder.router, prefix="/api")
 app.include_router(file_upload.router, prefix="/api")
 app.include_router(sales_roleplay.router, prefix="/api")
+app.include_router(selftest.router, prefix="/api")
 
 
 @app.exception_handler(Exception)
