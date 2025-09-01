@@ -26,3 +26,4 @@
 {"ts": "2025-08-31T14:34:29.415897+00:00", "type": "asr", "route": "/api/speech/transcribe", "ok": true, "duration_ms": 167, "bytes": 48461, "content_type": "audio/webm", "language": "ja", "text_len": 0, "segments": 0}
 {"ts": "2025-08-31T14:36:30.699065+00:00", "type": "reply", "route": "/api/voice/simulate", "ok": true, "duration_ms": 3546, "llm_ms": 3546, "text_len": 107, "speaker_id": 2}
 {"ts": "2025-08-31T14:36:51.451496+00:00", "type": "reply", "route": "/api/voice/simulate", "ok": true, "duration_ms": 1643, "llm_ms": 1643, "text_len": 46, "speaker_id": 2}
+{"ts": "2025-09-01T04:39:54.839Z", "turnIndex": 0, "route": "server", "recMs": 15600, "asrMs": -8, "textMs": 238, "ttsMs": 1126, "firstAudioMs": -9}
