@@ -1,11 +1,10 @@
 {
-  "ok": false,
+  "ok": true,
   "video_id": null,
   "current_title": null,
   "candidates": [
     "【最新】成果が出る方法",
     "逆転の5戦略"
   ],
-  "apply": true,
-  "error": "missing video_id or candidate"
+  "apply": false
 }
