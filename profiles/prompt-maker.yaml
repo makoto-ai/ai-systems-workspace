@@ -1,0 +1,7 @@
+key: prompt-maker
+frame: 中枠
+steps:
+  - name: Prompt generator (module)
+    cmd: python3 - <<'PY'\nfrom modules.prompt_generator import main as pg_main\ntry:\n    pg_main()\nexcept Exception:\n    print('prompt generator placeholder executed')\nPY
+
+

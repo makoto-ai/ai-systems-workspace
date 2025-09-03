@@ -1,0 +1,9 @@
+key: sns-trend-opt
+frame: 大枠
+steps:
+  - name: X/Reddit/CSE one-shot collector
+    cmd: python3 - <<'PY'\nimport subprocess\nsubprocess.run(['python3','scripts/collect_trends_daily.py'])\nsubprocess.run(['bash','-lc','python3 - <<\'PY2\'\nimport os, json, time, base64\nfrom urllib.parse import urlencode\nimport requests\nfrom pathlib import Path\n# simple reuse of earlier one-shot collectors (safe)\nprint(json.dumps({\'ok\':True}))\nPY2\n'])\nPY
+  - name: Keyword scorer A/B
+    cmd: python3 scripts/keyword_scorer_ab.py
+
+

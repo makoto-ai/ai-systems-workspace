@@ -1,0 +1,9 @@
+key: improve-loop
+frame: 中枠
+steps:
+  - name: Intelligence engine (autonomous)
+    cmd: python3 scripts/quality/intelligence_engine.py || true
+  - name: Project optimizer
+    cmd: python3 scripts/quality/project_optimizer.py || true
+
+

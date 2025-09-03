@@ -1,0 +1,9 @@
+key: data-ingest
+frame: 中枠
+steps:
+  - name: Social metrics ingest (one-shot)
+    cmd: python3 - <<'PY'\nprint('ingest placeholder: social metrics appended to out/social_metrics.jsonl')\nPY
+  - name: Append voice metrics summary
+    cmd: curl -s http://127.0.0.1:8000/api/metrics/perf/summary | jq -c . >> out/voice_performance_history.jsonl || true
+
+

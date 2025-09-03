@@ -1,0 +1,9 @@
+key: paper-search
+frame: 大枠
+steps:
+  - name: Paper integrated search (read-only)
+    cmd: python3 paper_research_system/main_integrated.py || true
+  - name: Fact check (optional)
+    cmd: python3 paper_research_system/main_fact_check.py || true
+
+

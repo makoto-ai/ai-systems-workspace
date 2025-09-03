@@ -1,0 +1,9 @@
+key: system-health
+frame: 小枠
+steps:
+  - name: Collect system metrics
+    cmd: python3 scripts/collect_metrics.py || true
+  - name: System status report
+    cmd: bash scripts/system_status_report.sh || true
+
+

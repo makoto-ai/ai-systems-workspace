@@ -1,0 +1,9 @@
+key: paper-fact-check
+frame: 中枠
+steps:
+  - name: Run manuscript fact checker (sample)
+    cmd: python3 paper_research_system/main_fact_check.py || true
+  - name: Verify DOIs (utility)
+    cmd: python3 scripts/verify_doi.py || true
+
+

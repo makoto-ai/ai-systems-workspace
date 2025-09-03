@@ -1,0 +1,9 @@
+key: voice-roleplay
+frame: 大枠
+steps:
+  - name: Voice roleplay perf selftest
+    cmd: curl -s -X POST http://127.0.0.1:8000/api/selftest/run_performance?iterations=6 | jq -c . || true
+  - name: Monitor summary
+    cmd: curl -s http://127.0.0.1:8000/api/metrics/perf/summary | jq -c . || true
+
+
