@@ -379,21 +379,17 @@
     const start = Date.now();
     // End-of-speech detection: aggressive cutoff for natural turn-taking
     await waitEndOfSpeech(1600, 450, 300);
-    // If no speech detected, skip downstream immediately
+    // If no speech detected, continue with fallback downstream instead of aborting
     if (vad.activeFrames < 3) {
-      transcriptEl.value = '[無音検知] 音声が拾えていません。マイク/声量/デバイスを確認してください';
-      if (rafId) cancelAnimationFrame(rafId);
-      return;
+      transcriptEl.value = '[無音検知] 音声が拾えていません（フォールバックで応答します）';
     }
     setStatus('processing', false);
     const tr = await stopRecordingAndTranscribe();
     if (recInfo) recInfo.textContent = 'rec: ' + ((Date.now() - start)/1000).toFixed(1) + 's';
-    // VAD gating: if speech ratio is too low, skip downstream
+    // VAD gating: if speech ratio is too low, continue with fallback instead of aborting
     const speechRatio = vad.totalFrames ? (vad.activeFrames / vad.totalFrames) : 0;
     if (speechRatio < 0.04) {
-      transcriptEl.value = '[無音検知] 話し始めてから「開始」を押す/声量を上げてください';
-      if (rafId) cancelAnimationFrame(rafId);
-      return;
+      transcriptEl.value = '[無音検知] 音量が低い可能性（フォールバックで応答します）';
     }
     if (tr && tr.text) {
       transcriptEl.value = tr.text;
@@ -532,7 +528,38 @@
         // 失敗時は無音で継続
       }
     } else {
-      transcriptEl.value = tr && (tr.error || tr.detail || tr.raw) ? `[${tr.error ?? ''}] ${JSON.stringify(tr.detail ?? tr.raw ?? '')}` : '認識に失敗しました';
+      // STT失敗時: 既定文でreply_text→simulateを実行し、音声を必ず返す
+      try {
+        const fallbackUser = '承知しました。続けてどうぞ。';
+        const textRes = await fetchWithTimeout(`/api/voice/reply_text?text_input=${encodeURIComponent(fallbackUser)}`, { method: 'POST' }, 1200);
+        let replyText = '';
+        if (textRes && textRes.ok) {
+          try { const js = await textRes.json(); replyText = js?.output?.text || ''; } catch {}
+        }
+        if (!replyText) replyText = fallbackUser;
+        // TTS（サーバ）試行
+        const spk = voiceSelect && voiceSelect.value ? Number(voiceSelect.value) : 2;
+        const sim = await fetchWithTimeout(`/api/voice/simulate?text_input=${encodeURIComponent(replyText)}&speaker_id=${encodeURIComponent(spk)}`, { method: 'POST' }, 2000)
+          .then(async r => (r && r.ok) ? r.json() : null);
+        if (sim && sim.output && sim.output.audio_data) {
+          aiAudio.src = 'data:audio/wav;base64,' + sim.output.audio_data;
+          aiAudio.style.display = '';
+          aiAudio.play().catch(()=>{});
+          httpInfo && (httpInfo.textContent = 'http: reply=server-tts');
+          statusEl.textContent = 'replied (fallback)';
+          lastAiText = replyText;
+        } else if (ENABLE_TTS_FALLBACK) {
+          // Client TTS最終手段
+          const u = new SpeechSynthesisUtterance(replyText);
+          u.lang = 'ja-JP';
+          try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch {}
+          statusEl.textContent = 'replied (client tts, fallback)';
+          lastAiText = replyText;
+        }
+      } catch (_) {
+        // 最終表示のみ
+        transcriptEl.value = tr && (tr.error || tr.detail || tr.raw) ? `[${tr.error ?? ''}] ${JSON.stringify(tr.detail ?? tr.raw ?? '')}` : '認識に失敗しました';
+      }
     }
     if (rafId) cancelAnimationFrame(rafId);
     turnIndex += 1;

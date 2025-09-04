@@ -4,3 +4,9 @@
 {"ts": "auto", "turnIndex": 0, "route": "http", "recMs": 500, "asrMs": 50, "textMs": 40, "ttsMs": 300, "firstAudioMs": 300, "asrOk": true}
 {"ts": "2025-09-04T12:07:38.432Z", "turnIndex": 0, "route": "client", "recMs": 2500, "asrMs": 0, "textMs": 654, "ttsMs": 1258, "firstAudioMs": 0, "asrOk": true}
 {"ts": "2025-09-04T12:07:42.757Z", "turnIndex": 1, "route": "client", "recMs": 3000, "asrMs": 0, "textMs": 665, "ttsMs": 1319, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:12:56.541Z", "turnIndex": 0, "route": "client", "recMs": 3300, "asrMs": 37, "textMs": 489, "ttsMs": 1506, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:12:59.740Z", "turnIndex": 1, "route": "client", "recMs": 3000, "asrMs": 38, "textMs": 851, "ttsMs": 1442, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:13:03.603Z", "turnIndex": 2, "route": "client", "recMs": 3700, "asrMs": 2, "textMs": 731, "ttsMs": 1328, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:13:08.023Z", "turnIndex": 3, "route": "client", "recMs": 3100, "asrMs": 0, "textMs": 641, "ttsMs": 1501, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:13:13.075Z", "turnIndex": 4, "route": "client", "recMs": 3700, "asrMs": 0, "textMs": 557, "ttsMs": 1493, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:13:17.978Z", "turnIndex": 5, "route": "client", "recMs": 3500, "asrMs": 42, "textMs": 399, "ttsMs": 1501, "firstAudioMs": 0, "asrOk": true}
