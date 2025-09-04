@@ -10,3 +10,4 @@
 {"ts": "2025-09-04T12:13:08.023Z", "turnIndex": 3, "route": "client", "recMs": 3100, "asrMs": 0, "textMs": 641, "ttsMs": 1501, "firstAudioMs": 0, "asrOk": true}
 {"ts": "2025-09-04T12:13:13.075Z", "turnIndex": 4, "route": "client", "recMs": 3700, "asrMs": 0, "textMs": 557, "ttsMs": 1493, "firstAudioMs": 0, "asrOk": true}
 {"ts": "2025-09-04T12:13:17.978Z", "turnIndex": 5, "route": "client", "recMs": 3500, "asrMs": 42, "textMs": 399, "ttsMs": 1501, "firstAudioMs": 0, "asrOk": true}
+{"ts": "rotation_check"}

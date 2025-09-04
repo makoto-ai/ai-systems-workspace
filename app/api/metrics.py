@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Request
 from typing import Dict, Any, List
 import os, json, time, statistics
+from app.services.metrics import append_jsonl
 
 router = APIRouter()
 
 @router.post("/metrics/voice")
 async def post_voice_metrics(payload: Dict[str, Any]) -> Dict[str, Any]:
     os.makedirs("out", exist_ok=True)
-    line = json.dumps({
+    append_jsonl({
         "ts": payload.get("ts") or time.strftime("%Y-%m-%dT%H:%M:%S"),
         "turnIndex": payload.get("turnIndex"),
         "route": payload.get("route"),
@@ -17,9 +18,7 @@ async def post_voice_metrics(payload: Dict[str, Any]) -> Dict[str, Any]:
         "ttsMs": payload.get("ttsMs"),
         "firstAudioMs": payload.get("firstAudioMs"),
         "asrOk": payload.get("asrOk", None),
-    }, ensure_ascii=False)
-    with open("out/voice_metrics.jsonl", "a", encoding="utf-8") as f:
-        f.write(line + "\n")
+    }, path="out/voice_metrics.jsonl")
     return {"ok": True}
 
 @router.get("/metrics/voice/summary")

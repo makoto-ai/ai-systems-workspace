@@ -14,10 +14,14 @@ DRY_RUN=1
 ROTATE_LOGS=0
 KEEP_LOGS_DAYS=30
 COMPRESS_OLDER_THAN_DAYS=1
+# out/ retention settings (safe defaults)
+CLEAN_OUT=0
+OUT_KEEP_DAYS=7
+OUT_MAX_TOTAL_MB=100
 
 print_usage() {
   cat <<USAGE
-Usage: scripts/safe_cleanup.sh [--apply] [--rotate-logs] [--keep-logs-days N] [--compress-older-than-days N]
+Usage: scripts/safe_cleanup.sh [--apply] [--rotate-logs] [--keep-logs-days N] [--compress-older-than-days N] [--clean-out] [--out-keep-days N] [--out-max-total-mb N]
 
 Default is dry-run (preview only). Use --apply to actually delete.
 Excludes: .git/, venv/, .venv/, backups/, test_backups/, memory/, uploads/, logs/, frontend/*/node_modules/
@@ -27,6 +31,10 @@ Targets (delete): __pycache__, .pytest_cache, .mypy_cache, .ruff_cache, .ipynb_c
 Log rotation (if --rotate-logs):
   - compress *.log older than COMPRESS_OLDER_THAN_DAYS (gzip)
   - delete *.log.gz older than KEEP_LOGS_DAYS
+
+Out directory cleanup (if --clean-out):
+  - delete files in out/ older than OUT_KEEP_DAYS (jsonl/json/md default)
+  - if total out/ size exceeds OUT_MAX_TOTAL_MB, delete oldest overflow files
 USAGE
 }
 
@@ -36,6 +44,9 @@ while [[ $# -gt 0 ]]; do
     --rotate-logs) ROTATE_LOGS=1; shift ;;
     --keep-logs-days) KEEP_LOGS_DAYS="${2:-30}"; shift 2 ;;
     --compress-older-than-days) COMPRESS_OLDER_THAN_DAYS="${2:-1}"; shift 2 ;;
+    --clean-out) CLEAN_OUT=1; shift ;;
+    --out-keep-days) OUT_KEEP_DAYS="${2:-7}"; shift 2 ;;
+    --out-max-total-mb) OUT_MAX_TOTAL_MB="${2:-100}"; shift 2 ;;
     -h|--help) print_usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; print_usage; exit 2 ;;
   esac
@@ -132,6 +143,54 @@ rotate_logs() {
 if [[ $ROTATE_LOGS -eq 1 ]]; then
   rotate_logs "$COMPRESS_OLDER_THAN_DAYS" "$KEEP_LOGS_DAYS"
   echo "\nLog rotation done (mode: $([[ $DRY_RUN -eq 1 ]] && echo DRY-RUN || echo APPLY))"
+fi
+
+cleanup_out() {
+  local keep_days="$1" max_total_mb="$2"
+  echo "\n== Clean up out/ directory =="
+  mkdir -p out || true
+
+  # Delete by age (conservative patterns)
+  while IFS= read -r -d '' f; do
+    echo "Remove old: $f"
+    if [[ $DRY_RUN -eq 1 ]]; then
+      echo "[DRY] rm -f $f"
+    else
+      rm -f "$f" || true
+    fi
+  done < <(find ./out -type f \
+           \( -name "*.jsonl" -o -name "*.json" -o -name "*.md" -o -name "*.log" \) \
+           -mtime +"$keep_days" -print0 2>/dev/null || true)
+
+  # Enforce total size cap (oldest first)
+  # Compute total size in KB
+  local total_kb
+  total_kb=$(du -sk ./out 2>/dev/null | awk '{print $1}')
+  total_kb=${total_kb:-0}
+  local cap_kb=$(( max_total_mb * 1024 ))
+  if [[ "$total_kb" -gt "$cap_kb" ]]; then
+    echo "Total out/ size ${total_kb}KB exceeds cap ${cap_kb}KB. Pruning oldest files..."
+    # List files by mtime ascending (oldest first)
+    mapfile -t files < <(find ./out -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | awk '{ $1=""; sub(/^ /,""); print }')
+    for fp in "${files[@]}"; do
+      # Recompute size periodically
+      total_kb=$(du -sk ./out 2>/dev/null | awk '{print $1}')
+      if [[ "$total_kb" -le "$cap_kb" ]]; then break; fi
+      echo "Prune: $fp"
+      if [[ $DRY_RUN -eq 1 ]]; then
+        echo "[DRY] rm -f $fp"
+      else
+        rm -f "$fp" || true
+      fi
+    done
+  else
+    echo "out/ size within cap (${total_kb}KB <= ${cap_kb}KB)"
+  fi
+}
+
+if [[ $CLEAN_OUT -eq 1 ]]; then
+  cleanup_out "$OUT_KEEP_DAYS" "$OUT_MAX_TOTAL_MB"
+  echo "\nout/ cleanup done (mode: $([[ $DRY_RUN -eq 1 ]] && echo DRY-RUN || echo APPLY))"
 fi
 
 echo "\nDone."

@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-04T21:38:20.207671",
+  "timestamp": "2025-09-05T08:40:15.727006",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "ce395947cd9c373a028734e2fb8e34bc0843235b",
+    "commit_hash": "87c082730da97064ff0b02fe3402ff92abfd5df4",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 2,
-    "status_details": "M  app/static/voice/app.js\nM  out/voice_metrics.jsonl"
+    "uncommitted_changes": 4,
+    "status_details": "M  app/api/metrics.py\nM  app/services/metrics.py\nM  out/voice_metrics.jsonl\nM  scripts/safe_cleanup.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1560,7 +1560,7 @@
     "app": {
       "exists": true,
       "python_files": 49,
-      "total_files": 194
+      "total_files": 120
     },
     "config": {
       "exists": true,
@@ -1570,17 +1570,17 @@
     "scripts": {
       "exists": true,
       "python_files": 102,
-      "total_files": 278
+      "total_files": 166
     },
     "modules": {
       "exists": true,
       "python_files": 2,
-      "total_files": 5
+      "total_files": 2
     },
     "paper_research_system": {
       "exists": true,
       "python_files": 34,
-      "total_files": 102
+      "total_files": 46
     }
   },
   "active_files": [
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25931,
+    "python_files_count": 25938,
     "cursor_configs_count": 13
   },
-  "state_hash": "d84a21122bfa47cc955c70db6e96b420"
+  "state_hash": "ab9c3b25844646009fddf17b25623994"
 }
