@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-04T20:07:48.560683",
+  "timestamp": "2025-09-04T20:38:00.961505",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "b6d029f60c48725feed276a4f60928a40bddeecd",
+    "commit_hash": "e5aa5ded46b308b69b33f8e8666c069146e2c3d3",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 23,
-    "status_details": "M  app/main.py\nM  paper_research_system/api/crossref_client.py\nM  paper_research_system/api/rate_limited_semantic_scholar_client.py\nM  paper_research_system/api/semantic_scholar_client.py\nM  paper_research_system/api/ultra_safe_semantic_scholar_client.py\nM  paper_research_system/config/settings.py\nM  paper_research_system/main_citation_network.py\nM  paper_research_system/main_filter.py\nM  paper_research_system/main_integrated.py\nM  paper_research_system/main_specialized.py\nM  paper_research_system/services/__init__.py\nM  paper_research_system/services/advanced_filter_engine.py\nM  paper_research_system/services/citation_graph_db.py\nM  paper_research_system/services/citation_network_engine.py\nM  paper_research_system/services/citation_visualization.py\nM  paper_research_system/services/manuscript_fact_checker.py\nM  paper_research_system/services/obsidian_paper_saver.py\nA  paper_research_system/services/output_schema.py\nM  paper_research_system/services/recommendation_engine.py\nM  paper_research_system/services/search_history_db.py\nM  paper_research_system/services/similarity_engine.py\nM  paper_research_system/services/specialized_search_service.py\nA  tests/fixtures/golden_claims.json"
+    "uncommitted_changes": 3,
+    "status_details": "M  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250904_203625.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1612,8 +1612,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 26136,
+    "python_files_count": 26137,
     "cursor_configs_count": 13
   },
-  "state_hash": "16f0174d6ffb61128407dabe16fc559c"
+  "state_hash": "524c2ff176783804f987810ff934ab10"
 }
