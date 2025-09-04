@@ -3,7 +3,7 @@ Advanced Filter Engine for Academic Paper Search
 学術論文検索用高度フィルタエンジン
 """
 
-from core.paper_model import Paper
+from ..core.paper_model import Paper
 import logging
 from typing import List, Optional, Set
 from datetime import datetime

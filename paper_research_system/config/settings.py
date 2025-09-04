@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     request_timeout: int = 30
     retry_attempts: int = 3
 
-    model_config = ConfigDict(env_file=".env")
+    model_config = ConfigDict(env_file=".env", extra="ignore")
 
 
 # グローバル設定インスタンス

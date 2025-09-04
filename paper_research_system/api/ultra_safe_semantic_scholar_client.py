@@ -3,8 +3,8 @@ Ultra-Safe Semantic Scholar API client for Academic Paper Research Assistant
 絶対安全 Semantic Scholar API クライアント（3秒間隔 + リトライ機能）
 """
 
-from config.settings import settings
-from core.paper_model import Paper, Author
+from ..config.settings import settings
+from ..core.paper_model import Paper, Author
 import httpx
 import asyncio
 import time

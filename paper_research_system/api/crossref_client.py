@@ -3,7 +3,7 @@ CrossRef API client for Academic Paper Research Assistant
 CrossRef API クライアント（無料・APIキー不要）
 """
 
-from config.settings import settings
+from ..config.settings import settings
 from ..core.paper_model import Paper, Author, Institution
 import httpx
 import asyncio

@@ -3,10 +3,10 @@ Citation Network Engine for Academic Paper Analysis
 学術論文引用ネットワーク分析エンジン
 """
 
-from services.safe_rate_limited_search_service import (
+from .safe_rate_limited_search_service import (
     get_safe_rate_limited_search_service,
 )
-from core.paper_model import Paper
+from ..core.paper_model import Paper
 import asyncio
 import logging
 import json

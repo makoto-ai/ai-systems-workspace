@@ -4,13 +4,13 @@ Interactive Advanced Filter CLI for Academic Paper Search
 """
 
 import time
-from core.paper_model import Paper
-from services.search_history_db import get_search_history_db
-from services.obsidian_paper_saver import ObsidianPaperSaver
-from services.safe_rate_limited_search_service import (
+from .core.paper_model import Paper
+from .services.search_history_db import get_search_history_db
+from .services.obsidian_paper_saver import ObsidianPaperSaver
+from .services.safe_rate_limited_search_service import (
     get_safe_rate_limited_search_service,
 )
-from services.advanced_filter_engine import SearchFilters, get_filter_engine
+from .services.advanced_filter_engine import SearchFilters, get_filter_engine
 import asyncio
 import click
 import logging

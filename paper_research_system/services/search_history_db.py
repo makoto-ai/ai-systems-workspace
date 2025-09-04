@@ -3,7 +3,7 @@ Search History Database Manager
 検索履歴データベース管理サービス
 """
 
-from core.paper_model import Paper
+from ..core.paper_model import Paper
 import sqlite3
 import json
 import logging

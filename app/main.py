@@ -241,6 +241,11 @@ async def root():
     }
 
 
+@app.get("/health")
+async def health_root():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     # Create output directories
     output_dir = Path("data/voicevox")

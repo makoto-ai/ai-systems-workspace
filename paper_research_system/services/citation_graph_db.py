@@ -3,7 +3,7 @@ Citation Graph Database Service
 引用ネットワーク グラフデータベース サービス
 """
 
-from services.citation_network_engine import CitationNetwork, CitationNode, CitationEdge
+from .citation_network_engine import CitationNetwork, CitationNode, CitationEdge
 import sqlite3
 import json
 import logging
@@ -13,7 +13,7 @@ from pathlib import Path
 from dataclasses import asdict
 import sys
 
-sys.path.append(str(Path(__file__).parent.parent))
+# Package-relative imports; no sys.path modification
 
 
 logger = logging.getLogger(__name__)
