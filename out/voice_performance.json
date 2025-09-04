@@ -1,17 +1,19 @@
 {
   "iterations": 1,
   "latencies": [
-    1.6048266887664795
+    0.552739143371582
   ],
-  "p50": 1.605,
-  "p90": 1.605,
-  "asr_rate": 0.0,
-  "passed": false,
+  "p50": 0.553,
+  "p90": 0.553,
+  "asr_rate": 1.0,
+  "passed": true,
   "details": [
     {
       "sim": false,
-      "asr": false,
-      "first_audio_s": 1.605
+      "asr": true,
+      "first_audio_s": 0.553,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
     }
   ]
 }
