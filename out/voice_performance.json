@@ -1,17 +1,105 @@
 {
-  "iterations": 1,
+  "iterations": 12,
   "latencies": [
-    0.552739143371582
+    0.6924741268157959,
+    0.4101247787475586,
+    0.3980138301849365,
+    0.4047410488128662,
+    0.3999900817871094,
+    0.40401697158813477,
+    0.40304064750671387,
+    0.4059269428253174,
+    0.48546600341796875,
+    0.4048597812652588,
+    0.5870678424835205,
+    0.6004469394683838
   ],
-  "p50": 0.553,
-  "p90": 0.553,
+  "p50": 0.405,
+  "p90": 0.665,
   "asr_rate": 1.0,
   "passed": true,
   "details": [
     {
       "sim": false,
       "asr": true,
-      "first_audio_s": 0.553,
+      "first_audio_s": 0.692,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.41,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.398,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.405,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.4,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.404,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.403,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.406,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.485,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.405,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.587,
+      "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
+      "conf": 0.5
+    },
+    {
+      "sim": false,
+      "asr": true,
+      "first_audio_s": 0.6,
       "asr_sample": "[音声認識: WhisperXが利用できません。代替実装を使",
       "conf": 0.5
     }
