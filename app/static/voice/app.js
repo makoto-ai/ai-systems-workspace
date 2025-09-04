@@ -256,16 +256,30 @@
     if (amp > thresh) {
       vad.activeFrames += 1; // threshold tuned for on-device mic
       vadLastActiveAt = Date.now();
-      // Barge-in: if AI is speaking, stop immediately when user voice is detected
+      // Soft barge-in: first pause (duck), then decide cancel/resume
       try {
         const speaking = ('speechSynthesis' in window) ? window.speechSynthesis.speaking : false;
         const audioPlaying = !!(aiAudio && !aiAudio.paused && !aiAudio.ended);
         if (speaking) { window.speechSynthesis.cancel(); }
-        if (audioPlaying) { aiAudio.pause(); aiAudio.currentTime = 0; }
-        // clear any pending TTS chunks on barge-in
-        ttsQueue.length = 0; ttsPlaying = false;
-        // notify server to cancel ongoing TTS
-        sendWs({ type: 'cancel_tts' });
+        if (audioPlaying) { aiAudio.pause(); }
+        // ask server to pause TTS chunking
+        sendWs({ type: 'pause_tts' });
+        // if連続発話が続く（>=350ms or activeFrames>=3）→ 完全キャンセル
+        const now = Date.now();
+        const sustained = (now - vadLastActiveAt) < 120 ? (vad.activeFrames >= 3) : true;
+        setTimeout(() => {
+          const stillSpeaking = (Date.now() - vadLastActiveAt) < 350;
+          if (sustained || stillSpeaking) {
+            // cancel fully
+            try { if (aiAudio) { aiAudio.pause(); aiAudio.currentTime = 0; } } catch(_){}
+            ttsQueue.length = 0; ttsPlaying = false;
+            sendWs({ type: 'cancel_tts' });
+          } else {
+            // resume softly
+            try { if (aiAudio && aiAudio.paused) aiAudio.play().catch(()=>{}); } catch(_){}
+            sendWs({ type: 'resume_tts' });
+          }
+        }, 350);
       } catch (_) {}
     }
     rafId = requestAnimationFrame(drawWave);

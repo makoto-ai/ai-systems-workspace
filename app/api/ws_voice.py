@@ -13,6 +13,8 @@ async def ws_voice(websocket: WebSocket):
     speaker_id: int = 2
     partial_task: Optional[asyncio.Task] = None
     ended: bool = False
+    cancel_tts_flag: bool = False
+    pause_tts_flag: bool = False
     try:
         # Lazy imports to avoid circular deps at startup
         try:
@@ -75,18 +77,65 @@ async def ws_voice(websocket: WebSocket):
                 if partial_task is None or partial_task.done():
                     partial_task = asyncio.create_task(run_partial_loop())
             elif typ == "cancel_tts":
-                # Cooperative cancel: set a flag consumed by streaming loop
-                cancel = True
+                # Cooperative cancel: set a shared flag consumed by streaming loop
+                cancel_tts_flag = True
                 await websocket.send_json({"event": "cancel_ack"})
+            elif typ == "pause_tts":
+                pause_tts_flag = True
+                await websocket.send_json({"event": "pause_ack"})
+            elif typ == "resume_tts":
+                pause_tts_flag = False
+                await websocket.send_json({"event": "resume_ack"})
             elif typ == "end":
                 ended = True
                 # Transcribe accumulated audio
                 audio_data = b"".join(audio_chunks)
                 audio_chunks.clear()
                 try:
-                    speech = get_speech_service(model_size="small", language="ja")
-                    asr = await speech.transcribe_audio(audio_data, language="ja", enable_diarization=False)
-                    text = (asr.get("text") or "").strip()
+                    # Two-stage ASR: small (fast) and medium (precise) with short race window
+                    speech_fast = get_speech_service(model_size="small", language="ja")
+                    speech_precise = get_speech_service(model_size="medium", language="ja")
+
+                    async def run_fast():
+                        try:
+                            return await speech_fast.transcribe_audio(audio_data, language="ja", enable_diarization=False)
+                        except Exception:
+                            return {"text": "", "confidence": 0.0}
+
+                    async def run_precise():
+                        try:
+                            return await speech_precise.transcribe_audio(audio_data, language="ja", enable_diarization=False)
+                        except Exception:
+                            return {"text": "", "confidence": 0.0}
+
+                    fast_task = asyncio.create_task(run_fast())
+                    precise_task = asyncio.create_task(run_precise())
+
+                    chosen = None
+                    # First window: prefer precise if it arrives within 200ms
+                    done, pending = await asyncio.wait({fast_task, precise_task}, timeout=0.2, return_when=asyncio.FIRST_COMPLETED)
+                    if precise_task in done:
+                        chosen = await precise_task
+                        # ensure to cancel fast if still running
+                        if not fast_task.done():
+                            fast_task.cancel()
+                    elif fast_task in done:
+                        fast_res = await fast_task
+                        conf = float(fast_res.get("confidence", 0.0) or 0.0)
+                        if not precise_task.done() and conf < 0.65:
+                            # wait a bit more for precise (up to 180ms additional)
+                            done2, _ = await asyncio.wait({precise_task}, timeout=0.18, return_when=asyncio.FIRST_COMPLETED)
+                            if precise_task in done2:
+                                chosen = await precise_task
+                            else:
+                                chosen = fast_res
+                        else:
+                            chosen = fast_res
+                    else:
+                        # timeout with neither finished: await fast as fallback
+                        chosen = await fast_task
+
+                    text = (chosen.get("text") or "").strip()
                 except Exception as e:
                     await websocket.send_json({"event": "error", "detail": f"asr_failed:{e}"})
                     text = ""
@@ -116,10 +165,14 @@ async def ws_voice(websocket: WebSocket):
                     parts = [p.strip().strip('|') for p in reply_text.split('|') if p and len(p.strip()) > 0]
                     if not parts:
                         parts = [reply_text]
-                    cancel = False
                     for idx, seg in enumerate(parts):
-                        if cancel:
+                        # cooperative cancel
+                        if cancel_tts_flag:
+                            await websocket.send_json({"event": "tts_cancelled"})
                             break
+                        # cooperative pause (soft barge-in)
+                        while pause_tts_flag and not cancel_tts_flag:
+                            await asyncio.sleep(0.05)
                         try:
                             wav = await voice_service.synthesize_voice(text=seg, speaker_id=speaker_id)
                             await websocket.send_json({
@@ -133,6 +186,8 @@ async def ws_voice(websocket: WebSocket):
                 except Exception as e:
                     await websocket.send_json({"event": "error", "detail": f"tts_failed:{e}"})
                 # Turn completed
+                cancel_tts_flag = False
+                pause_tts_flag = False
                 await websocket.send_json({"event": "done"})
             else:
                 await websocket.send_json({"event": "error", "detail": "unknown_type"})
