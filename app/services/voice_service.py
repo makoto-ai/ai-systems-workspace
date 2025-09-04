@@ -117,8 +117,8 @@ class VoiceService:
             # Create audio query with absolute minimum settings
             audio_query = await self.client.create_audio_query(text, speaker_id)
             if not audio_query:
-                logger.error("Failed to create audio query")
-                return None
+                logger.error("Failed to create audio query; returning silence fallback")
+                return self._generate_silence_wav(duration_ms=500)
 
             # EXTREME SPEED: Tune audio_query for faster first audio
             try:

@@ -18,7 +18,7 @@
   const micSelect = document.getElementById('micSelect');
   const modelSelect = document.getElementById('modelSelect');
   const scenarioSelect = document.getElementById('scenarioSelect');
-  const USE_WS = true; // prefer websocket streaming when available
+  const USE_WS = false; // force HTTP path to avoid WS issues
   // Speaker locking & scenario tracking
   let userSelectedSpeaker = false;
   let lastScenarioId = '';

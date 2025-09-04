@@ -1,2 +1,6 @@
-
-
+{"ts": "2025-09-04T11:39:37.865Z", "turnIndex": 0, "route": "ws", "recMs": 5600, "asrMs": 47, "textMs": 0, "ttsMs": 0, "firstAudioMs": 0, "asrOk": false}
+{"ts": "2025-09-04T11:39:42.795Z", "turnIndex": 1, "route": "ws", "recMs": 4700, "asrMs": 0, "textMs": 0, "ttsMs": 0, "firstAudioMs": 0, "asrOk": false}
+{"ts": "2025-09-04T11:39:48.695Z", "turnIndex": 2, "route": "ws", "recMs": 5600, "asrMs": 49, "textMs": 0, "ttsMs": 0, "firstAudioMs": 0, "asrOk": false}
+{"ts": "auto", "turnIndex": 0, "route": "http", "recMs": 500, "asrMs": 50, "textMs": 40, "ttsMs": 300, "firstAudioMs": 300, "asrOk": true}
+{"ts": "2025-09-04T12:07:38.432Z", "turnIndex": 0, "route": "client", "recMs": 2500, "asrMs": 0, "textMs": 654, "ttsMs": 1258, "firstAudioMs": 0, "asrOk": true}
+{"ts": "2025-09-04T12:07:42.757Z", "turnIndex": 1, "route": "client", "recMs": 3000, "asrMs": 0, "textMs": 665, "ttsMs": 1319, "firstAudioMs": 0, "asrOk": true}
