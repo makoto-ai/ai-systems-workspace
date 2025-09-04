@@ -108,6 +108,30 @@ async def voice_conversation_file(
             speaker_preferences={"speaker_id": speaker_id} if speaker_id else None,
         )
 
+        # Normalize audio bytes -> Base64 string for frontend compatibility
+        try:
+            if result and isinstance(result.get("output", {}).get("audio_data"), (bytes, bytearray)):
+                import base64 as _b64
+                b = result["output"]["audio_data"]
+                result["output"]["audio_data"] = _b64.b64encode(b).decode("utf-8")
+                result["output"]["audio_format"] = "wav"
+        except Exception:
+            # best-effort: leave as is on failure
+            pass
+
+        # Add analysis aliases and performance key defaults for frontend compatibility
+        try:
+            analysis_obj = result.get("analysis")
+            if analysis_obj is not None:
+                result.setdefault("ai_analysis", analysis_obj)
+                result.setdefault("dify_analysis", analysis_obj)
+            perf = result.setdefault("performance", {})
+            perf.setdefault("transcription_time", 0)
+            perf.setdefault("analysis_time", 0)
+            perf.setdefault("synthesis_time", 0)
+        except Exception:
+            pass
+
         # Add usage information to result
         result["usage_info"] = {
             "roleplay_sessions_consumed": usage_check["roleplay_sessions_consumed"],
@@ -167,6 +191,29 @@ async def voice_conversation_base64(
             customer_info=req.conversation_context,
             speaker_preferences=req.speaker_preferences,
         )
+
+        # Normalize audio bytes -> Base64 string for frontend compatibility
+        try:
+            if result and isinstance(result.get("output", {}).get("audio_data"), (bytes, bytearray)):
+                import base64 as _b64
+                b = result["output"]["audio_data"]
+                result["output"]["audio_data"] = _b64.b64encode(b).decode("utf-8")
+                result["output"]["audio_format"] = "wav"
+        except Exception:
+            pass
+
+        # Add analysis aliases and performance key defaults for frontend compatibility
+        try:
+            analysis_obj = result.get("analysis")
+            if analysis_obj is not None:
+                result.setdefault("ai_analysis", analysis_obj)
+                result.setdefault("dify_analysis", analysis_obj)
+            perf = result.setdefault("performance", {})
+            perf.setdefault("transcription_time", 0)
+            perf.setdefault("analysis_time", 0)
+            perf.setdefault("synthesis_time", 0)
+        except Exception:
+            pass
 
         return VoiceConversationResponse(**result)
 
@@ -780,6 +827,15 @@ async def end_session_analysis(
     except Exception as e:
         logger.error(f"Session analysis error: {e}")
         raise HTTPException(status_code=500, detail=f"分析エラー: {str(e)}")
+
+
+# Backward-compatible alias under /api/conversation
+# Frontend calls `${API_BASE_URL}/api/conversation/end-session-analysis`
+@router.post("/conversation/end-session-analysis")
+async def end_session_analysis_alias(
+    request: Request, session_id: str = Form(...), user_id: str = Form(...)
+) -> Dict[str, Any]:
+    return await end_session_analysis(request, session_id=session_id, user_id=user_id)
 
 
 async def _generate_comprehensive_report(

@@ -3,17 +3,17 @@ Safe Rate-Limited Integrated Search Service
 安全なレート制限対応統合検索サービス
 """
 
-from core.paper_model import Paper
-from api.ultra_safe_semantic_scholar_client import UltraSafeSemanticScholarClient
-from api.crossref_client import CrossRefClient
-from api.openalex_client import OpenAlexClient
+from ..core.paper_model import Paper
+from ..api.ultra_safe_semantic_scholar_client import UltraSafeSemanticScholarClient
+from ..api.crossref_client import CrossRefClient
+from ..api.openalex_client import OpenAlexClient
 import asyncio
 from typing import List, Dict, Optional
 import logging
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+# NOTE: Package-relative imports are used; sys.path modification is unnecessary
 
 
 logger = logging.getLogger(__name__)

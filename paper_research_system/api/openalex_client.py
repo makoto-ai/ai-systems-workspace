@@ -3,9 +3,9 @@ OpenAlex API client for Academic Paper Research Assistant
 OpenAlex API クライアント（無料・APIキー不要）
 """
 
-from services.query_translator import get_query_translator
-from config.settings import settings
-from core.paper_model import Paper, Author, Institution
+from ..services.query_translator import get_query_translator
+from ..config.settings import settings
+from ..core.paper_model import Paper, Author, Institution
 import httpx
 import asyncio
 from typing import List, Optional, Dict, Any
@@ -13,7 +13,7 @@ import logging
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+# Package-relative imports are used; no sys.path hacking needed
 
 
 logger = logging.getLogger(__name__)

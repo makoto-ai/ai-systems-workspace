@@ -4,7 +4,7 @@ CrossRef API クライアント（無料・APIキー不要）
 """
 
 from config.settings import settings
-from core.paper_model import Paper, Author, Institution
+from ..core.paper_model import Paper, Author, Institution
 import httpx
 import asyncio
 from typing import List, Optional, Dict, Any
