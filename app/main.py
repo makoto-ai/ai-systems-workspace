@@ -89,6 +89,20 @@ async def lifespan(app: FastAPI):
         # VoiceServiceは__init__で初期化されるため、awaitは不要
         app.state.voice_service = voice_service
         logger.info("🎤 Voice service initialized successfully")
+        # 軽量プリウォームを定期実行（60s）
+        try:
+            import asyncio as _asyncio
+            async def _prewarm_loop():
+                while True:
+                    try:
+                        await voice_service.prewarm(2)
+                    except Exception:
+                        pass
+                    await _asyncio.sleep(60)
+            app.state.voice_prewarm_task = _asyncio.create_task(_prewarm_loop())
+            logger.info("🔥 Voice prewarm loop started")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not start voice prewarm loop: {e}")
     except Exception as e:
         logger.warning(f"⚠️  Could not initialize voice service: {e}")
         app.state.voice_service = None
@@ -119,6 +133,11 @@ async def lifespan(app: FastAPI):
     logger.info("👋 Voice Roleplay System shutting down...")
 
     # Cleanup voice service
+    if hasattr(app.state, "voice_prewarm_task") and app.state.voice_prewarm_task:
+        try:
+            app.state.voice_prewarm_task.cancel()
+        except Exception:
+            pass
     if hasattr(app.state, "voice_service") and app.state.voice_service:
         await app.state.voice_service.cleanup()
         logger.info("🎤 Voice service cleaned up")

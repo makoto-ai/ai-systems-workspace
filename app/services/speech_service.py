@@ -175,21 +175,38 @@ class SpeechService:
             tried: list[list[str]] = []
             success = False
 
-            # 1) Default decode with increased probe/analyze and tolerant flags
-            cmd1 = [
+            # 0) Assume input is already WAV (common for our TTS path)
+            cmd0 = [
                 ffmpeg_bin, "-y",
+                "-f", "wav",
                 "-analyzeduration", "2M", "-probesize", "32M",
-                "-fflags", "+genpts+discardcorrupt",
                 "-i", raw_path,
                 "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
                 wav_tmp,
             ]
-            tried.append(cmd1)
+            tried.append(cmd0)
             try:
-                _run(cmd1)
+                _run(cmd0)
                 success = True
             except Exception:
                 pass
+
+            # 1) Default decode with increased probe/analyze and tolerant flags
+            if not success:
+                cmd1 = [
+                    ffmpeg_bin, "-y",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-fflags", "+genpts+discardcorrupt",
+                    "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                tried.append(cmd1)
+                try:
+                    _run(cmd1)
+                    success = True
+                except Exception:
+                    pass
 
             # 2) Explicit container format: webm
             if not success:
@@ -267,13 +284,13 @@ class SpeechService:
                 rms = float(np.sqrt(np.mean(np.square(audio)))) if len(audio) else 0.0
             except Exception:
                 rms = 0.0
-            target_rms = 0.05
+            target_rms = 0.08
             if rms > 0.0 and rms < target_rms:
                 gain = min(10.0, target_rms / max(rms, 1e-8))
                 audio = np.clip(audio * gain, -1.0, 1.0)
 
             # 2) Ensure minimum duration (2.0s) for stable recognition
-            min_len = 32000  # 2.0s at 16kHz
+            min_len = 48000  # 3.0s at 16kHz
             if len(audio) < min_len:
                 padding = min_len - len(audio)
                 audio = np.pad(audio, (0, padding), "constant")
