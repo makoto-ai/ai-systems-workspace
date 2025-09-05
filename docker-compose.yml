@@ -56,7 +56,7 @@ services:
     image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
     container_name: voicevox-engine
     ports:
-      - "50021:50021"
+      - "50022:50021"
     environment:
       - VV_ENABLE_CORS=1
     restart: unless-stopped
