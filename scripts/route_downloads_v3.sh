@@ -38,7 +38,7 @@ now_title() { date '+%Y年%m月%d日_%H時%M分%S秒'; }
 # 重複回避の移動
 safe_move() {
   local src="$1" dst_dir="$2" new_base="$3" ext="${1##*.}"
-  mkdir -p "$dst_dir"
+  mkdir -p "$dst_dir" || true
   local dst
   if [[ "$ext" != "$src" && -n "$ext" ]]; then
     dst="$dst_dir/$new_base.$ext"
@@ -47,9 +47,12 @@ safe_move() {
   fi
   local n=1
   while [[ -e "$dst" ]]; do
-    dst="$dst_dir/${new_base}_$n.$ext"; n=$((n+1))
+    dst="$dst_dir/${new_base}_$n.${ext}"; n=$((n+1))
   done
-  mv "$src" "$dst"
+  mkdir -p "$(dirname "$dst")" || true
+  if ! mv "$src" "$dst" 2>/dev/null; then
+    cp -p "$src" "$dst" 2>/dev/null && rm -f "$src"
+  fi
   echo "$dst"
 }
 
