@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Obsidian
+workspace.json
+workspace-mobile.json
+.hotkeys.json
+.hotkeys-mobile.json
+.graphviewrc
+.graphviewrc-mobile
+.trash/
+
+# プラグイン設定（必要に応じて除外）
+# .obsidian/plugins/*/
+
+# 一時ファイル
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# ログファイル
+*.log
+
+# バックアップファイル
+*.bak
+*.backup
