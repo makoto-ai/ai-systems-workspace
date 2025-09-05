@@ -21,7 +21,7 @@ export async function runTasks(tasks: Task[], ctx: RunContext) {
       done.add(next.id);
       await ctx.audit({ ts: new Date().toISOString(), taskId: next.id, level: "info", message: `done:${next.title}` });
     } catch (err: any) {
-      await ctx.audit({ ts: new Date().toISOString(), taskId: next.id, level: "error", message: `fail:${next.title}}`, data: { err: String(err?.message ?? err) } });
+      await ctx.audit({ ts: new Date().toISOString(), taskId: next.id, level: "error", message: `fail:${next.title}`, data: { err: String(err?.message ?? err) } });
       throw err;
     }
   }

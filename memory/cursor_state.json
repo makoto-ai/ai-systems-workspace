@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-05T19:04:45.644346",
+  "timestamp": "2025-09-05T19:08:56.546494",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "33fd018238a36af5ef5769d4eca769d9449460d6",
+    "commit_hash": "439e6f7837bd75ea958c90271f816b11b4321491",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "A  oneperson-os/src/cli.ts"
+    "uncommitted_changes": 8,
+    "status_details": "M  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250905_190548.json\nA  memory/snapshots/mcp_snapshot_20250905_190651.json\nA  memory/snapshots/mcp_snapshot_20250905_190754.json\nM  oneperson-os/package.json\nM  oneperson-os/src/cli.ts\nM  oneperson-os/src/core/runner.ts"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1590,5 +1590,5 @@
     "python_files_count": 24424,
     "cursor_configs_count": 12
   },
-  "state_hash": "83557988a9bcbb4144da2ce1bda400be"
+  "state_hash": "d970a071de6999cda972615e82b427f0"
 }

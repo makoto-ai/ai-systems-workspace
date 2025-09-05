@@ -31,8 +31,10 @@ function makeCtx(opts: { yes?: boolean; auto?: boolean; dryRun?: boolean }) {
     flags: { yes: opts.yes, auto: opts.auto, dryRun: opts.dryRun }
   };
   // 危険ツールにゲートを適用
-  (ctx.tools as any).writeFileText = { name: "writeFileText", kind: "danger", run: (args: any, c: any) => _writeFileText.run(args, c) };
-  (ctx.tools as any).publishToPublicDir = { name: "publishToPublicDir", kind: "danger", run: (args: any, c: any) => _publishToPublicDir.run(args, c) };
+  const gatedWrite = gateDangerous(_writeFileText, approve, ctx);
+  const gatedPublish = gateDangerous(_publishToPublicDir, approve, ctx);
+  (ctx.tools as any).writeFileText = { name: "writeFileText", kind: "danger", run: (args: any) => gatedWrite(args) };
+  (ctx.tools as any).publishToPublicDir = { name: "publishToPublicDir", kind: "danger", run: (args: any) => gatedPublish(args) };
   // SAFEはそのまま
   (ctx.tools as any).delay = delay;
   (ctx.tools as any).listFiles = listFiles;

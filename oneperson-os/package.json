@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "ts-node src/cli.ts",
+    "dev": "tsc -p . && node dist/cli.js",
     "build": "tsc -p .",
     "start": "node dist/cli.js"
   },
