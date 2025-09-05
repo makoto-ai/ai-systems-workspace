@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-05T14:05:52.061162",
+  "timestamp": "2025-09-05T17:09:41.383382",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "9b4e98b287bef557e6bac010a61ab45744e4783c",
+    "commit_hash": "da1cc6ab869bcd015af00e1bcf31d4625f767721",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  .github/workflows/pre-commit.yml"
+    "uncommitted_changes": 4,
+    "status_details": "D  .cursor/mcp.json\nM  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250905_170838.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1529,32 +1529,6 @@
           "description": "営業会話分析"
         }
       }
-    },
-    "mcp.json": {
-      "name": "ai-systems-workspace",
-      "goals": [
-        "Set up CI/CD using GitHub Actions",
-        "Implement pre-commit hooks for quality and security",
-        "Deploy with GitHub Pages or FastAPI"
-      ],
-      "tools": [
-        "git",
-        "gh",
-        "pre-commit",
-        "black",
-        "flake8",
-        "bandit",
-        "pip-audit"
-      ],
-      "language": "Python",
-      "pythonVersion": "3.12",
-      "framework": "FastAPI",
-      "routes": {
-        "doi_summary": "claude-3-opus",
-        "hallucination_check": "gpt-4",
-        "structure_validation": "gpt-4",
-        "manuscript_suggestion": "claude-3-opus"
-      }
     }
   },
   "project_structure": {
@@ -1613,8 +1587,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 23826,
-    "cursor_configs_count": 13
+    "python_files_count": 24424,
+    "cursor_configs_count": 12
   },
-  "state_hash": "556af93cd04e04e2022250d5c3e74bd2"
+  "state_hash": "ae5c5ca65dfcedde00ecaed829c4c510"
 }
