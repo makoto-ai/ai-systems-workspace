@@ -212,7 +212,7 @@ app.add_middleware(
 
 # 静的ファイル（public）を配信
 try:
-    app.mount("/public", StaticFiles(directory="public"), name="public")
+    app.mount("/public", StaticFiles(directory="public", html=True), name="public")
     logger.info("Mounted static files at /public")
 except Exception as e:
     logger.warning(f"Failed to mount static files: {e}")
@@ -296,7 +296,7 @@ class TTSReq(BaseModel):
 
 tts_router = APIRouter(prefix="/api/tts", tags=["tts"])
 
-@tts_router.get("/speakers")
+@tts_router.get("/speakers", deprecated=True)
 async def tts_speakers():
     if app_state.voice_service is None:
         return {"speakers": [], "status": "unavailable"}
@@ -305,7 +305,7 @@ async def tts_speakers():
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
 
-@tts_router.post("/text-to-speech")
+@tts_router.post("/text-to-speech", deprecated=True)
 async def tts_synthesize(req: TTSReq):
     if app_state.voice_service is None:
         raise HTTPException(status_code=503, detail="Voice service not available")
