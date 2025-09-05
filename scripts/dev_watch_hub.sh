@@ -50,7 +50,21 @@ case "$CHOICE" in
   "Pre-commit 監視（拡張）")
     run_term "/bin/zsh -lc 'cd \"$REPO\"; echo \"== $(date '+%F %T') :: watch start ==\" >> \"$LOG\"; while pgrep -f pre-commit >/dev/null 2>&1; do date '+%F %T' >> \"$LOG\"; sleep 5; done; osascript -e \"display notification \\\"pre-commit: finished\\\" with title \\\"KM Watch\\\"\"'" ;;
   "総合スタック監視（3秒ごと）")
-    run_term "/bin/zsh -lc 'INTERVAL=$INTERVAL; while true; do clear; date \"+%F %T\"; ps -Ao pid,etime,pcpu,pmem,command | egrep \"pre-commit|python(|3\\.[0-9])|docker|pytest\" | grep -v egrep | head -n 40 || true; echo; docker ps --format \"table {{.Names}}\\t{{.Status}}\\t{{.Image}}\" || true; echo; docker stats --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\" || true; sleep $INTERVAL; done'" ;;
+    run_term "/bin/zsh -lc 'INTERVAL=$INTERVAL; while true; do \
+clear; date \"+%F %T\"; \
+echo \"=== PROCESSES (pre-commit/python/docker) ===\"; \
+ps -Ao pid,etime,pcpu,pmem,command | egrep \"pre-commit|python(3\\.[0-9])?|docker|pytest\" | grep -v egrep | head -n 40 || true; \
+echo; \
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then \
+  echo \"=== DOCKER CONTAINERS ===\"; \
+  docker ps --format \"table {{.Names}}\\t{{.Status}}\\t{{.Image}}\"; \
+  echo; \
+  echo \"=== DOCKER STATS (1-shot) ===\"; \
+  docker stats --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\"; \
+else \
+  echo \"(docker not running)\"; \
+fi; \
+sleep $INTERVAL; done'" ;;
   "監視ログを tail -f")
     run_term "/bin/zsh -lc 'mkdir -p \"$(dirname \"$LOG\")\"; touch \"$LOG\"; tail -f \"$LOG\"'" ;;
   "特定PIDを top で監視")
