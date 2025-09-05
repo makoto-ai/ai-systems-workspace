@@ -99,7 +99,7 @@ case "$CATEGORY" in
   Word|PowerPoint|Excel|テキスト|PDF)
     DEST_DIR="$DEST_ROOT_DOCS/Docs/$CATEGORY" ;;
   アーカイブ)
-    DEST_DIR="$HOME/Archives/_Inbox/Archives" ;;
+    DEST_DIR="$DEST_ROOT_DOCS/Archives" ;;
   *)
     DEST_DIR="$DEST_ROOT_DOCS/Misc" ;;
 esac
