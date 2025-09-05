@@ -1,0 +1,37 @@
+{
+  "Activate": "Normal",
+  "CreationDate": 693595200.0,
+  "Macros": [
+    {
+      "Actions": [
+        {
+          "ActionUID": 1001,
+          "MacroActionType": "ExecuteShell",
+          "Path": "/bin/zsh",
+          "Parameters": "echo 'Dev Watch Hub OK' && osascript -e 'display notification \"Dev Watch Hub: test\" with title \"KM\"'",
+          "TimeOutAbortsMacro": true,
+          "TimeOutPeriod": 10,
+          "TrimResults": true,
+          "TrimResultsNew": true
+        }
+      ],
+      "CreationDate": 693595200.0,
+      "ModificationDate": 693595200.0,
+      "Name": "Dev Watch Hub (test)",
+      "Triggers": [
+        {
+          "FireType": "Pressed",
+          "KeyCode": 35,
+          "MacroTriggerType": "HotKey",
+          "Modifiers": 4352,
+          "TriggerUID": 2001
+        }
+      ],
+      "UID": "DEV-WATCH-HUB-TEST-20250905"
+    }
+  ],
+  "Name": "Dev Watch Hub",
+  "UID": "DEV-WATCH-HUB-GROUP-TEST-20250905"
+}
+
+
