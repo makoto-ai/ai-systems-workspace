@@ -31,3 +31,6 @@ workspace-mobile.json
 # バックアップファイル
 *.bak
 *.backup
+
+# Allow docs to be versioned
+!AI-Systems-Docs/**
