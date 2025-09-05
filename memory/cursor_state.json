@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-05T23:38:01.632582",
+  "timestamp": "2025-09-05T23:39:06.050610",
   "session_purpose": "pre-commit",
   "git_status": {
     "commit_hash": "eb3758234310e14affd279147b4e35f20e1d7426",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  scripts/start_voicevox.sh"
+    "uncommitted_changes": 4,
+    "status_details": "M  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250905_233803.json\nM  scripts/start_voicevox.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1590,5 +1590,5 @@
     "python_files_count": 24424,
     "cursor_configs_count": 12
   },
-  "state_hash": "7b6dd56a68a2c4df34b447867bff240a"
+  "state_hash": "9ca7cb128379fc89a87fc9ccad171549"
 }
