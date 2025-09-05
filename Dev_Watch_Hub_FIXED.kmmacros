@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Activate</key>
+	<string>Normal</string>
+	<key>CreationDate</key>
+	<real>693595200</real>
+	<key>Macros</key>
+	<array>
+		<dict>
+			<key>Actions</key>
+			<array>
+				<dict>
+					<key>ActionUID</key>
+					<string>A-HUB-EXEC-0001</string>
+					<key>Asynchronously</key>
+					<true/>
+					<key>MacroActionType</key>
+					<string>ExecuteShellScript</string>
+					<key>Path</key>
+					<string>/bin/zsh</string>
+					<key>Text</key>
+					<string><![CDATA[#!/bin/zsh
+set -euo pipefail
+
+# ====== Config (edit as needed) ======
+REPO="${REPO:-$HOME/ai-driven/ai-systems-workspace}"
+LOG="${LOG:-$HOME/Documents/Logs/pre_commit_watch.log}"
+INTERVAL="${INTERVAL:-3}"
+SOUND="${SOUND:-/System/Library/Sounds/Glass.aiff}"
+mkdir -p "$(dirname "$LOG")"
+
+# ====== Menu (AppleScript list) ======
+CHOICE=$(osascript <<'AS'
+set theList to {"Pre-commit 監視（拡張）", "総合スタック監視（3秒ごと）", "監視ログを tail -f", "特定PIDを top で監視", "監視を停止（pkill）"}
+set theChoice to choose from list theList with prompt "Dev Watch Hub" default items {item 1 of theList} OK button name "実行" cancel button name "キャンセル"
+if theChoice is false then return "__CANCEL__" else return item 1 of theChoice as string
+AS
+)
+[ "$CHOICE" = "__CANCEL__" ] && exit 0
+
+case_precommit_watch() {
+  (
+    set -euo pipefail
+    cd "$REPO" || exit 1
+    echo "== $(date '+%F %T') :: watch start ==" >> "$LOG"
+
+    if ! pgrep -f pre-commit >/dev/null 2>&1; then
+      osascript -e 'display notification "pre-commit: not running" with title "KM Watch"'
+      echo "no process" >> "$LOG"
+      exit 0
+    fi
+
+    IDLE_COUNT=0
+    PC_INTERVAL=${PC_INTERVAL:-5}
+    while pgrep -f pre-commit >/dev/null 2>&1; do
+      PIDS=$(pgrep -f pre-commit | tr '\n' ' ')
+      SNAP=$(ps -o pid,etime,pcpu,pmem,command -p $PIDS 2>/dev/null | sed '1!b;n' || true)
+      NOW=$(date '+%F %T')
+      {
+        echo "[$NOW]"
+        echo "$SNAP"
+      } >> "$LOG"
+      osascript -e "display notification \"pre-commit running\" with title \"KM Watch\""
+
+      if echo "$SNAP" | awk '{print $3}' | grep -E '^(0(\.0)?|0)$' >/dev/null 2>&1; then
+        IDLE_COUNT=$((IDLE_COUNT+1))
+      else
+        IDLE_COUNT=0
+      fi
+      if [ $IDLE_COUNT -ge $((300/PC_INTERVAL)) ]; then
+        osascript -e 'display notification "Possible hang (idle ~5m)" with title "KM Watch"'
+        echo "[warn] idle ~5m" >> "$LOG"
+        IDLE_COUNT=0
+      fi
+      sleep "$PC_INTERVAL"
+    done
+
+    echo "== $(date '+%F %T') :: finished ==" >> "$LOG"
+    osascript -e 'display notification "pre-commit: finished" with title "KM Watch"'
+    afplay "$SOUND" || true
+
+    /usr/bin/osascript <<'APPLESCRIPT'
+set theButtons to {"何もしない", "全ファイル再チェック", "SKIP=mypy で push", "--no-verify で commit"}
+set thePrompt to "pre-commit 完了。次のアクションを選択してください："
+try
+  set userChoice to button returned of (display dialog thePrompt buttons theButtons default button "何もしない" with icon note giving up after 120)
+on error
+  return
+end try
+set repoPath to system attribute "REPO_PATH"
+if userChoice is "何もしない" then
+  return
+else if userChoice is "全ファイル再チェック" then
+  do shell script "cd " & quoted form of POSIX path of repoPath & " && pre-commit run --all-files -v"
+else if userChoice is "SKIP=mypy で push" then
+  do shell script "cd " & quoted form of POSIX path of repoPath & " && SKIP=mypy git push"
+else if userChoice is "--no-verify で commit" then
+  set msg to text returned of (display dialog "コミットメッセージ:" default answer "chore: quick commit" buttons {"OK"} default button "OK" with icon note)
+  do shell script "cd " & quoted form of POSIX path of repoPath & " && git add -A && git commit -m " & quoted form of msg & " --no-verify"
+end if
+APPLESCRIPT
+  ) &
+  export REPO_PATH="$REPO"
+}
+
+case_stack_watch() {
+  (
+    set -euo pipefail
+    while true; do
+      clear
+      date "+%F %T"
+      echo "=== PROCESSES (pre-commit/python/docker) ==="
+      ps -Ao pid,etime,pcpu,pmem,command \
+        | egrep 'pre-commit|python(|3\.[0-9])|docker|pytest' \
+        | grep -v egrep \
+        | head -n 40 || true
+      echo ""
+      echo "=== DOCKER CONTAINERS ==="
+      docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' || true
+      echo ""
+      echo "=== DOCKER STATS (1-shot) ==="
+      docker stats --no-stream --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}' || true
+      sleep "$INTERVAL"
+    done
+  ) &
+}
+
+case_tail_log() {
+  (
+    set -euo pipefail
+    mkdir -p "$(dirname "$LOG")"; touch "$LOG"; exec tail -f "$LOG"
+  ) &
+}
+
+case_top_pid() {
+  PID=$(osascript <<'AS'
+set p to text returned of (display dialog "監視する PID:" default answer "" buttons {"OK"} default button "OK")
+return p
+AS
+)
+  [ -z "$PID" ] && exit 0
+  (
+    exec top -pid "$PID"
+  ) &
+}
+
+case_stop_watch() {
+  pkill -f "pre-commit run|pre-commit autoupdate|stackwatch" || true
+  osascript -e 'display notification "watchers: stop signal sent" with title "KM Watch"'
+}
+
+case "$CHOICE" in
+  "Pre-commit 監視（拡張）")        case_precommit_watch ;;
+  "総合スタック監視（3秒ごと）")    case_stack_watch    ;;
+  "監視ログを tail -f")             case_tail_log       ;;
+  "特定PIDを top で監視")           case_top_pid        ;;
+  "監視を停止（pkill）")            case_stop_watch     ;;
+  *) exit 0 ;;
+esac
+]]></string>
+					<key>TimeOutAbortsMacro</key>
+					<false/>
+					<key>TimeOutPeriod</key>
+					<integer>0</integer>
+					<key>TrimResults</key>
+					<true/>
+				</dict>
+			</array>
+			<key>CreationDate</key>
+			<real>693595200</real>
+			<key>ModificationDate</key>
+			<real>693595200</real>
+			<key>Name</key>
+			<string>Dev Watch Hub (pre-commit + stackwatch)</string>
+			<key>Triggers</key>
+			<array>
+				<dict>
+					<key>FireType</key>
+					<string>Pressed</string>
+					<key>KeyCode</key>
+					<integer>35</integer>
+					<key>MacroTriggerType</key>
+					<string>HotKey</string>
+					<key>Modifiers</key>
+					<integer>10240</integer>
+					<key>TriggerUID</key>
+					<string>TRIG-CTRL-OPT-CMD-P</string>
+				</dict>
+			</array>
+			<key>UID</key>
+			<string>MACRO-DEV-WATCH-HUB-001</string>
+		</dict>
+	</array>
+	<key>Name</key>
+	<string>Dev Watch Hub (pre-commit + stackwatch)</string>
+	<key>UID</key>
+	<string>GROUP-DEV-WATCH-HUB</string>
+</dict>
+</plist>
