@@ -1,0 +1,16 @@
+#!/bin/bash
+# Obsidian自動コミットスクリプト
+
+cd "$(dirname "$0")"
+
+# 変更があるかチェック
+if git diff --quiet && git diff --cached --quiet; then
+    echo "変更なし - コミットをスキップ"
+    exit 0
+fi
+
+# 変更をコミット
+git add .
+git commit -m "Auto commit: $(date '+%Y-%m-%d %H:%M:%S')"
+
+echo "自動コミット完了: $(date)"
