@@ -1,0 +1,37 @@
+{
+  "Activate": "Normal",
+  "CreationDate": 693595200.0,
+  "Macros": [
+    {
+      "Actions": [
+        {
+          "ActionUID": 1001,
+          "MacroActionType": "ExecuteShell",
+          "Path": "/bin/zsh",
+          "Parameters": "#!/bin/zsh\nset -euo pipefail\n\nREPO=\"${REPO:-$HOME/ai-driven/ai-systems-workspace}\"\nLOG=\"${LOG:-$HOME/Documents/Logs/pre_commit_watch.log}\"\nINTERVAL=\"${INTERVAL:-3}\"\nSOUND=\"${SOUND:-/System/Library/Sounds/Glass.aiff}\"\n\nmenu=$(osascript <<'APPLESCRIPT'\nset listItems to {\"Pre-commit 監視（拡張）\",\"総合スタック監視（3秒ごと）\",\"監視ログを tail -f\",\"特定PIDを top で監視\",\"監視を停止（pkill）\"}\nset choice to choose from list listItems with title \"Dev Watch Hub\" with prompt \"実行する監視を選択\" default items {\"Pre-commit 監視（拡張）\"} OK button name \"実行\" cancel button name \"キャンセル\"\nif choice is false then\n  return \"\"\nelse\n  return item 1 of choice\nend if\nAPPLESCRIPT\n)\n\nif [[ -z \"$menu\" ]]; then\n  osascript -e 'display notification "キャンセルされました" with title "Dev Watch Hub"'\n  exit 0\nfi\n\nrun_in_terminal() {\n  local cmd=\"$1\"\n  /usr/bin/osascript <<OSA\ntell application \"Terminal\"\n  activate\n  do script \"$cmd\"\nend tell\nOSA\n}\n\ncase \"$menu\" in\n  \"Pre-commit 監視（拡張）\")\n    mkdir -p \"$(dirname \"$LOG\")\"\n    watcher=$(cat <<'ZSH'\nREPO=\"$REPO\"\nLOG=\"$LOG\"\nINTERVAL=\"${INTERVAL:-5}\"\nSOUND=\"$SOUND\"\ncd \"$REPO\" || exit 1\necho \"== $(date '+%F %T') :: watch start ==\" >> \"$LOG\"\nif ! pgrep -f pre-commit >/dev/null; then\n  osascript -e 'display notification "pre-commit: not running" with title "KM Watch"'\n  echo \"no process\" >> \"$LOG\"\n  exit 0\nfi\nIDLE_COUNT=0\nwhile pgrep -f pre-commit >/dev/null; do\n  PIDS=$(pgrep -f pre-commit | tr '\n' ' ')\n  SNAP=$(ps -o pid,etime,pcpu,pmem,command -p $PIDS 2>/dev/null || true)\n  NOW=$(date '+%F %T')\n  { echo \"[$NOW]\"; echo \"$SNAP\"; } >> \"$LOG\"\n  osascript -e 'display notification "pre-commit running" with title "KM Watch"'\n  if echo \"$SNAP\" | awk '{print $3}' | grep -E '^(0(\\.0)?|0)$' >/dev/null 2>&1; then\n    IDLE_COUNT=$((IDLE_COUNT+1))\n  else\n    IDLE_COUNT=0\n  fi\n  if [ $IDLE_COUNT -ge $((300/INTERVAL)) ]; then\n    osascript -e 'display notification "Possible hang (idle ~5m)" with title "KM Watch"'\n    echo \"[warn] idle ~5m\" >> \"$LOG\"\n    IDLE_COUNT=0\n  fi\n  sleep \"$INTERVAL\"\ndone\necho \"== $(date '+%F %T') :: finished ==\" >> \"$LOG\"\nosascript -e 'display notification "pre-commit: finished" with title "KM Watch"'\n(afplay \"$SOUND\" || true) &\n/usr/bin/osascript <<'APPLESCRIPT'\nset theButtons to {\"何もしない\", \"全ファイル再チェック\", \"SKIP=mypy で push\", \"--no-verify で commit\"}\nset thePrompt to \"pre-commit 完了。次のアクションを選択してください：\"\ntry\n  set userChoice to button returned of (display dialog thePrompt buttons theButtons default button \"何もしない\" with icon note giving up after 120)\non error\n  return\nend try\nset repoPath to \"$REPO\"\nif userChoice is \"何もしない\" then\n  return\nelse if userChoice is \"全ファイル再チェック\" then\n  do shell script \"cd \" & quoted form of POSIX path of repoPath & \" && pre-commit run --all-files -v\"\nelse if userChoice is \"SKIP=mypy で push\" then\n  do shell script \"cd \" & quoted form of POSIX path of repoPath & \" && SKIP=mypy git push\"\nelse if userChoice is \"--no-verify で commit\" then\n  set msg to text returned of (display dialog \"コミットメッセージ:\" default answer \"chore: quick commit\" buttons {\"OK\"} default button \"OK\" with icon note)\n  do shell script \"cd \" & quoted form of POSIX path of repoPath & \" && git add -A && git commit -m \" & quoted form of msg & \" --no-verify\"\nend if\nAPPLESCRIPT\nZSH\n)\n    run_in_terminal \"nohup /bin/zsh -lc '""$watcher""' >/dev/null 2>&1 &\"\n    ;;&\n  \"総合スタック監視（3秒ごと）\")\n    cmd=\"INTERVAL=$INTERVAL; while true; do clear; date '+%F %T'; echo '=== PROCESSES (pre-commit/python/docker) ==='; ps -Ao pid,etime,pcpu,pmem,command | egrep 'pre-commit|python(|3\\.[0-9])|docker|pytest' | grep -v egrep | head -n 40 || true; echo; echo '=== DOCKER CONTAINERS ==='; docker ps --format 'table {{.Names}}\\t{{.Status}}\\t{{.Image}}' || true; echo; echo '=== DOCKER STATS (1-shot) ==='; docker stats --no-stream --format 'table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}' || true; sleep $INTERVAL; done\"\n    run_in_terminal \"/bin/zsh -lc '$cmd'\"\n    ;;&\n  \"監視ログを tail -f\")\n    cmd=\"LOG=$LOG; mkdir -p \"$(dirname \"$LOG\")\"; touch \"$LOG\"; tail -f \"$LOG\"\"\n    run_in_terminal \"/bin/zsh -lc '$cmd'\"\n    ;;&\n  \"特定PIDを top で監視\")\n    PID=$(osascript -e 'text returned of (display dialog "PIDを入力:" default answer "" buttons {"OK"} default button 1)') || true\n    if [[ -n \"$PID\" ]]; then\n      run_in_terminal \"/bin/zsh -lc 'top -pid \"$PID\"'\"\n    fi\n    ;;&\n  \"監視を停止（pkill）\")\n    /usr/bin/pkill -f \"pre-commit run|pre-commit autoupdate|stackwatch\" || true\n    osascript -e 'display notification "watchers: stop signal sent" with title "KM Watch"'\n    ;;&\n  * ) : ;;\nesac\n",
+          "TimeOutAbortsMacro": true,
+          "TimeOutPeriod": 30,
+          "TrimResults": true,
+          "TrimResultsNew": true
+        }
+      ],
+      "CreationDate": 693595200.0,
+      "ModificationDate": 693595200.0,
+      "Name": "Dev Watch Hub (pre-commit + stackwatch)",
+      "Triggers": [
+        {
+          "FireType": "Pressed",
+          "KeyCode": 35,
+          "MacroTriggerType": "HotKey",
+          "Modifiers": 4352,
+          "TriggerUID": 2001
+        }
+      ],
+      "UID": "DEV-WATCH-HUB-20250905"
+    }
+  ],
+  "Name": "Dev Watch Hub",
+  "UID": "DEV-WATCH-HUB-GROUP-20250905"
+}
+
+
