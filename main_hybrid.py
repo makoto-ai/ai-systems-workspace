@@ -67,12 +67,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Optional Voice API / Service (for local VOICEVOX integration)
+try:
+    from app.api import voice as voice_api  # type: ignore
+except Exception:
+    voice_api = None
+    logger.warning("voice API router not available")
+
+try:
+    from app.services.voice_service import VoiceService  # type: ignore
+    VOICE_AVAILABLE = True
+except Exception:
+    VOICE_AVAILABLE = False
+    VoiceService = None  # type: ignore
+    logger.warning("VoiceService not available")
+
 # アプリケーション状態管理
 class AppState:
     def __init__(self):
         self.composer: Optional[ScriptComposer] = None
         self.mcp_generator: Optional[YouTubeScriptGenerator] = None
         self.system_monitor: Optional["SystemMonitor"] = None
+        self.voice_service: Optional["VoiceService"] = None
         self.is_healthy = False
 
 app_state = AppState()
@@ -143,6 +159,17 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.error(f"System Monitor初期化エラー: {e}")
             app_state.system_monitor = None
+    
+    # VoiceService 初期化（存在する場合のみ）
+    if VOICE_AVAILABLE and VoiceService is not None:
+        try:
+            vs = VoiceService()
+            app_state.voice_service = vs
+            app.state.voice_service = vs  # voice.router互換
+            logger.info("Voice service initialized for hybrid app")
+        except Exception as e:
+            logger.warning(f"Voice service init failed: {e}")
+            app_state.voice_service = None
     
     # Vault接続テスト（オプショナル）
     try:
@@ -244,6 +271,14 @@ async def metrics_endpoint():
     if app_state.system_monitor:
         return app_state.system_monitor.get_prometheus_metrics()
     return JSONResponse(status_code=503, content={"error": "System monitor not available"})
+
+# Voice API を /api に統合（存在時）
+if voice_api is not None:
+    try:
+        app.include_router(voice_api.router, prefix="/api")
+        logger.info("voice API router mounted at /api")
+    except Exception as e:
+        logger.error(f"Mount voice router failed: {e}")
 
 # Composer API
 @app.post("/composer/generate")

@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-05T23:59:36.107334",
+  "timestamp": "2025-09-06T00:28:55.206879",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "09c0a7d432463c6757d77eab9eddaf73d0fda5c0",
+    "commit_hash": "fca475c531ea47eeb75c85dd8e65f50b410b7b08",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  docker-compose.yml"
+    "uncommitted_changes": 6,
+    "status_details": "M  main_hybrid.py\nM  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250906_002545.json\nA  memory/snapshots/mcp_snapshot_20250906_002649.json\nA  memory/snapshots/mcp_snapshot_20250906_002753.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1535,7 +1535,7 @@
     "app": {
       "exists": true,
       "python_files": 49,
-      "total_files": 120
+      "total_files": 158
     },
     "config": {
       "exists": true,
@@ -1561,8 +1561,8 @@
   "active_files": [
     {
       "file": "main_hybrid.py",
-      "size": 35981,
-      "modified": "2025-08-09T11:50:41.094970"
+      "size": 37253,
+      "modified": "2025-09-06T00:28:49.141631"
     },
     {
       "file": "system_monitor.py",
@@ -1586,9 +1586,9 @@
     }
   ],
   "system_status": {
-    "main_hybrid_running": false,
+    "main_hybrid_running": true,
     "python_files_count": 24424,
     "cursor_configs_count": 12
   },
-  "state_hash": "08c09f389bb6f5f405ffb75506908cc4"
+  "state_hash": "22216f158d3d8405c9779196503b1994"
 }
