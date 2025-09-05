@@ -7,16 +7,10 @@ INTERVAL="${INTERVAL:-3}"
 SOUND="${SOUND:-/System/Library/Sounds/Glass.aiff}"
 mkdir -p "$(dirname "$LOG")"
 
-CHOICE=$(osascript <<'AS'
-set L to {"Pre-commit 監視（拡張）", "総合スタック監視（3秒ごと）", "監視ログを tail -f", "特定PIDを top で監視", "監視を停止（pkill）"}
-set C to choose from list L with prompt "Dev Watch Hub" default items {item 1 of L} OK button name "実行" cancel button name "キャンセル"
-if C is false then
-  return "__CANCEL__"
-else
-  return item 1 of C as string
-end if
-AS
-)
+CHOICE=$(osascript \
+  -e 'set L to {"Pre-commit 監視（拡張）","総合スタック監視（3秒ごと）","監視ログを tail -f","特定PIDを top で監視","監視を停止（pkill）"}' \
+  -e 'set C to choose from list L' \
+  -e 'if C is false then return "__CANCEL__" else return item 1 of C as string end if')
 
 [[ "$CHOICE" == "__CANCEL__" ]] && exit 0
 
