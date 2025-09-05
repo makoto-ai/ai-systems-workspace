@@ -18,6 +18,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 import httpx
 from fastapi.websockets import WebSocket, WebSocketDisconnect
@@ -209,6 +210,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 静的ファイル（public）を配信
+try:
+    app.mount("/public", StaticFiles(directory="public"), name="public")
+    logger.info("Mounted static files at /public")
+except Exception as e:
+    logger.warning(f"Failed to mount static files: {e}")
+
 # OpenTelemetry計装（利用可能な場合）
 if OTEL_AVAILABLE:
     try:
@@ -276,8 +284,8 @@ async def metrics_endpoint():
 # Voice API を /api に統合（存在時）
 if voice_api is not None:
     try:
-        app.include_router(voice_api.router, prefix="/api")
-        logger.info("voice API router mounted at /api")
+        app.include_router(voice_api.router, prefix="/api/voice")
+        logger.info("voice API router mounted at /api/voice")
     except Exception as e:
         logger.error(f"Mount voice router failed: {e}")
 
