@@ -1,5 +1,5 @@
 #!/bin/zsh
-set -euo pipefail
+set -eo pipefail
 
 # 引数: 監視対象で追加されたファイルパス（KMの%TriggerValue%）
 SRC_PATH=${1:-}
@@ -37,9 +37,14 @@ now_title() { date '+%Y年%m月%d日_%H時%M分%S秒'; }
 
 # 重複回避の移動
 safe_move() {
-  local src="$1" dst_dir="$2" new_base="$3" ext="${src##*.}"
+  local src="$1" dst_dir="$2" new_base="$3" ext="${1##*.}"
   mkdir -p "$dst_dir"
-  local dst="$dst_dir/$new_base.$ext"
+  local dst
+  if [[ "$ext" != "$src" && -n "$ext" ]]; then
+    dst="$dst_dir/$new_base.$ext"
+  else
+    dst="$dst_dir/$new_base"
+  fi
   local n=1
   while [[ -e "$dst" ]]; do
     dst="$dst_dir/${new_base}_$n.$ext"; n=$((n+1))
