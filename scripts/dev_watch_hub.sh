@@ -7,10 +7,29 @@ INTERVAL="${INTERVAL:-3}"
 SOUND="${SOUND:-/System/Library/Sounds/Glass.aiff}"
 mkdir -p "$(dirname "$LOG")"
 
-CHOICE=$(osascript \
-  -e 'set L to {"Pre-commit 監視（拡張）","総合スタック監視（3秒ごと）","監視ログを tail -f","特定PIDを top で監視","監視を停止（pkill）"}' \
-  -e 'set C to choose from list L' \
-  -e 'if C is false then return "__CANCEL__" else return item 1 of C as string end if')
+if [[ $# -gt 0 ]]; then
+  # 引数で動作を指定する自動モード
+  case "$1" in
+    precommit)
+      CHOICE="Pre-commit 監視（拡張）" ;;
+    stackwatch)
+      CHOICE="総合スタック監視（3秒ごと）" ;;
+    tail)
+      CHOICE="監視ログを tail -f" ;;
+    toppid)
+      CHOICE="特定PIDを top で監視" ;;
+    stop)
+      CHOICE="監視を停止（pkill）" ;;
+    *)
+      CHOICE="__CANCEL__" ;;
+  esac
+else
+  # 手動メニュー
+  CHOICE=$(osascript \
+    -e 'set L to {"Pre-commit 監視（拡張）","総合スタック監視（3秒ごと）","監視ログを tail -f","特定PIDを top で監視","監視を停止（pkill）"}' \
+    -e 'set C to choose from list L' \
+    -e 'if C is false then return "__CANCEL__" else return item 1 of C as string end if')
+fi
 
 [[ "$CHOICE" == "__CANCEL__" ]] && exit 0
 
