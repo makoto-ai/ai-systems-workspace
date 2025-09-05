@@ -15,9 +15,10 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, APIRouter, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
+from pydantic import BaseModel, Field
 import httpx
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -279,6 +280,38 @@ if voice_api is not None:
         logger.info("voice API router mounted at /api")
     except Exception as e:
         logger.error(f"Mount voice router failed: {e}")
+
+# Minimal TTS router (fallback)
+class TTSReq(BaseModel):
+    text: str = Field(..., min_length=1)
+    speaker_id: int = Field(...)
+
+tts_router = APIRouter(prefix="/api/tts", tags=["tts"])
+
+@tts_router.get("/speakers")
+async def tts_speakers():
+    if app_state.voice_service is None:
+        return {"speakers": [], "status": "unavailable"}
+    try:
+        return await app_state.voice_service.get_speakers()
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+@tts_router.post("/text-to-speech")
+async def tts_synthesize(req: TTSReq):
+    if app_state.voice_service is None:
+        raise HTTPException(status_code=503, detail="Voice service not available")
+    try:
+        wav = await app_state.voice_service.synthesize_voice(text=req.text, speaker_id=req.speaker_id)
+        if not wav:
+            raise HTTPException(status_code=500, detail="Failed to generate audio")
+        return Response(content=wav, media_type="audio/wav")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+app.include_router(tts_router)
 
 # Composer API
 @app.post("/composer/generate")
