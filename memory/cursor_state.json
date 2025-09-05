@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-05T08:40:15.727006",
+  "timestamp": "2025-09-05T12:22:10.116622",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "87c082730da97064ff0b02fe3402ff92abfd5df4",
+    "commit_hash": "a5b3789805c302b9b7e861afbf7fdb279b0b5b29",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 4,
-    "status_details": "M  app/api/metrics.py\nM  app/services/metrics.py\nM  out/voice_metrics.jsonl\nM  scripts/safe_cleanup.sh"
+    "uncommitted_changes": 3,
+    "status_details": "M  .cursor/autostart.json\nA  .cursor/autostart.json.bak_20250905_120933\nM  data_integrity_report.json"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -915,9 +915,10 @@
           "checkServices": true,
           "startIfNeeded": true,
           "commands": [
-            "python3 scripts/cursor_startup_automation.py",
+            "./auto-start-on-open-complete.sh",
             "./quick-status.sh",
-            "./start-services.sh"
+            "./start-services.sh",
+            "python3 scripts/cursor_startup_automation.py"
           ]
         },
         "onCursorError": {
@@ -1570,7 +1571,7 @@
     "scripts": {
       "exists": true,
       "python_files": 102,
-      "total_files": 166
+      "total_files": 167
     },
     "modules": {
       "exists": true,
@@ -1612,8 +1613,8 @@
   ],
   "system_status": {
     "main_hybrid_running": false,
-    "python_files_count": 25938,
+    "python_files_count": 25842,
     "cursor_configs_count": 13
   },
-  "state_hash": "ab9c3b25844646009fddf17b25623994"
+  "state_hash": "79dbd43994dc4b62934eeaabec755835"
 }

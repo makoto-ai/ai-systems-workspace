@@ -1,15 +1,13 @@
 {
-  "timestamp": "2025-08-04T15:46:24.589988",
+  "timestamp": "2025-09-05T12:09:21.007727",
   "checks": [
     {
       "name": "Critical File: data/usage_limits.json",
       "type": "file_integrity",
-      "status": "OK",
+      "status": "FAILED",
       "details": {
-        "exists": true,
-        "size_bytes": 682,
-        "hash": "d9174969180036150f69cc3f69165371f8957860334bda8d353f74d64719cf70",
-        "last_modified": "2025-08-04T15:15:06.056813"
+        "exists": false,
+        "error": "File not found"
       }
     },
     {
@@ -18,9 +16,9 @@
       "status": "OK",
       "details": {
         "exists": true,
-        "size_bytes": 1186,
-        "hash": "c38c5e48bff97adacb3de5b0601fda66b7aafa6c8c8fc37748458ebd786df3ab",
-        "last_modified": "2025-08-04T13:36:48.901114"
+        "size_bytes": 1263,
+        "hash": "c199c25fe818dbe023fd9727d249e2eac4f0b506cef6729880ff574782156f5b",
+        "last_modified": "2025-08-29T21:39:54.298893"
       }
     },
     {
@@ -29,20 +27,18 @@
       "status": "OK",
       "details": {
         "exists": true,
-        "size_bytes": 5360,
-        "hash": "5096cdc5e30291a3867af6d407cf4b08c89808de70c1c0a3d2af5d5cd98f97f7",
-        "last_modified": "2025-08-02T13:13:32.730185"
+        "size_bytes": 7717,
+        "hash": "20746d3a7a3dc5fde844fcd9f88c258b0968fa0c1c1d96a006a0ad9747fc72c8",
+        "last_modified": "2025-09-04T20:05:04.268685"
       }
     },
     {
       "name": "Critical File: .env.local",
       "type": "file_integrity",
-      "status": "OK",
+      "status": "FAILED",
       "details": {
-        "exists": true,
-        "size_bytes": 527,
-        "hash": "87a310adf74be71ecb09a4ab59f0d75d8666a5c2e807bb1eae663882be211912",
-        "last_modified": "2025-08-04T13:40:41.548565"
+        "exists": false,
+        "error": "File not found"
       }
     },
     {
@@ -50,30 +46,28 @@
       "type": "backup_integrity",
       "status": "OK",
       "details": {
-        "backup_count": 16,
+        "backup_count": 3983,
         "backup_files": [
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/backup_verification_enhancement.py",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/config_backup_20250804_134423.bak",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/env_local_backup_20250804_134423.bak",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/requirements_backup_20250804_134423.bak",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/voice-roleplay-system/backups/config/env_backup_20250804_134423.bak"
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_115205.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_112157.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/system_monitor.py",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/requirements.txt",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/Dockerfile"
         ],
-        "status_message": "Found 16 backup files"
+        "status_message": "Found 3983 backup files"
       }
     },
     {
       "name": "Data Directory Structure",
       "type": "data_structure",
-      "status": "OK",
+      "status": "WARNING",
       "details": {
         "usage_limits_json": {
-          "exists": true,
-          "user_count": 1,
-          "total_entries": 12,
-          "file_size_kb": 0.67
+          "exists": false,
+          "warning": "usage_limits.json not found"
         }
       }
     }
   ],
-  "overall_status": "OK"
+  "overall_status": "FAILED"
 }
