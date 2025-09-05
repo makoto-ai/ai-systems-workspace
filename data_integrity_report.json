@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-05T12:09:21.007727",
+  "timestamp": "2025-09-05T17:28:27.390308",
   "checks": [
     {
       "name": "Critical File: data/usage_limits.json",
@@ -46,15 +46,15 @@
       "type": "backup_integrity",
       "status": "OK",
       "details": {
-        "backup_count": 3983,
+        "backup_count": 6723,
         "backup_files": [
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_115205.tar.gz",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_112157.tar.gz",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/system_monitor.py",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/requirements.txt",
-          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250905_105148/Dockerfile"
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250814_102913.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250824_155542.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250826_061620.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250901_230001.tar.gz",
+          "/Users/araimakoto/ai-driven/ai-systems-workspace/backups/backup_critical_20250811_050424.tar.gz"
         ],
-        "status_message": "Found 3983 backup files"
+        "status_message": "Found 6723 backup files"
       }
     },
     {
