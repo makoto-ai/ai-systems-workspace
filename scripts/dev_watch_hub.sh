@@ -33,7 +33,18 @@ fi
 
 [[ "$CHOICE" == "__CANCEL__" ]] && exit 0
 
-run_term(){ /usr/bin/osascript -e "tell application \"Terminal\" to do script \"$1\""; }
+run_term(){
+  local cmd="$1"
+  /usr/bin/osascript - "$cmd" <<'OSA'
+on run argv
+  set cmd to item 1 of argv
+  tell application "Terminal"
+    activate
+    do script cmd
+  end tell
+end run
+OSA
+}
 
 case "$CHOICE" in
   "Pre-commit 監視（拡張）")
