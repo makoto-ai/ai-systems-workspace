@@ -3,8 +3,8 @@ Specialized Search Service for Sales, Management & Psychology Research
 営業・マネジメント・心理学特化検索サービス
 """
 
-from core.paper_model import Paper
-from services.safe_rate_limited_search_service import SafeRateLimitedSearchService
+from ..core.paper_model import Paper
+from .safe_rate_limited_search_service import SafeRateLimitedSearchService
 from typing import List, Dict, Optional, Tuple
 import logging
 import sys

@@ -1,0 +1,33 @@
+{
+  "autoStart": {
+    "enabled": true,
+    "onProjectOpen": {
+      "checkServices": true,
+      "startIfNeeded": true,
+      "commands": [
+        "python3 scripts/cursor_startup_automation.py",
+        "./quick-status.sh",
+        "./start-services.sh"
+      ]
+    },
+    "onCursorError": {
+      "autoRecover": true,
+      "commands": [
+        "./start-services.sh",
+        "./quick-status.sh"
+      ]
+    },
+    "healthCheck": {
+      "interval": 60,
+      "endpoints": [
+        "http://localhost:8000/api/health/basic",
+        "http://localhost:3000"
+      ]
+    },
+    "securityAutomation": {
+      "enabled": true,
+      "fullAutomation": true,
+      "autoStart": "python3 scripts/security_full_automation.py"
+    }
+  }
+}

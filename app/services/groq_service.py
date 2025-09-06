@@ -70,37 +70,52 @@ class GroqService:
 
         # HIGH QUALITY: Professional sales roleplay prompt with detailed context
         prompt = f"""
-        あなたは経験豊富で親しみやすい営業担当者です。以下の顧客の発言に対して、自然で専門的な営業応答をしてください。
+        あなたは「顧客役」です。以下の営業マンの発言に対し、自然で簡潔な顧客応答を1~2文で返してください。
 
-        顧客の発言: "{conversation_text[:200]}"
+        営業マンの発言: "{conversation_text[:200]}"
 
-        営業応答の要件：
-        - 顧客の発言に共感し、理解を示す
-        - 具体的で価値のある情報を提供
-        - 自然な会話の流れを維持
-        - 営業として適切で専門的な対応
-        - 60-80文字程度の適切な長さ
+        応答ルール:
+        - 長さは60〜100文字程度（話しすぎない）
+        - ニーズ/懸念を一つだけ明確に述べる
+        - 最後は短い質問または確認で締める（会話継続性）
+        - 具体語を1つ入れ、曖昧語を減らす（自然/現実的）
+        - 敬体で丁寧に。箇条書き・列挙は禁止
 
-        営業担当者として自然に応答してください：
+        顧客役として短く返答：
         """
 
         try:
             # HIGH QUALITY: Balanced Groq call with quality parameters
-            result = await self.chat_completion(prompt, max_tokens=150, temperature=0.5)
+            result = await self.chat_completion(prompt, max_tokens=160, temperature=0.4)
             response_text = result["response"].strip()
 
-            # Quality assurance: Ensure appropriate response length
-            if not response_text or len(response_text) < 20:
+            # Quality assurance: Ensure appropriate response length (short)
+            if not response_text or len(response_text) < 20 or len(response_text) > 140:
                 response_text = self._generate_quality_fallback(conversation_text)
 
-            # Quality control: Adjust length for natural conversation
-            if len(response_text) > 80:
-                # Truncate at sentence boundary if possible
+            # Prevent single-word/short acknowledgements like "はい" only
+            banned_minimal = ["はい", "うん", "ええ", "了解", "承知", "OK", "ok"]
+            if any(response_text.strip() == w for w in banned_minimal):
+                response_text = self._generate_quality_fallback(conversation_text)
+
+            # Ensure the reply ends with a brief question to continue the dialogue
+            if not any(x in response_text for x in ["？", "?", "でしょうか", "ますか", "ませんか"]):
+                # append a short follow-up question politely
+                response_text = (response_text.rstrip("。") + "。ご希望やご不明点はありますでしょうか？")[:120]
+
+            # Quality control: cap to ~110字で文末調整（話しすぎ抑制）
+            if len(response_text) > 110:
                 sentences = response_text.split("。")
-                if len(sentences) > 1:
-                    response_text = sentences[0] + "。"
-                else:
-                    response_text = response_text[:80]
+                cut = []
+                total = 0
+                for s in sentences:
+                    if not s:
+                        continue
+                    if total + len(s) + 1 > 110:
+                        break
+                    cut.append(s)
+                    total += len(s) + 1
+                response_text = ("。".join(cut) + "。") if cut else response_text[:180]
 
             # Enhanced intent detection with business context
             intent = self._detect_detailed_intent(conversation_text)

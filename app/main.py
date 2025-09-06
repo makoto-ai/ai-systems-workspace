@@ -7,7 +7,8 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 from pathlib import Path
@@ -30,6 +31,10 @@ try:
         reminder,
         file_upload,
         sales_roleplay,
+        selftest,
+        metrics,
+        ws_voice,
+        selftest,
     )
 except ImportError:
     from app.api import (
@@ -48,6 +53,9 @@ except ImportError:
         reminder,
         file_upload,
         sales_roleplay,
+        selftest,
+        metrics,
+        ws_voice,
     )
 
 # Import configuration
@@ -81,6 +89,20 @@ async def lifespan(app: FastAPI):
         # VoiceServiceは__init__で初期化されるため、awaitは不要
         app.state.voice_service = voice_service
         logger.info("🎤 Voice service initialized successfully")
+        # 軽量プリウォームを定期実行（60s）
+        try:
+            import asyncio as _asyncio
+            async def _prewarm_loop():
+                while True:
+                    try:
+                        await voice_service.prewarm(2)
+                    except Exception:
+                        pass
+                    await _asyncio.sleep(60)
+            app.state.voice_prewarm_task = _asyncio.create_task(_prewarm_loop())
+            logger.info("🔥 Voice prewarm loop started")
+        except Exception as e:
+            logger.warning(f"⚠️  Could not start voice prewarm loop: {e}")
     except Exception as e:
         logger.warning(f"⚠️  Could not initialize voice service: {e}")
         app.state.voice_service = None
@@ -111,6 +133,11 @@ async def lifespan(app: FastAPI):
     logger.info("👋 Voice Roleplay System shutting down...")
 
     # Cleanup voice service
+    if hasattr(app.state, "voice_prewarm_task") and app.state.voice_prewarm_task:
+        try:
+            app.state.voice_prewarm_task.cancel()
+        except Exception:
+            pass
     if hasattr(app.state, "voice_service") and app.state.voice_service:
         await app.state.voice_service.cleanup()
         logger.info("🎤 Voice service cleaned up")
@@ -135,6 +162,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Static UI for minimal voice client
+app.mount("/ui/voice", StaticFiles(directory="app/static/voice", html=True), name="ui-voice")
+
+
+@app.get("/ui/voice")
+async def ui_voice_root():
+    """Serve minimal UI index explicitly to avoid 404s on no-trailing-slash."""
+    return FileResponse("app/static/voice/index.html")
+
+
+@app.get("/ui/monitor")
+async def ui_monitor_root():
+    """Serve monitoring dashboard for performance visibility."""
+    return FileResponse("app/static/voice/monitor.html")
+
 # Include API routers
 app.include_router(health.router, prefix="/api")
 app.include_router(voice.router, prefix="/api")
@@ -151,6 +193,9 @@ app.include_router(context.router, prefix="/api")
 app.include_router(reminder.router, prefix="/api")
 app.include_router(file_upload.router, prefix="/api")
 app.include_router(sales_roleplay.router, prefix="/api")
+app.include_router(selftest.router, prefix="/api")
+app.include_router(metrics.router, prefix="/api")
+app.include_router(ws_voice.router)
 
 
 @app.exception_handler(Exception)
@@ -194,6 +239,11 @@ async def root():
         "docs": "/docs",
         "redoc": "/redoc",
     }
+
+
+@app.get("/health")
+async def health_root():
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":

@@ -4,15 +4,15 @@ Citation Network Analysis CLI
 """
 
 import time
-from services.safe_rate_limited_search_service import (
+from .services.safe_rate_limited_search_service import (
     get_safe_rate_limited_search_service,
 )
-from services.citation_visualization import (
+from .services.citation_visualization import (
     get_citation_visualization,
     VisualizationConfig,
 )
-from services.citation_graph_db import get_citation_graph_db
-from services.citation_network_engine import (
+from .services.citation_graph_db import get_citation_graph_db
+from .services.citation_network_engine import (
     get_citation_network_engine,
     CitationNetwork,
 )

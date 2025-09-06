@@ -5,9 +5,10 @@
       "checkServices": true,
       "startIfNeeded": true,
       "commands": [
-        "python3 scripts/cursor_startup_automation.py",
+        "./auto-start-on-open-complete.sh",
         "./quick-status.sh",
-        "./start-services.sh"
+        "./start-services.sh",
+        "python3 scripts/cursor_startup_automation.py"
       ]
     },
     "onCursorError": {

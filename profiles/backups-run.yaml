@@ -1,0 +1,9 @@
+key: backups-run
+frame: 小枠
+steps:
+  - name: Daily backup
+    cmd: bash scripts/backup/daily_backup.sh || true
+  - name: Weekly rsync
+    cmd: bash scripts/backup/weekly_rsync.sh || true
+
+

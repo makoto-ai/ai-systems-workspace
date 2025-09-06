@@ -1,0 +1,13 @@
+key: youtube-opt
+frame: 大枠
+steps:
+  - name: Collect official RSS
+    cmd: python3 scripts/collect_official_rss.py
+  - name: Google Trends
+    cmd: python3 scripts/collect_trends_daily.py
+  - name: Keyword scorer A/B
+    cmd: python3 scripts/keyword_scorer_ab.py
+  - name: Plan A/B (dry-run)
+    cmd: python3 scripts/yt_ab_runner.py
+
+

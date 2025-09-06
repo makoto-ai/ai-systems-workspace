@@ -108,6 +108,30 @@ async def voice_conversation_file(
             speaker_preferences={"speaker_id": speaker_id} if speaker_id else None,
         )
 
+        # Normalize audio bytes -> Base64 string for frontend compatibility
+        try:
+            if result and isinstance(result.get("output", {}).get("audio_data"), (bytes, bytearray)):
+                import base64 as _b64
+                b = result["output"]["audio_data"]
+                result["output"]["audio_data"] = _b64.b64encode(b).decode("utf-8")
+                result["output"]["audio_format"] = "wav"
+        except Exception:
+            # best-effort: leave as is on failure
+            pass
+
+        # Add analysis aliases and performance key defaults for frontend compatibility
+        try:
+            analysis_obj = result.get("analysis")
+            if analysis_obj is not None:
+                result.setdefault("ai_analysis", analysis_obj)
+                result.setdefault("dify_analysis", analysis_obj)
+            perf = result.setdefault("performance", {})
+            perf.setdefault("transcription_time", 0)
+            perf.setdefault("analysis_time", 0)
+            perf.setdefault("synthesis_time", 0)
+        except Exception:
+            pass
+
         # Add usage information to result
         result["usage_info"] = {
             "roleplay_sessions_consumed": usage_check["roleplay_sessions_consumed"],
@@ -167,6 +191,29 @@ async def voice_conversation_base64(
             customer_info=req.conversation_context,
             speaker_preferences=req.speaker_preferences,
         )
+
+        # Normalize audio bytes -> Base64 string for frontend compatibility
+        try:
+            if result and isinstance(result.get("output", {}).get("audio_data"), (bytes, bytearray)):
+                import base64 as _b64
+                b = result["output"]["audio_data"]
+                result["output"]["audio_data"] = _b64.b64encode(b).decode("utf-8")
+                result["output"]["audio_format"] = "wav"
+        except Exception:
+            pass
+
+        # Add analysis aliases and performance key defaults for frontend compatibility
+        try:
+            analysis_obj = result.get("analysis")
+            if analysis_obj is not None:
+                result.setdefault("ai_analysis", analysis_obj)
+                result.setdefault("dify_analysis", analysis_obj)
+            perf = result.setdefault("performance", {})
+            perf.setdefault("transcription_time", 0)
+            perf.setdefault("analysis_time", 0)
+            perf.setdefault("synthesis_time", 0)
+        except Exception:
+            pass
 
         return VoiceConversationResponse(**result)
 
@@ -244,6 +291,42 @@ async def simulate_conversation(
     except Exception as e:
         logger.error(f"Error in conversation simulation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Simulation failed: {str(e)}")
+
+
+@router.post("/voice/reply_text")
+async def reply_text(
+    request: Request,
+    text_input: str,
+    context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Fast text-only reply for low-latency UX.
+
+    Args:
+        text_input: User transcript text
+        context: Optional conversation context
+
+    Returns:
+        JSON with short AI reply text and timings (no audio synthesis)
+    """
+    try:
+        t0 = time.time()
+        conversation_service = get_conversation_service()
+
+        # Generate concise reply using Groq (same policy as simulate)
+        ai_response = await conversation_service.groq_service.sales_analysis(text_input)
+        response_text = ai_response.get("response", "応答を生成できませんでした。")
+
+        return {
+            "success": True,
+            "processing_time": time.time() - t0,
+            "input": {"text": text_input, "type": "text_only"},
+            "output": {"text": response_text},
+            "ai_analysis": ai_response,
+        }
+    except Exception as e:
+        logger.error(f"Error in reply_text: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"reply_text failed: {str(e)}")
 
 
 @router.get("/voice/health")
@@ -744,6 +827,15 @@ async def end_session_analysis(
     except Exception as e:
         logger.error(f"Session analysis error: {e}")
         raise HTTPException(status_code=500, detail=f"分析エラー: {str(e)}")
+
+
+# Backward-compatible alias under /api/conversation
+# Frontend calls `${API_BASE_URL}/api/conversation/end-session-analysis`
+@router.post("/conversation/end-session-analysis")
+async def end_session_analysis_alias(
+    request: Request, session_id: str = Form(...), user_id: str = Form(...)
+) -> Dict[str, Any]:
+    return await end_session_analysis(request, session_id=session_id, user_id=user_id)
 
 
 async def _generate_comprehensive_report(

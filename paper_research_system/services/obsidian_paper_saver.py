@@ -5,7 +5,7 @@
 カタカナふりがな・日本語翻訳・わかりやすいファイル名対応
 """
 
-from core.paper_model import Paper
+from ..core.paper_model import Paper
 import datetime
 from pathlib import Path
 from typing import Dict, List
@@ -15,7 +15,7 @@ import requests
 import json
 
 # 相対パスの解決
-sys.path.append(str(Path(__file__).parent.parent))
+# Package-relative imports are used; no sys.path modification necessary
 
 
 class ObsidianPaperSaver:
@@ -642,7 +642,7 @@ class ObsidianPaperSaver:
 
 def test_obsidian_paper_saver():
     """テスト用の論文保存"""
-    from core.paper_model import Paper, Author
+    from ..core.paper_model import Paper, Author
 
     # テスト用論文データ
     test_papers = [

@@ -4,12 +4,12 @@ Academic Paper Research Assistant - Specialized Search for Sales & Management Ps
 """
 
 import time
-from core.paper_model import Paper
-from services.advanced_filter_engine import get_filter_engine, SearchFilters
-from services.recommendation_engine import get_recommendation_engine
-from services.search_history_db import get_search_history_db
-from services.obsidian_paper_saver import ObsidianPaperSaver
-from services.specialized_search_service import get_specialized_search_service
+from .core.paper_model import Paper
+from .services.advanced_filter_engine import get_filter_engine, SearchFilters
+from .services.recommendation_engine import get_recommendation_engine
+from .services.search_history_db import get_search_history_db
+from .services.obsidian_paper_saver import ObsidianPaperSaver
+from .services.specialized_search_service import get_specialized_search_service
 import asyncio
 import logging
 from rich.console import Console

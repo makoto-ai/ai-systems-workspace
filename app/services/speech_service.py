@@ -36,7 +36,7 @@ class SpeechService:
 
     def __init__(
         self,
-        model_size: str = "tiny",
+        model_size: str = "base",
         language: str = "ja",
         device: str = "auto",
         hf_token: Optional[str] = None,
@@ -50,19 +50,19 @@ class SpeechService:
             device: Device to use (FORCED to "cpu" for maximum stability)
             hf_token: HuggingFace token for speaker diarization (DISABLED for speed)
         """
-        # EXTREME SPEED MODE: Force optimal settings
-        self.model_size = "tiny"  # Fastest model only
+        # Configurable model with safe defaults
+        self.model_size = model_size or "base"
         self.language = language
-        self.device = "cpu"  # CPU is faster for tiny model
-        self.hf_token = None  # Completely disable diarization
+        self.device = self._get_device(device)
+        self.hf_token = None  # diarization disabled by default for speed
         self.model = None
         self.align_model = None
         self.diarize_model = None
 
-        # Extreme speed settings
-        self.extreme_speed = True
-        self.minimal_processing = True
-        self.skip_all_extras = True
+        # Performance settings (prefer accuracy over extreme speed)
+        self.extreme_speed = False
+        self.minimal_processing = False
+        self.skip_all_extras = False
 
         self._load_models()
 
@@ -85,15 +85,15 @@ class SpeechService:
                 logger.info("Fallback speech service initialized (no WhisperX)")
                 return
 
-            logger.info(f"Loading WhisperX TINY model for extreme speed")
+            logger.info(f"Loading WhisperX model size={self.model_size} device={self.device}")
 
-            # Load ONLY the core WhisperX model
+            # Load core WhisperX model with selected size
             self.model = whisperx.load_model(
-                "tiny",  # Always tiny for speed
-                device="cpu",  # CPU for tiny model stability
-                compute_type="int8",  # Fastest compute type
+                self.model_size,
+                device=self.device,
+                compute_type="int8",  # CPU-friendly; upgrade if GPU available
             )
-            logger.info(f"WhisperX TINY model loaded (EXTREME SPEED MODE)")
+            logger.info("WhisperX model loaded")
 
             # Skip ALL other models for maximum speed
             self.align_model = None
@@ -155,40 +155,164 @@ class SpeechService:
             logger.info("Using fallback speech recognition")
             return self._fallback_transcribe(audio_data, use_language)
 
-        # Create temporary file to store audio data
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+        # Create temporary file and ensure WAV/PCM16/16kHz mono for stable VAD
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
             temp_file.write(audio_data)
-            temp_file_path = temp_file.name
+            raw_path = temp_file.name
+        temp_file_path = raw_path
+        try:
+            import subprocess, shutil
+            wav_fd, wav_tmp = tempfile.mkstemp(suffix=".wav")
+            os.close(wav_fd)
+            ffmpeg_bin = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
+            env = os.environ.copy()
+            env["PATH"] = env.get("PATH", "") + ":/opt/homebrew/bin:/usr/local/bin:/usr/bin"
+
+            def _run(cmd: list[str]):
+                subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
+
+            # Strategy: try several robust decode paths in order
+            tried: list[list[str]] = []
+            success = False
+
+            # 0) Assume input is already WAV (common for our TTS path)
+            cmd0 = [
+                ffmpeg_bin, "-y",
+                "-f", "wav",
+                "-analyzeduration", "2M", "-probesize", "32M",
+                "-i", raw_path,
+                "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                wav_tmp,
+            ]
+            tried.append(cmd0)
+            try:
+                _run(cmd0)
+                success = True
+            except Exception:
+                pass
+
+            # 1) Default decode with increased probe/analyze and tolerant flags
+            if not success:
+                cmd1 = [
+                    ffmpeg_bin, "-y",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-fflags", "+genpts+discardcorrupt",
+                    "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                tried.append(cmd1)
+                try:
+                    _run(cmd1)
+                    success = True
+                except Exception:
+                    pass
+
+            # 2) Explicit container format: webm
+            if not success:
+                cmd2 = [
+                    ffmpeg_bin, "-y",
+                    "-f", "webm",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                tried.append(cmd2)
+                try:
+                    _run(cmd2)
+                    success = True
+                except Exception:
+                    pass
+
+            # 3) Explicit container format: matroska
+            if not success:
+                cmd3 = [
+                    ffmpeg_bin, "-y",
+                    "-f", "matroska",
+                    "-analyzeduration", "2M", "-probesize", "32M",
+                    "-i", raw_path,
+                    "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                    wav_tmp,
+                ]
+                tried.append(cmd3)
+                try:
+                    _run(cmd3)
+                    success = True
+                except Exception:
+                    pass
+
+            # 4) Remux copy to new webm then decode
+            if not success:
+                remux_fd, remux_path = tempfile.mkstemp(suffix=".webm")
+                os.close(remux_fd)
+                try:
+                    cmd4a = [ffmpeg_bin, "-y", "-analyzeduration", "2M", "-probesize", "32M", "-fflags", "+genpts", "-i", raw_path, "-c", "copy", remux_path]
+                    tried.append(cmd4a)
+                    _run(cmd4a)
+                    cmd4b = [ffmpeg_bin, "-y", "-i", remux_path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav_tmp]
+                    tried.append(cmd4b)
+                    _run(cmd4b)
+                    success = True
+                except Exception:
+                    pass
+                finally:
+                    try:
+                        if os.path.exists(remux_path):
+                            os.unlink(remux_path)
+                    except OSError:
+                        pass
+
+            if not success:
+                # As a last resort, leave original path to try direct load; will raise if unsupported
+                temp_file_path = raw_path
+            else:
+                temp_file_path = wav_tmp
+        except Exception:
+            # fallback: assume input already wav
+            temp_file_path = raw_path
 
         try:
-            logger.info(f"EXTREME SPEED: Transcribing audio")
+            logger.info("Transcribing audio")
 
             # Load audio with WhisperX
             audio = whisperx.load_audio(temp_file_path)
 
-            # EXTREME SPEED: Skip duration checks for maximum speed
-            # Only pad if absolutely necessary
-            if len(audio) < 8000:  # Less than 0.5 seconds at 16kHz
-                padding = 8000 - len(audio)
+            # Basic gain + padding for better VAD/ASR pickup
+            # 1) Normalize quiet audio up to target RMS (~-26 dB)
+            try:
+                rms = float(np.sqrt(np.mean(np.square(audio)))) if len(audio) else 0.0
+            except Exception:
+                rms = 0.0
+            target_rms = 0.08
+            if rms > 0.0 and rms < target_rms:
+                gain = min(10.0, target_rms / max(rms, 1e-8))
+                audio = np.clip(audio * gain, -1.0, 1.0)
+
+            # 2) Ensure minimum duration (2.0s) for stable recognition
+            min_len = 48000  # 3.0s at 16kHz
+            if len(audio) < min_len:
+                padding = min_len - len(audio)
                 audio = np.pad(audio, (0, padding), "constant")
 
-            # 1. Transcribe with WhisperX (EXTREME SPEED MODE)
-            # Absolute minimum settings for sub-second processing
+            # 1. Transcribe with WhisperX (accuracy biased)
             result = self.model.transcribe(
                 audio,
-                batch_size=1,  # Minimum batch for maximum speed
+                batch_size=8,
                 language=use_language,
             )
 
-            # 2. EXTREME SPEED: Skip ALL extra processing
+            # 2. Minimal extra processing disabled when accuracy is preferred
             diarization_successful = False
-            logger.info("EXTREME SPEED: Minimal processing only")
 
-            # Process and format results with minimal overhead
-            transcription_result = self._format_result_fast(result, use_language)
+            # Prefer richer formatting when segments are available
+            transcription_result = (
+                self._format_result(result, use_language, has_diarization=False)
+                if (isinstance(result, dict) and result.get("segments"))
+                else self._format_result_fast(result, use_language)
+            )
 
-            # EXTREME SPEED: Skip GPU cleanup for speed
-            logger.info(f"EXTREME SPEED: Transcription completed")
+            logger.info("Transcription completed")
             return transcription_result
 
         except Exception as e:
@@ -198,7 +322,8 @@ class SpeechService:
         finally:
             # Clean up temporary file
             try:
-                os.unlink(temp_file_path)
+                if os.path.exists(temp_file_path):
+                    os.unlink(temp_file_path)
             except OSError:
                 pass
 
@@ -405,8 +530,8 @@ class SpeechService:
         }
 
 
-# Global speech service instance
-_speech_service_instance: Optional[SpeechService] = None
+# Global speech service cache by model size
+_speech_service_cache: dict[str, SpeechService] = {}
 
 
 def get_speech_service(
@@ -423,11 +548,10 @@ def get_speech_service(
     Returns:
         SpeechService instance
     """
-    global _speech_service_instance
-
-    if _speech_service_instance is None:
-        _speech_service_instance = SpeechService(
-            model_size=model_size, language=language, hf_token=hf_token
-        )
-
-    return _speech_service_instance
+    global _speech_service_cache
+    key = f"{model_size}:{language}"
+    svc = _speech_service_cache.get(key)
+    if svc is None:
+        svc = SpeechService(model_size=model_size, language=language, hf_token=hf_token)
+        _speech_service_cache[key] = svc
+    return svc

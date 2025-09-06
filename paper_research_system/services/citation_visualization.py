@@ -3,7 +3,7 @@ Citation Network Visualization Engine
 引用ネットワーク可視化エンジン
 """
 
-from services.citation_network_engine import CitationNetwork, CitationNode, CitationEdge
+from .citation_network_engine import CitationNetwork, CitationNode, CitationEdge
 import logging
 import math
 from typing import List, Dict, Set, Tuple, Optional, Any

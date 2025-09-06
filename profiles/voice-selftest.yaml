@@ -1,0 +1,9 @@
+key: voice-selftest
+frame: 中枠
+steps:
+  - name: Server health (selftest)
+    cmd: curl -s -X POST http://127.0.0.1:8000/api/selftest/run_performance?iterations=6 | jq -c .
+  - name: Metrics summary
+    cmd: curl -s http://127.0.0.1:8000/api/metrics/perf/summary | jq -c .
+
+

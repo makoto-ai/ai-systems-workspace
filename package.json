@@ -18,7 +18,11 @@
     "frontend:install": "cd frontend/voice-roleplay-frontend && npm install",
     "backend:install": "pip install -r requirements.txt",
     "install": "npm run backend:install && npm run frontend:install",
-    "test": "pytest",
+    "test:e2e": "playwright test",
+    "test:api": "pytest -q tests/api/test_roundtrip.py",
+    "test": "npm run test:e2e && npm run test:api",
+    "auto:white": "chokidar \"**/*\" -i \".git|node_modules|dist|build|playwright-report|.playwright\" -c \"bash scripts/auto-whiten.sh\" --debounce 8000",
+    "auto:white:once": "bash scripts/auto-whiten.sh",
     "auto-save": "./auto-save.sh",
     "integrity-check": "python scripts/data-integrity-check.py --check",
     "obsidian-backup": "./scripts/obsidian-backup.sh",
@@ -28,7 +32,18 @@
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
-  "keywords": ["voice", "ai", "roleplay", "training", "sales", "mobile"],
+  "keywords": [
+    "voice",
+    "ai",
+    "roleplay",
+    "training",
+    "sales",
+    "mobile"
+  ],
   "author": "Voice Roleplay System",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "chokidar-cli": "^3.0.0"
+  }
 }

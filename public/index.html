@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>公開ファイル</title></head><body>
+<h1>公開ファイル</h1>
+<p>最終更新: 2025年09月06日 08時06分00秒</p>
+<p><a href=./音声テスト_20250906_075933_spk2.wav download>最新の音声をダウンロード</a></p>
+<ul>
+<li><a href="./index.html" download>index.html</a></li>
+<li><a href="./音声テスト_20250906_075933_spk2.wav" download>音声テスト_20250906_075933_spk2.wav</a></li>
+</ul>
+<hr>
+<h2>簡易TTSテスト</h2>
+<form id="ttsForm" onsubmit="return false;">
+  <label>テキスト: <input type="text" id="ttsText" value="テスト音声です。" size="40"></label>
+  <label>話者ID: <input type="number" id="ttsSpeaker" value="2" min="0" style="width:80px"></label>
+  <label>プリセット:
+    <select id="ttsPreset">
+      <option value="custom">（手動指定）</option>
+      <option value="female_calm" selected>女性・落ち着き（ID=2）</option>
+      <option value="male_calm">男性・落ち着き（ID=11）</option>
+      <option value="female_energetic">女性・元気（ID=7）</option>
+      <option value="male_energetic">男性・元気（ID=39）</option>
+    </select>
+  </label>
+  <button id="ttsBtn">合成してダウンロード</button>
+</form>
+<p id="ttsStatus"></p>
+<audio id="ttsAudio" controls style="margin-top:8px; width:100%"></audio>
+<script>
+const btn = document.getElementById('ttsBtn');
+const preset = document.getElementById('ttsPreset');
+const speakerInput = document.getElementById('ttsSpeaker');
+
+function applyPreset(){
+  const v = preset.value;
+  const map = {
+    female_calm: 2,      // 例: 青山龍星/四国めたん系の落ち着き
+    male_calm: 11,       // 例: 玄野武宏ノーマル
+    female_energetic: 7, // 例: 春日部つむぎノーマル
+    male_energetic: 39   // 例: 玄野武宏(喜び)
+  };
+  if (v !== 'custom' && map[v] !== undefined){
+    speakerInput.value = String(map[v]);
+  }
+}
+
+preset.addEventListener('change', applyPreset);
+btn.addEventListener('click', async () => {
+  const text = document.getElementById('ttsText').value.trim();
+  const speaker = parseInt(document.getElementById('ttsSpeaker').value || '2', 10);
+  const status = document.getElementById('ttsStatus');
+  const audio = document.getElementById('ttsAudio');
+  if (!text) { status.textContent = 'テキストを入力してください'; return; }
+  status.textContent = '合成中...';
+  try {
+    const res = await fetch('/api/voice/text-to-speech', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, speaker_id: speaker })
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      status.textContent = '失敗: ' + res.status + ' ' + t;
+      return;
+    }
+    const blob = await res.blob();
+    // 再生用URL
+    const url = URL.createObjectURL(blob);
+    audio.src = url;
+    audio.load();
+    try { await audio.play(); } catch (e) {}
+    // ダウンロード用URL（別で生成し、こちらのみ即解放）
+    const dlUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = dlUrl;
+    a.download = `tts_${Date.now()}.wav`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(dlUrl);
+    status.textContent = '成功: ダウンロード開始';
+  } catch (e) {
+    status.textContent = 'エラー: ' + e;
+  }
+});
+</script>
+<hr>
+<h2>最新音声（自動）</h2>
+<table id="hist" border="1" cellspacing="0" cellpadding="6">
+  <thead><tr><th>名前</th><th>サイズ</th><th>更新</th></tr></thead>
+  <tbody></tbody>
+  </table>
+<script>
+async function loadHistory(){
+  try{
+    const res = await fetch('/api/public/list?limit=5');
+    if(!res.ok){return}
+    const data = await res.json();
+    const tb = document.querySelector('#hist tbody');
+    tb.innerHTML = '';
+    for(const f of (data.files||[])){
+      const tr = document.createElement('tr');
+      const sz = (f.size/1024).toFixed(1)+' KB';
+      const dt = new Date(f.mtime*1000).toLocaleString('ja-JP');
+      tr.innerHTML = `<td><a href="${f.url}" download>${f.name}</a></td><td>${sz}</td><td>${dt}</td>`;
+      tb.appendChild(tr);
+    }
+  }catch(e){/* ignore */}
+}
+loadHistory();
+setInterval(loadHistory, 10000);
+</script>
+</body></html>

@@ -1,0 +1,7 @@
+key: course-builder
+frame: 中枠
+steps:
+  - name: Generate course skeleton from past chats (placeholder)
+    cmd: python3 - <<'PY'\nprint('TODO: implement course builder using conversation history')\nPY
+
+

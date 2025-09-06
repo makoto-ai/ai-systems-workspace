@@ -3,11 +3,11 @@ Recommendation Engine for Academic Papers
 学術論文推薦エンジン
 """
 
-from services.safe_rate_limited_search_service import (
+from .safe_rate_limited_search_service import (
     get_safe_rate_limited_search_service,
 )
-from services.similarity_engine import get_similarity_engine
-from core.paper_model import Paper
+from .similarity_engine import get_similarity_engine
+from ..core.paper_model import Paper
 import asyncio
 import logging
 import re

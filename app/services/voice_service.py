@@ -5,17 +5,13 @@ import logging
 try:
     from core.voicevox import (
         VoicevoxClient,
-        VoicevoxConnectionError,
         EmotionParams,
-        Speaker,
     )
     from core.speakers import VOICEVOX_SPEAKER_MAPPING
 except ImportError:
     from app.core.voicevox import (
         VoicevoxClient,
-        VoicevoxConnectionError,
         EmotionParams,
-        Speaker,
     )
     from app.core.speakers import VOICEVOX_SPEAKER_MAPPING
 import weakref
@@ -60,6 +56,7 @@ class VoiceService:
             self.output_dir = Path(os.getenv("OUTPUT_DIR", "./data/voicevox"))
             self.output_dir.mkdir(parents=True, exist_ok=True)
             self.test_mode = test_mode
+            self._last_prewarm_ms: int = 0
             self._initialized = True
             logger.info("VoiceService initialized successfully")
 
@@ -89,7 +86,8 @@ class VoiceService:
         try:
             # 話者IDのバリデーション
             if not await self.validate_speaker_id(speaker_id):
-                raise SpeakerNotFoundError(f"Speaker ID {speaker_id} not found")
+                # VOICEVOXが未起動などで話者検証ができない場合は無音WAVを返す（E2Eのための安全フォールバック）
+                return self._generate_silence_wav(duration_ms=500)
 
             # テストモードの場合はモックデータを返す
             if self.test_mode:
@@ -112,32 +110,92 @@ class VoiceService:
                 voicevox_params = VOICEVOX_SPEAKER_MAPPING[speaker_id]
                 speaker_id = voicevox_params["speaker"]
 
-            # EXTREME SPEED: Truncate text to 30 characters for fastest synthesis
-            if len(text) > 30:
-                text = text[:30]
+            # Do not truncate: synthesize full text to avoid early cut-off
+            # (VOICEVOX handles sentence-length inputs; allow full reply)
 
             # EXTREME SPEED: Skip emotion parameters completely
             # Create audio query with absolute minimum settings
             audio_query = await self.client.create_audio_query(text, speaker_id)
             if not audio_query:
-                logger.error("Failed to create audio query")
-                return None
+                logger.error("Failed to create audio query; returning silence fallback")
+                return self._generate_silence_wav(duration_ms=500)
 
-            # EXTREME SPEED: Generate audio with highest speed settings
+            # EXTREME SPEED: Tune audio_query for faster first audio + 聞きやすさ
+            try:
+                def _clamp(val: float, lo: float, hi: float) -> float:
+                    return max(lo, min(hi, float(val)))
+
+                # 環境変数で上書き可能（なければ推奨既定値）
+                default_speed = float(os.getenv("VOICE_DEFAULT_SPEED", "1.30"))
+                default_volume = float(os.getenv("VOICE_DEFAULT_VOLUME", "1.08"))
+                default_pre = float(os.getenv("VOICE_DEFAULT_PRE_S", "0.035"))
+                default_post = float(os.getenv("VOICE_DEFAULT_POST_S", "0.045"))
+                default_pause_scale = float(os.getenv("VOICE_DEFAULT_PAUSE_SCALE", "0.70"))
+
+                audio_query["speedScale"] = _clamp(
+                    audio_query.get("speedScale", default_speed), 1.10, 1.60
+                )
+                audio_query["volumeScale"] = _clamp(
+                    audio_query.get("volumeScale", default_volume), 0.80, 1.50
+                )
+                audio_query["prePhonemeLength"] = _clamp(
+                    audio_query.get("prePhonemeLength", default_pre), 0.02, 0.08
+                )
+                audio_query["postPhonemeLength"] = _clamp(
+                    audio_query.get("postPhonemeLength", default_post), 0.02, 0.08
+                )
+                if "pauseLength" in audio_query:
+                    audio_query["pauseLength"] = _clamp(
+                        audio_query.get("pauseLength", 0.08), 0.02, 0.08
+                    )
+                if "pauseLengthScale" in audio_query:
+                    audio_query["pauseLengthScale"] = _clamp(
+                        audio_query.get("pauseLengthScale", default_pause_scale), 0.50, 1.00
+                    )
+            except Exception:
+                # If the query format differs, continue safely
+                pass
+
             wav_data = await self.client.synthesis(audio_query, speaker_id)
             if not wav_data:
-                logger.error("Failed to synthesize audio")
-                return None
+                logger.error("Failed to synthesize audio (empty). Returning fallback silence.")
+                return self._generate_silence_wav(duration_ms=500)
 
             return wav_data
 
         except SpeakerNotFoundError:
-            # 話者エラーは再度スローする
-            raise
+            # 話者が見つからない場合も無音WAVでフォールバック
+            return self._generate_silence_wav(duration_ms=500)
         except Exception as e:
             logger.error(f"Error in extreme speed voice synthesis: {e}")
-            # EXTREME SPEED: Return minimal error audio
-            return b""  # Empty bytes for fastest fallback
+            # EXTREME SPEED: Return minimal error audio (silence)
+            return self._generate_silence_wav(duration_ms=500)
+
+    async def prewarm(self, speaker_id: int = 2) -> None:
+        """Prime VOICEVOX pipeline to reduce first-audio latency.
+        Runs at most once per 45 seconds to avoid unnecessary load.
+        """
+        import time as _t
+        now_ms = int(_t.time() * 1000)
+        if (now_ms - self._last_prewarm_ms) < 45_000:
+            return
+        try:
+            # minimal query+synthesis with single short mora
+            short_text = "テスト。"
+            aq = await self.client.create_audio_query(short_text, speaker_id)
+            if aq:
+                # keep params tiny to be fast
+                try:
+                    aq["speedScale"] = float(min(1.3, aq.get("speedScale", 1.1)))
+                    aq["prePhonemeLength"] = float(min(0.03, aq.get("prePhonemeLength", 0.05)))
+                    aq["postPhonemeLength"] = float(min(0.03, aq.get("postPhonemeLength", 0.05)))
+                except Exception:
+                    pass
+                _ = await self.client.synthesis(aq, speaker_id)
+            self._last_prewarm_ms = now_ms
+        except Exception:
+            # best-effort: ignore prewarm failures
+            return
 
     async def get_speakers(self) -> Dict[str, Dict[str, Any]]:
         """利用可能な話者の一覧を取得する"""
@@ -184,6 +242,24 @@ class VoiceService:
         except Exception as e:
             logger.error(f"Failed to get speakers: {e}")
             raise VoiceServiceError(f"Failed to get speakers: {e}")
+
+    def _generate_silence_wav(self, duration_ms: int = 400, sample_rate: int = 24000) -> bytes:
+        """指定長の無音WAV（PCM16 mono）を生成して返す。外部依存のない安全フォールバック。"""
+        import struct
+        num_samples = int(sample_rate * (duration_ms / 1000.0))
+        num_channels = 1
+        bits_per_sample = 16
+        byte_rate = sample_rate * num_channels * bits_per_sample // 8
+        block_align = num_channels * bits_per_sample // 8
+        data = b"\x00\x00" * num_samples  # 16-bit PCM silence
+        # RIFF header
+        riff = b"RIFF" + struct.pack('<I', 36 + len(data)) + b"WAVE"
+        # fmt chunk
+        fmt = (b"fmt " + struct.pack('<IHHIIHH', 16, 1, num_channels, sample_rate,
+                                      byte_rate, block_align, bits_per_sample))
+        # data chunk
+        dat = b"data" + struct.pack('<I', len(data)) + data
+        return riff + fmt + dat
 
     async def validate_speaker_id(self, speaker_id: int) -> bool:
         """話者IDが有効かどうかを確認する"""

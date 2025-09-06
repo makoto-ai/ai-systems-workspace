@@ -3,6 +3,9 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Dict, Any, List, Literal
 from pathlib import Path
+from datetime import datetime
+import re
+import os
 
 try:
     from services.voice_service import (
@@ -85,6 +88,38 @@ class OpenAITTSRequest(BaseModel):
     speed: Optional[float] = 1.0
 
 
+@router.post("/reply_text")
+async def reply_text(request: Request, text_input: str) -> Dict[str, Any]:
+    try:
+        base = (text_input or "").strip().replace("\n", " ")
+        if not base:
+            base = "承知しました。続けてどうぞ。"
+        reply = f"承知しました。『{base[:80]}』への回答です。"
+        return {"output": {"text": reply}}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/simulate")
+async def simulate_tts(request: Request, text_input: str, speaker_id: int = 2) -> Dict[str, Any]:
+    try:
+        if (
+            not hasattr(request.app.state, "voice_service")
+            or request.app.state.voice_service is None
+        ):
+            raise HTTPException(status_code=503, detail="Voice service not available")
+        wav = await request.app.state.voice_service.synthesize_voice(
+            text=text_input or "承知しました。続けてどうぞ。", speaker_id=speaker_id
+        )
+        if not wav:
+            raise HTTPException(status_code=500, detail="Failed to generate audio")
+        b64 = base64.b64encode(wav).decode("utf-8")
+        return {"output": {"audio_data": b64, "text": text_input}}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/speakers")
 async def get_speakers(request: Request) -> Dict[str, Any]:
     """利用可能な話者の一覧を取得する"""
@@ -108,6 +143,56 @@ async def get_speakers(request: Request) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+
+class ConversationLiteRequest(BaseModel):
+    input: str = Field(..., min_length=1, description="ユーザーの発話（テキスト）")
+    speaker_id: int = Field(..., description="話者ID")
+    system_prompt: Optional[str] = Field(None, description="応答方針（任意）")
+
+
+@router.post("/conversation-lite")
+async def conversation_lite(request: Request, req: ConversationLiteRequest) -> Response:
+    """最小1往復: text->LLM->TTS（高速フォールバック内蔵）"""
+    try:
+        # 応答テキスト生成（MCPがあれば利用、なければ軽量テンプレート）
+        reply_text = None
+        try:
+            if hasattr(request.app.state, "mcp_generator") and request.app.state.mcp_generator:
+                mcp = request.app.state.mcp_generator
+                payload = {"title": "conversation-lite", "content": req.input, "style": "concise"}
+                gen = await mcp.generate_script(payload)
+                # 生成結果から短く要約（先頭200文字）
+                reply_text = (gen or "").strip()[:200] or None
+        except Exception:
+            reply_text = None
+        if not reply_text:
+            # フォールバック（丁寧+簡潔）
+            base = req.input.strip().replace("\n", " ")[:80]
+            reply_text = f"承知しました。『{base}』について要点をまとめて対応します。"
+
+        # 音声合成
+        wav_data = await request.app.state.voice_service.synthesize_voice(
+            text=reply_text, speaker_id=req.speaker_id
+        )
+        if not wav_data:
+            raise HTTPException(status_code=500, detail="Failed to generate audio")
+
+        # 保存（public）
+        try:
+            project_root = Path(__file__).resolve().parents[2]
+            public_dir = project_root / "public"
+            public_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y年%m月%d日_%H時%M分%S秒")
+            head = reply_text.strip()[:12]
+            head = re.sub(r"[\\/:*?\"<>|\n\r]", "_", head)
+            fname = f"{ts}_会話応答_話者{req.speaker_id}_{head or '音声'}.wav"
+            (public_dir / fname).write_bytes(wav_data)
+        except Exception:
+            pass
+
+        return Response(content=wav_data, media_type="audio/wav")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 @router.post("/text-to-speech")
 async def text_to_speech(request: Request, req: TextToSpeechRequest) -> Response:
@@ -141,6 +226,23 @@ async def text_to_speech(request: Request, req: TextToSpeechRequest) -> Response
 
         if not wav_data:
             raise HTTPException(status_code=500, detail="Failed to generate audio")
+
+        # 生成音声を public/ に保存（日本語名）
+        try:
+            project_root = Path(__file__).resolve().parents[2]
+            public_dir = project_root / "public"
+            public_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y年%m月%d日_%H時%M分%S秒")
+            # テキスト先頭を短く取り、ファイル名に不適切な記号を除去
+            head = req.text.strip()[:12]
+            head = re.sub(r"[\\/:*?\"<>|\n\r]", "_", head)
+            fname = f"{ts}_話者{req.speaker_id}_{head or '音声'}.wav"
+            out_path = public_dir / fname
+            with open(out_path, "wb") as f:
+                f.write(wav_data)
+        except Exception:
+            # 保存失敗は応答に影響させない
+            pass
 
         # WAVファイルとして返す
         return Response(
@@ -191,6 +293,21 @@ async def openai_compatible_tts(request: Request, req: OpenAITTSRequest) -> Resp
 
         if not wav_data:
             raise HTTPException(status_code=500, detail="Failed to generate audio")
+
+        # 生成音声を public/ に保存（日本語名）
+        try:
+            project_root = Path(__file__).resolve().parents[2]
+            public_dir = project_root / "public"
+            public_dir.mkdir(parents=True, exist_ok=True)
+            ts = datetime.now().strftime("%Y年%m月%d日_%H時%M分%S秒")
+            head = req.input.strip()[:12]
+            head = re.sub(r"[\\/:*?\"<>|\n\r]", "_", head)
+            fname = f"{ts}_話者{speaker_id}_{head or '音声'}.wav"
+            out_path = public_dir / fname
+            with open(out_path, "wb") as f:
+                f.write(wav_data)
+        except Exception:
+            pass
 
         # レスポンスフォーマットに応じたContent-Typeを設定
         content_type_map = {

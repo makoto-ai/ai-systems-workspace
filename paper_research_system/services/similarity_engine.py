@@ -3,7 +3,7 @@ Similarity Engine for Academic Paper Recommendation
 論文推薦システム用類似度計算エンジン
 """
 
-from core.paper_model import Paper
+from ..core.paper_model import Paper
 import re
 import logging
 from typing import List, Dict, Any, Tuple, Optional
@@ -12,7 +12,7 @@ import math
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+# Package-relative imports are used; no sys.path modification
 
 
 logger = logging.getLogger(__name__)

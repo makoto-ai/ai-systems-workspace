@@ -1,0 +1,7 @@
+key: youtube-script
+frame: 大枠
+steps:
+  - name: Run YouTube script generation API (local)
+    cmd: python3 research_to_youtube_api.py || true
+
+

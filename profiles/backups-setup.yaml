@@ -1,0 +1,9 @@
+key: backups-setup
+frame: 中枠
+steps:
+  - name: Configure cron backups (if available)
+    cmd: bash scripts/backup/setup_cron_backup.sh || true
+  - name: Configure Obsidian git backup
+    cmd: bash scripts/backup/setup_obsidian_git.sh || true
+
+

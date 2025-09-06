@@ -219,7 +219,7 @@ async def sales_text_to_speech(
         wav_data = await request.app.state.voice_service.synthesize_voice(
             text=req.text,
             speaker_id=speaker_id,
-            emotion=None,  # 感情パラメータは後で実装
+            emotion=emotion_params,
         )
 
         if not wav_data:

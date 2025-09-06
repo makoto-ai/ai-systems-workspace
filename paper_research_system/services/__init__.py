@@ -19,6 +19,7 @@ from .advanced_filter_engine import (
 from .citation_network_engine import CitationNetworkEngine, get_citation_network_engine
 from .citation_graph_db import CitationGraphDB, get_citation_graph_db
 from .citation_visualization import CitationVisualization, get_citation_visualization
+from .output_schema import validate_output_schema, SchemaValidationError
 
 __all__ = [
     "QueryTranslator",
@@ -40,4 +41,6 @@ __all__ = [
     "get_citation_graph_db",
     "CitationVisualization",
     "get_citation_visualization",
+    "validate_output_schema",
+    "SchemaValidationError",
 ]

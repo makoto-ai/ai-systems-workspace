@@ -3,8 +3,8 @@ Semantic Scholar API client for Academic Paper Research Assistant
 Semantic Scholar API クライアント（APIキー推奨だが無しでも利用可能）
 """
 
-from config.settings import settings
-from core.paper_model import Paper, Author
+from ..config.settings import settings
+from ..core.paper_model import Paper, Author
 import httpx
 import asyncio
 from typing import List, Optional, Dict, Any

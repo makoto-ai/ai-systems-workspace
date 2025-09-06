@@ -3,8 +3,8 @@ Rate-Limited Semantic Scholar API client for Academic Paper Research Assistant
 レート制限対応 Semantic Scholar API クライアント（1リクエスト/秒）
 """
 
-from config.settings import settings
-from core.paper_model import Paper, Author
+from ..config.settings import settings
+from ..core.paper_model import Paper, Author
 import httpx
 import asyncio
 import time

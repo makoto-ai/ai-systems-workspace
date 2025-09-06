@@ -101,6 +101,15 @@ frontend/voice-roleplay-frontend/build/
 frontend/voice-roleplay-frontend/.env
 frontend/voice-roleplay-frontend/.env.local
 
+# Playwright artifacts
+.playwright/
+playwright-report/
+
+# Generic caches & logs
+*.cache
+*.tmp
+*.pyc
+
 # Package managers
 npm-debug.log*
 yarn-debug.log*
@@ -174,6 +183,9 @@ backups/
 voice_samples/
 user_data/
 session_recordings/
+memory/snapshots/*.json
+memory/cursor_state.json
+memory/mcp_snapshot.json
 
 # Docker
 .dockerignore
@@ -336,3 +348,9 @@ __pycache__/
 *.env
 secrets/
 **/secrets/
+
+# --- Allow contract tests (override above test/audio ignores) ---
+!tests/
+!tests/**
+!tests/fixtures/
+!tests/fixtures/hello_short.wav
