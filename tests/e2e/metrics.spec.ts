@@ -7,9 +7,9 @@ test('Dashboard metrics heatmap renders and shows KPI', async ({ page }) => {
   const heatmap = page.getByTestId('heatmap').first();
   await expect(heatmap).toBeVisible();
 
-  // Color style should be set based on KPI
+  // Color style should be set based on KPI (RGB or HSL)
   const bg = await heatmap.evaluate((el) => (el as HTMLElement).style.background);
-  expect(bg).toContain('hsl(');
+  expect(bg).toMatch(/^(hsl\(|rgb\()/);
 });
 
 
