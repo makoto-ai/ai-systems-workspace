@@ -1,11 +1,11 @@
 {
-  "timestamp": "2025-09-06T08:23:41.837431",
+  "timestamp": "2025-09-06T09:54:17.300507",
   "session_purpose": "pre-commit",
   "git_status": {
-    "commit_hash": "99bda76de5e385bacd5eccadc9af191ad58ecc5b",
+    "commit_hash": "4cae5a838ea71da8af55d7a75273415227af7e0d",
     "branch": "ci/slack-test",
-    "uncommitted_changes": 1,
-    "status_details": "M  .monitor.pid"
+    "uncommitted_changes": 56,
+    "status_details": "M  README.md\nM  auto-start-on-open-complete.sh\nD  main_hybrid.py\nM  memory/cursor_state.json\nM  memory/mcp_snapshot.json\nA  memory/snapshots/mcp_snapshot_20250906_082748.json\nA  memory/snapshots/mcp_snapshot_20250906_082852.json\nA  memory/snapshots/mcp_snapshot_20250906_082955.json\nA  memory/snapshots/mcp_snapshot_20250906_083059.json\nA  memory/snapshots/mcp_snapshot_20250906_083203.json\nA  memory/snapshots/mcp_snapshot_20250906_083307.json\nA  memory/snapshots/mcp_snapshot_20250906_083410.json\nA  memory/snapshots/mcp_snapshot_20250906_083513.json\nA  memory/snapshots/mcp_snapshot_20250906_083617.json\nA  memory/snapshots/mcp_snapshot_20250906_083722.json\nA  memory/snapshots/mcp_snapshot_20250906_083826.json\nA  memory/snapshots/mcp_snapshot_20250906_083930.json\nA  memory/snapshots/mcp_snapshot_20250906_084034.json\nA  memory/snapshots/mcp_snapshot_20250906_084138.json\nA  memory/snapshots/mcp_snapshot_20250906_084241.json\nA  memory/snapshots/mcp_snapshot_20250906_084346.json\nA  memory/snapshots/mcp_snapshot_20250906_084450.json\nA  memory/snapshots/mcp_snapshot_20250906_084554.json\nA  memory/snapshots/mcp_snapshot_20250906_084658.json\nA  memory/snapshots/mcp_snapshot_20250906_085104.json\nA  memory/snapshots/mcp_snapshot_20250906_085207.json\nA  memory/snapshots/mcp_snapshot_20250906_085310.json\nA  memory/snapshots/mcp_snapshot_20250906_085415.json\nA  memory/snapshots/mcp_snapshot_20250906_085519.json\nA  memory/snapshots/mcp_snapshot_20250906_085623.json\nA  memory/snapshots/mcp_snapshot_20250906_085725.json\nA  memory/snapshots/mcp_snapshot_20250906_085829.json\nA  memory/snapshots/mcp_snapshot_20250906_085934.json\nA  memory/snapshots/mcp_snapshot_20250906_090038.json\nA  memory/snapshots/mcp_snapshot_20250906_090141.json\nA  memory/snapshots/mcp_snapshot_20250906_092941.json\nA  memory/snapshots/mcp_snapshot_20250906_093333.json\nA  memory/snapshots/mcp_snapshot_20250906_093436.json\nA  memory/snapshots/mcp_snapshot_20250906_093541.json\nA  memory/snapshots/mcp_snapshot_20250906_093646.json\nA  memory/snapshots/mcp_snapshot_20250906_093749.json\nA  memory/snapshots/mcp_snapshot_20250906_094036.json\nA  memory/snapshots/mcp_snapshot_20250906_094139.json\nA  memory/snapshots/mcp_snapshot_20250906_094243.json\nA  memory/snapshots/mcp_snapshot_20250906_094349.json\nA  memory/snapshots/mcp_snapshot_20250906_094407.json\nA  memory/snapshots/mcp_snapshot_20250906_094452.json\nA  memory/snapshots/mcp_snapshot_20250906_094608.json\nA  memory/snapshots/mcp_snapshot_20250906_094617.json\nA  memory/snapshots/mcp_snapshot_20250906_094712.json\nA  memory/snapshots/mcp_snapshot_20250906_094903.json\nA  memory/snapshots/mcp_snapshot_20250906_094943.json\nA  memory/snapshots/mcp_snapshot_20250906_095007.json\nA  memory/snapshots/mcp_snapshot_20250906_095210.json\nA  memory/snapshots/mcp_snapshot_20250906_095314.json\nM  scripts/memory_auto_commit.sh"
   },
   "cursor_configs": {
     "mcp_groq_constitution.json": {
@@ -1560,11 +1560,6 @@
   },
   "active_files": [
     {
-      "file": "main_hybrid.py",
-      "size": 38942,
-      "modified": "2025-09-06T08:10:01.676883"
-    },
-    {
       "file": "system_monitor.py",
       "size": 88299,
       "modified": "2025-08-10T00:50:41.223087"
@@ -1587,8 +1582,8 @@
   ],
   "system_status": {
     "main_hybrid_running": true,
-    "python_files_count": 24424,
+    "python_files_count": 24423,
     "cursor_configs_count": 12
   },
-  "state_hash": "59487c9bdcc61eb3096d06d91f5bedd9"
+  "state_hash": "d01aa2f1a5fe3d336cdaaf22a23d6d1a"
 }

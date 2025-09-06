@@ -79,6 +79,42 @@
 - **音声処理**: Librosa, PyWorld, Praat
 - **機械学習**: PyTorch, Scikit-learn, NumPy
 
+## 🟢 **運用・起動まとめ（最短手順）**
+
+- 一発起動（ハブ）
+```bash
+/Users/araimakoto/ai-driven/ai-systems-workspace/auto-start-on-open-complete.sh
+```
+
+- 動作確認
+  - API: http://localhost:8000/health /docs
+  - TTS: http://localhost:8000/api/voice/speakers, /api/voice/text-to-speech
+  - 公開: http://localhost:8000/public/
+
+- 迅速テスト（TTS）
+```bash
+curl -sS -H "Content-Type: application/json" \
+  -d '{"text":"テスト","speaker_id":2}' \
+  -o out/quick.wav http://localhost:8000/api/voice/text-to-speech
+```
+
+- 常駐/定期ジョブ
+  - 監視: 常駐（PIDは `cat /Users/araimakoto/ai-driven/ai-systems-workspace/.monitor.pid`）
+  - 自動コミット: 5分毎（launchd: local.memory_auto_commit）
+  - デイリーバックアップ: 毎日3時（launchd: local.daily_backup）
+
+- 主要ログ
+  - `logs/hybrid_restart.log`（API）
+  - `logs/monitor_start.log`（監視）
+  - `logs/cron_daily_backup.*.log`（バックアップ）
+  - `logs/audit.jsonl`（監査）
+
+- 停止
+```bash
+pkill -f "main_hybrid:app" || true
+pkill -f monitor-services.sh || true
+```
+
 ## 🚀 **クイックスタート**
 
 ### **1. 環境セットアップ**
