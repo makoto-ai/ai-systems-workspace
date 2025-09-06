@@ -19,6 +19,8 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci || true
+      - name: Install frontend deps
+        run: npm ci --prefix frontend/voice-roleplay-frontend || true
       - run: npx playwright install --with-deps
 
       - uses: actions/setup-python@v5
