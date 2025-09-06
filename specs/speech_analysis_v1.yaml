@@ -1,0 +1,20 @@
+id: speech_analysis_v1
+purpose: "音声→文字起こし→要約→評価を返す"
+inputs: {audio_wav: {format: wav, sample_rate: 16000}}
+process: [{asr: "whisperx:small|fallback:large-v2"}, {nlp: "LLM: groq|claude"}]
+outputs:
+  summary: {type: string, max_chars: 600}
+  positives: {type: array, items: string, max_items: 5}
+  improvements: {type: array, items: string, max_items: 5}
+  next_practice: {type: array, items: string, max_items: 3}
+non_functional: {latency_ms_p95: 2500, cost_per_min_usd: 0.02}
+acceptance_tests:
+  - name: hello_short
+    input_audio_fixture: "tests/fixtures/hello_short.wav"
+    expect:
+      summary_contains: ["挨拶","要件確認"]
+      positives_min: 1
+      improvements_min: 1
+versioning: {semver: "1.0.0"}
+
+
