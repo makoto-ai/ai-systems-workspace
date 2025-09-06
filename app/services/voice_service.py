@@ -120,17 +120,38 @@ class VoiceService:
                 logger.error("Failed to create audio query; returning silence fallback")
                 return self._generate_silence_wav(duration_ms=500)
 
-            # EXTREME SPEED: Tune audio_query for faster first audio
+            # EXTREME SPEED: Tune audio_query for faster first audio + 聞きやすさ
             try:
-                # さらに初音を早める（自然さとのバランス範囲）
-                audio_query["speedScale"] = float(max(1.35, min(1.6, audio_query.get("speedScale", 1.45))))
-                # 無音を短縮（ただし極端にしない）
-                audio_query["prePhonemeLength"] = float(min(0.03, audio_query.get("prePhonemeLength", 0.08)))
-                audio_query["postPhonemeLength"] = float(min(0.04, audio_query.get("postPhonemeLength", 0.08)))
+                def _clamp(val: float, lo: float, hi: float) -> float:
+                    return max(lo, min(hi, float(val)))
+
+                # 環境変数で上書き可能（なければ推奨既定値）
+                default_speed = float(os.getenv("VOICE_DEFAULT_SPEED", "1.30"))
+                default_volume = float(os.getenv("VOICE_DEFAULT_VOLUME", "1.08"))
+                default_pre = float(os.getenv("VOICE_DEFAULT_PRE_S", "0.035"))
+                default_post = float(os.getenv("VOICE_DEFAULT_POST_S", "0.045"))
+                default_pause_scale = float(os.getenv("VOICE_DEFAULT_PAUSE_SCALE", "0.70"))
+
+                audio_query["speedScale"] = _clamp(
+                    audio_query.get("speedScale", default_speed), 1.10, 1.60
+                )
+                audio_query["volumeScale"] = _clamp(
+                    audio_query.get("volumeScale", default_volume), 0.80, 1.50
+                )
+                audio_query["prePhonemeLength"] = _clamp(
+                    audio_query.get("prePhonemeLength", default_pre), 0.02, 0.08
+                )
+                audio_query["postPhonemeLength"] = _clamp(
+                    audio_query.get("postPhonemeLength", default_post), 0.02, 0.08
+                )
                 if "pauseLength" in audio_query:
-                    audio_query["pauseLength"] = float(min(0.03, audio_query.get("pauseLength", 0.08)))
+                    audio_query["pauseLength"] = _clamp(
+                        audio_query.get("pauseLength", 0.08), 0.02, 0.08
+                    )
                 if "pauseLengthScale" in audio_query:
-                    audio_query["pauseLengthScale"] = float(min(0.65, audio_query.get("pauseLengthScale", 1.0)))
+                    audio_query["pauseLengthScale"] = _clamp(
+                        audio_query.get("pauseLengthScale", default_pause_scale), 0.50, 1.00
+                    )
             except Exception:
                 # If the query format differs, continue safely
                 pass

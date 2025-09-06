@@ -8,7 +8,12 @@ while true; do
     # ハイブリッド(8000)監視
     if ! pgrep -f "main_hybrid:app" > /dev/null; then
         echo "⚠️  hybrid 停止検出 - 再起動中..."
-        nohup python3 -u main_hybrid.py > logs/hybrid_restart.log 2>&1 &
+        # VOICE環境の適用
+        if [ -f scripts/env.voice.sh ]; then
+            # shellcheck disable=SC1091
+            source scripts/env.voice.sh
+        fi
+        nohup env VOICE_DEFAULT_SPEED="$VOICE_DEFAULT_SPEED" VOICE_DEFAULT_VOLUME="$VOICE_DEFAULT_VOLUME" VOICE_DEFAULT_PRE_S="$VOICE_DEFAULT_PRE_S" VOICE_DEFAULT_POST_S="$VOICE_DEFAULT_POST_S" VOICE_DEFAULT_PAUSE_SCALE="$VOICE_DEFAULT_PAUSE_SCALE" python3 -u main_hybrid.py > logs/hybrid_restart.log 2>&1 &
         echo "✅ hybrid 復旧完了 (8000)"
     fi
 

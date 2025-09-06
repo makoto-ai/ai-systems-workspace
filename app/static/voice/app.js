@@ -18,7 +18,9 @@
   const micSelect = document.getElementById('micSelect');
   const modelSelect = document.getElementById('modelSelect');
   const scenarioSelect = document.getElementById('scenarioSelect');
-  const USE_WS = false; // force HTTP path to avoid WS issues
+  // ?ws=1 でWSモードを有効化（既定はHTTP）
+  const params = new URLSearchParams(location.search);
+  const USE_WS = params.get('ws') === '1';
   // Speaker locking & scenario tracking
   let userSelectedSpeaker = false;
   let lastScenarioId = '';

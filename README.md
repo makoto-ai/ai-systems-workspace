@@ -116,6 +116,39 @@ pkill -f monitor-services.sh || true
 ```
 
 ## 🚀 **クイックスタート**
+### 自動コミットで常に白にする（モードA）
+- 一度だけ実行: `npm run auto:white:once`
+- 監視して常駐: `npm run auto:white`
+- 停止: 監視プロセス（ターミナル）を Ctrl+C
+- 注意: `.gitignore` に入っていないファイルは自動コミット対象。秘密は pre-commit でブロック。
+
+### **E2E/CI（自動会話検証）**
+
+1) 依存準備
+
+```bash
+npm i -D @playwright/test
+npx playwright install --with-deps
+```
+
+2) 変数
+
+- E2E_BASE_URL: フロントのURL（既定: http://localhost:5173）
+- API_BASE_URL: APIのURL（既定: http://localhost:8000）
+
+3) ローカル実行
+
+```bash
+npx playwright test
+pytest -q tests/api/test_roundtrip.py
+```
+
+4) 音声フィクスチャ
+
+- `tests/fixtures/input.wav` を差し替えると実録音で検証可能
+
+失敗時: `playwright-report/` を参照（Actionsではアーティファクトに保存）
+
 
 ### **1. 環境セットアップ**
 ```bash

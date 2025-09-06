@@ -8,6 +8,11 @@ echo "🚀 完全自動復旧システム開始..."
 ROOT="/Users/araimakoto/ai-driven/ai-systems-workspace"
 cd "$ROOT"
 mkdir -p logs
+# VOICE 環境適用
+if [ -f "$ROOT/scripts/env.voice.sh" ]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/scripts/env.voice.sh"
+fi
 
 # Python仮想環境の確認・起動
 if [ -d ".venv" ]; then

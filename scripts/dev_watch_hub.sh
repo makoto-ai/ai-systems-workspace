@@ -1,4 +1,5 @@
 #!/bin/zsh
+# touch: trigger auto-whiten watcher at $(date '+%F %T')
 set -u
 
 REPO="${REPO:-$HOME/ai-driven/ai-systems-workspace}"

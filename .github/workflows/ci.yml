@@ -1,0 +1,50 @@
+name: ci
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: "0 18 * * *"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: http://localhost:8000
+      API_BASE_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci || true
+      - run: npx playwright install --with-deps
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt || true
+      - run: pip install pytest requests || true
+
+      - name: Start backend & frontend (dev servers)
+        run: |
+          nohup python -m uvicorn main_hybrid:app --host 0.0.0.0 --port 8000 >/dev/null 2>&1 &
+          nohup npm run dev --prefix frontend/voice-roleplay-frontend -- --port 5173 >/dev/null 2>&1 &
+          sleep 10
+
+      - name: E2E (UI robot)
+        run: npx playwright test
+
+      - name: API roundtrip
+        run: pytest -q tests/api/test_roundtrip.py
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-trace
+          path: |
+            playwright-report/**/*
+            test-results/**/*
+
+

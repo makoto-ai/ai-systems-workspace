@@ -21,7 +21,7 @@
     <h2>音声AIロープレ（最小UI）</h2>
 
     <div class="row">
-      <button id="toggleBtn">開始</button>
+      <button id="toggleBtn" data-testid="mic-btn">開始</button>
       <span class="pill" id="status">idle</span>
       <span class="pill" id="micState" style="background:#eee">mic: unknown</span>
       <select id="micSelect"><option value="">入力デバイスを選択（任意）</option></select>
@@ -49,7 +49,7 @@
       <div id="metrics" class="muted"></div>
       <div id="advice" style="margin-top: 6px; font-weight: 600;"></div>
       <audio id="adviceAudio" controls style="margin-top:8px; display:none;"></audio>
-      <audio id="aiAudio" controls style="margin-top:8px; display:none;"></audio>
+      <audio id="aiAudio" data-testid="tts" controls style="margin-top:8px; display:none;"></audio>
       <div class="row muted" style="margin-top:8px; gap:16px">
         <div id="codecInfo">codec: -</div>
         <div id="httpInfo">http: -</div>
@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <script src="/ui/voice/app.js"></script>
+    <script src="/static/voice/app.js"></script>
   </body>
   </html>
 
