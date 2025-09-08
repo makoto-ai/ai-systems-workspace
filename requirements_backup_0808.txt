@@ -2,7 +2,7 @@
 fastapi==0.116.1
 uvicorn[standard]==0.35.0
 groq==0.13.0
-anthropic==0.37.1
+anthropic==0.66.0
 google-generativeai==0.8.3
 python-multipart==0.0.17
 python-dotenv==1.0.1
